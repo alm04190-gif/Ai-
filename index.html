@@ -14,6 +14,7 @@
             --accent-hover: #0077b3;
             --text: #ffffff;
             --text-secondary: #888888;
+            --purple-glow: rgba(160, 32, 240, 0.4);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,12 +26,30 @@
             padding: 16px;
             padding-bottom: 100px;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Rain Animation CSS --- */
+        .rain-drop {
+            position: fixed;
+            top: -10vh;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(transparent, rgba(255, 255, 255, 0.15));
+            z-index: 0;
+            animation: fall linear forwards;
+            pointer-events: none;
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh); }
         }
 
         .header {
             text-align: center;
             margin-bottom: 24px;
             padding-top: 8px;
+            position: relative;
+            z-index: 10;
         }
 
         .header h1 {
@@ -45,7 +64,7 @@
             color: var(--text-secondary);
         }
 
-        .section { margin-bottom: 20px; }
+        .section { margin-bottom: 20px; position: relative; z-index: 10; }
 
         .section-title {
             font-size: 12px;
@@ -56,6 +75,7 @@
             letter-spacing: 0.8px;
         }
 
+        /* --- Floating Draft Area with Purple Shadow --- */
         .draft-area {
             width: 100%;
             min-height: 140px;
@@ -68,42 +88,87 @@
             line-height: 1.5;
             resize: vertical;
             font-family: inherit;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px var(--purple-glow);
+            animation: floatBox 3.5s ease-in-out infinite;
+        }
+
+        @keyframes floatBox {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); box-shadow: 0 8px 20px rgba(160, 32, 240, 0.6); }
+            100% { transform: translateY(0px); }
         }
 
         .draft-area:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: #a020f0;
+            box-shadow: 0 0 20px rgba(160, 32, 240, 0.8);
         }
 
         .draft-area::placeholder { color: #555; }
 
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
-            gap: 10px;
-        }
-
-        .emoji-item {
+        /* --- Expandable Emoji Section --- */
+        .emoji-wrapper {
+            position: relative;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 6px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.15s ease;
-            position: relative;
+            border-radius: 14px;
+            padding: 10px;
             overflow: hidden;
         }
 
+        .emoji-scroll-area {
+            max-height: 145px; /* ৩ লাইন ইমোজি দেখানোর জন্য */
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .emoji-scroll-area.expanded {
+            max-height: 50vh; /* খোলার পর স্ক্রল করা যাবে */
+            overflow-y: auto;
+        }
+
+        .emoji-fade {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, var(--surface));
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .emoji-scroll-area.expanded + .emoji-fade {
+            opacity: 0; /* খুললে ফেড মুছে যাবে */
+        }
+
+        /* --- Smaller Emojis --- */
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); /* সাইজ ছোট করা হয়েছে */
+            gap: 8px;
+        }
+
+        .emoji-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px 4px; /* প্যাডিং কমানো হয়েছে */
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
         .emoji-item:active {
-            transform: scale(0.95);
+            transform: scale(0.90);
             border-color: var(--accent);
+            background: rgba(160, 32, 240, 0.2);
         }
 
         .emoji-item img {
-            width: 44px;
-            height: 44px;
+            width: 26px; /* ছবি অনেক ছোট করা হয়েছে */
+            height: 26px;
             object-fit: contain;
             display: block;
             margin: 0 auto;
@@ -111,19 +176,38 @@
         }
 
         .emoji-item .label {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-secondary);
-            margin-top: 6px;
+            margin-top: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
+        /* Expand Button */
+        .toggle-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            padding-top: 12px;
+            cursor: pointer;
+            border-top: 1px solid var(--border);
+            margin-top: 5px;
+        }
+        
+        .toggle-btn span { margin-right: 5px; }
+
         .loading, .empty, .error {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 10px;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             grid-column: 1 / -1;
         }
 
@@ -151,9 +235,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3);
         }
 
-        .send-btn button:active { background: var(--accent-hover); }
+        .send-btn button:active { background: var(--accent-hover); transform: scale(0.98); }
 
         .stats {
             display: flex;
@@ -180,9 +265,17 @@
     </div>
 
     <div class="section">
-        <div class="section-title">Emoji Keyboard</div>
-        <div id="emojiKeyboard" class="emoji-grid">
-            <div class="loading">Loading emojis...</div>
+        <div class="section-title">Premium Keyboard</div>
+        <div class="emoji-wrapper">
+            <div class="emoji-scroll-area" id="emojiArea">
+                <div id="emojiKeyboard" class="emoji-grid">
+                    <div class="loading">Loading emojis...</div>
+                </div>
+            </div>
+            <div class="emoji-fade" id="fadeEffect"></div>
+            <button class="toggle-btn" onclick="toggleEmojiList()">
+                <span id="toggleText">Show All Emojis</span> <span id="toggleIcon">🔽</span>
+            </button>
         </div>
     </div>
 
@@ -202,9 +295,39 @@
         const draft = document.getElementById('draft');
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
+        const emojiArea = document.getElementById('emojiArea');
+        const toggleText = document.getElementById('toggleText');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
         let emojis = [];
         let emojiMap = {};
         let emojiCounter = 1;
+
+        // --- Rain Animation Logic ---
+        function createRainDrop() {
+            const drop = document.createElement('div');
+            drop.classList.add('rain-drop');
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = (Math.random() * 1.5 + 1) + 's';
+            drop.style.opacity = Math.random() * 0.5 + 0.1;
+            document.body.appendChild(drop);
+            
+            setTimeout(() => { drop.remove(); }, 2500);
+        }
+        setInterval(createRainDrop, 100); // প্রতি ১০০ মিলিসেকেন্ডে বৃষ্টি পড়বে
+
+        // --- Emoji Toggle Logic ---
+        function toggleEmojiList() {
+            emojiArea.classList.toggle('expanded');
+            if (emojiArea.classList.contains('expanded')) {
+                toggleText.textContent = "Show Less Emojis";
+                toggleIcon.textContent = "🔼";
+            } else {
+                toggleText.textContent = "Show All Emojis";
+                toggleIcon.textContent = "🔽";
+                emojiArea.scrollTop = 0; // গুটিয়ে ফেলার সময় উপরে চলে যাবে
+            }
+        }
 
         draft.addEventListener('input', () => {
             charCount.textContent = draft.value.length + ' chars';
@@ -218,8 +341,8 @@
 
             try {
                 const res = await fetch(`${apiBase}/api/emojis`, {
-    headers: { 'ngrok-skip-browser-warning': 'true' }
-});
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 emojis = await res.json();
 
@@ -259,41 +382,38 @@
         }
 
         function insertEmoji(emoji) {
-    // নতুন শর্টকোড ম্যাজিক: যেমন [🥲1] তৈরি হবে
-    const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
-    emojiMap[shortCode] = `[${emoji.id}]`;
-    emojiCounter++;
+            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
+            emojiMap[shortCode] = `[${emoji.id}]`;
+            emojiCounter++;
 
-    const textToInsert = shortCode + ' ';
-    const start = draft.selectionStart;
-    const end = draft.selectionEnd;
-    const text = draft.value;
+            const textToInsert = shortCode + ' ';
+            const start = draft.selectionStart;
+            const end = draft.selectionEnd;
+            const text = draft.value;
 
-    draft.value = text.substring(0, start) + textToInsert + text.substring(end);
-    draft.focus();
-    draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
-    draft.dispatchEvent(new Event('input'));
+            draft.value = text.substring(0, start) + textToInsert + text.substring(end);
+            draft.focus();
+            draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
+            draft.dispatchEvent(new Event('input'));
 
-    if (Telegram.HapticFeedback) {
-        Telegram.HapticFeedback.impactOccurred('light');
-    }
+            if (Telegram.HapticFeedback) {
+                Telegram.HapticFeedback.impactOccurred('light');
+            }
         }
 
         function sendData() {
-    let text = draft.value;
-    if (!text.trim()) {
-        Telegram.showAlert('Please write something first!');
-        return;
-    }
+            let text = draft.value;
+            if (!text.trim()) {
+                Telegram.showAlert('Please write something first!');
+                return;
+            }
 
-    // ম্যাজিক: সেন্ড করার ঠিক আগে শর্টকোডগুলোকে আসল আইডিতে লুকিয়ে কনভার্ট করে ফেলা
-    for (let code in emojiMap) {
-        text = text.split(code).join(emojiMap[code]);
-    }
+            for (let code in emojiMap) {
+                text = text.split(code).join(emojiMap[code]);
+            }
 
-    Telegram.sendData(JSON.stringify({ text: text }));
-}
-
+            Telegram.sendData(JSON.stringify({ text: text }));
+        }
 
         loadEmojis();
     </script>
