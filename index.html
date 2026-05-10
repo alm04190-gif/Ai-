@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Post Manager</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --surface: #1a1a1a;
+            --border: #2a2a2a;
+            --accent: #0088cc;
+            --accent-hover: #0077b3;
+            --text: #ffffff;
+            --text-secondary: #888888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 16px;
+            padding-bottom: 100px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 8px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .section { margin-bottom: 20px; }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .draft-area {
+            width: 100%;
+            min-height: 140px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .draft-area:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .draft-area::placeholder { color: #555; }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+            gap: 10px;
+        }
+
+        .emoji-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emoji-item:active {
+            transform: scale(0.95);
+            border-color: var(--accent);
+        }
+
+        .emoji-item img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            pointer-events: none;
+        }
+
+        .emoji-item .label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading, .empty, .error {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            grid-column: 1 / -1;
+        }
+
+        .error { color: #ff4444; }
+
+        .send-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg);
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .send-btn button {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .send-btn button:active { background: var(--accent-hover); }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✨ Premium Post Manager</h1>
+        <p>Compose & send premium emoji posts</p>
+    </div>
+
+    <div class="section">
+        <div class="stats">
+            <span class="section-title">Draft</span>
+            <span id="charCount">0 chars</span>
+        </div>
+        <textarea class="draft-area" id="draft" placeholder="Type your post here... Tap emojis below to insert them."></textarea>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Emoji Keyboard</div>
+        <div id="emojiKeyboard" class="emoji-grid">
+            <div class="loading">Loading emojis...</div>
+        </div>
+    </div>
+
+    <div class="send-btn">
+        <button id="sendBtn" onclick="sendData()">📤 Send to Bot</button>
+    </div>
+
+    <script>
+        const Telegram = window.Telegram.WebApp;
+        Telegram.expand();
+        Telegram.ready();
+        Telegram.enableClosingConfirmation();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiBase = urlParams.get('api');
+
+        const draft = document.getElementById('draft');
+        const keyboard = document.getElementById('emojiKeyboard');
+        const charCount = document.getElementById('charCount');
+        let emojis = [];
+
+        draft.addEventListener('input', () => {
+            charCount.textContent = draft.value.length + ' chars';
+        });
+
+        async function loadEmojis() {
+            if (!apiBase) {
+                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${apiBase}/api/emojis`, {
+    headers: { 'ngrok-skip-browser-warning': 'true' }
+});
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                emojis = await res.json();
+
+                if (emojis.length === 0) {
+                    keyboard.innerHTML = '<div class="empty">No emojis in database.<br>Ask admin to add some!</div>';
+                    return;
+                }
+
+                keyboard.innerHTML = '';
+                emojis.forEach((emoji) => {
+                    const div = document.createElement('div');
+                    div.className = 'emoji-item';
+                    div.title = emoji.type === 'mapped' ? `${emoji.symbol} (${emoji.id})` : emoji.id;
+
+                    const img = document.createElement('img');
+                    img.src = emoji.image_url;
+                    img.alt = emoji.symbol || emoji.id;
+                    img.loading = 'lazy';
+                    img.onerror = function() {
+                        this.style.opacity = '0.3';
+                        this.parentElement.style.cursor = 'not-allowed';
+                    };
+
+                    const label = document.createElement('div');
+                    label.className = 'label';
+                    label.textContent = emoji.symbol || emoji.id.slice(-6);
+
+                    div.appendChild(img);
+                    div.appendChild(label);
+                    div.onclick = () => insertEmoji(emoji);
+                    keyboard.appendChild(div);
+                });
+            } catch (err) {
+                keyboard.innerHTML = '<div class="error">❌ Failed to load emojis.<br>Check API connection.</div>';
+                console.error(err);
+            }
+        }
+
+        function insertEmoji(emoji) {
+            const textToInsert = emoji.symbol || `[${emoji.id}]`;
+            const start = draft.selectionStart;
+            const end = draft.selectionEnd;
+            const text = draft.value;
+
+            draft.value = text.substring(0, start) + textToInsert + text.substring(end);
+            draft.focus();
+            draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
+            draft.dispatchEvent(new Event('input'));
+
+            if (Telegram.HapticFeedback) {
+                Telegram.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        function sendData() {
+            const text = draft.value;
+            if (!text.trim()) {
+                Telegram.showAlert('Please write something first!');
+                return;
+            }
+
+            const payload = JSON.stringify({text: text});
+
+            try {
+                Telegram.sendData(payload);
+                if (Telegram.HapticFeedback) {
+                    Telegram.HapticFeedback.notificationOccurred('success');
+                }
+            } catch (e) {
+                Telegram.showAlert('Error sending data: ' + e.message);
+            }
+        }
+
+        loadEmojis();
+    </script>
+</body>
+</html>
