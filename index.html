@@ -257,7 +257,7 @@
         }
 
         function insertEmoji(emoji) {
-            const textToInsert = emoji.symbol || `[${emoji.id}]`;
+            const textToInsert = '[' + emoji.id + '] ';
             const start = draft.selectionStart;
             const end = draft.selectionEnd;
             const text = draft.value;
