@@ -203,6 +203,8 @@
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
         let emojis = [];
+        let emojiMap = {};
+        let emojiCounter = 1;
 
         draft.addEventListener('input', () => {
             charCount.textContent = draft.value.length + ' chars';
@@ -257,39 +259,41 @@
         }
 
         function insertEmoji(emoji) {
-            const textToInsert = '[' + emoji.id + '] ';
-            const start = draft.selectionStart;
-            const end = draft.selectionEnd;
-            const text = draft.value;
+    // নতুন শর্টকোড ম্যাজিক: যেমন [🥲1] তৈরি হবে
+    const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
+    emojiMap[shortCode] = `[${emoji.id}]`;
+    emojiCounter++;
 
-            draft.value = text.substring(0, start) + textToInsert + text.substring(end);
-            draft.focus();
-            draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
-            draft.dispatchEvent(new Event('input'));
+    const textToInsert = shortCode + ' ';
+    const start = draft.selectionStart;
+    const end = draft.selectionEnd;
+    const text = draft.value;
 
-            if (Telegram.HapticFeedback) {
-                Telegram.HapticFeedback.impactOccurred('light');
-            }
+    draft.value = text.substring(0, start) + textToInsert + text.substring(end);
+    draft.focus();
+    draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
+    draft.dispatchEvent(new Event('input'));
+
+    if (Telegram.HapticFeedback) {
+        Telegram.HapticFeedback.impactOccurred('light');
+    }
         }
 
         function sendData() {
-            const text = draft.value;
-            if (!text.trim()) {
-                Telegram.showAlert('Please write something first!');
-                return;
-            }
+    let text = draft.value;
+    if (!text.trim()) {
+        Telegram.showAlert('Please write something first!');
+        return;
+    }
 
-            const payload = JSON.stringify({text: text});
+    // ম্যাজিক: সেন্ড করার ঠিক আগে শর্টকোডগুলোকে আসল আইডিতে লুকিয়ে কনভার্ট করে ফেলা
+    for (let code in emojiMap) {
+        text = text.split(code).join(emojiMap[code]);
+    }
 
-            try {
-                Telegram.sendData(payload);
-                if (Telegram.HapticFeedback) {
-                    Telegram.HapticFeedback.notificationOccurred('success');
-                }
-            } catch (e) {
-                Telegram.showAlert('Error sending data: ' + e.message);
-            }
-        }
+    Telegram.sendData(JSON.stringify({ text: text }));
+}
+
 
         loadEmojis();
     </script>
