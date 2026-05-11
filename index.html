@@ -29,13 +29,13 @@
             overflow-x: hidden;
         }
 
-        /* --- Rain Animation CSS --- */
+        /* --- Rain Animation CSS (Now Purple) --- */
         .rain-drop {
             position: fixed;
             top: -10vh;
             width: 2px;
             height: 15px;
-            background: linear-gradient(transparent, rgba(255, 255, 255, 0.15));
+            background: linear-gradient(transparent, rgba(160, 32, 240, 0.6)); /* পার্পল রেইন */
             z-index: 0;
             animation: fall linear forwards;
             pointer-events: none;
@@ -70,12 +70,12 @@
             font-size: 12px;
             font-weight: 600;
             color: var(--text-secondary);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
         }
 
-        /* --- Floating Draft Area with Purple Shadow --- */
+        /* --- Floating Draft Area with Purple Shadow (Untouched) --- */
         .draft-area {
             width: 100%;
             min-height: 140px;
@@ -107,6 +107,64 @@
 
         .draft-area::placeholder { color: #555; }
 
+        /* --- Category Section (New) --- */
+        .category-hint {
+            font-size: 11px;
+            color: #aaaaaa;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .category-row {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 10px 5px 25px 5px; /* Bottom padding for floating shadow */
+            margin-bottom: 5px;
+            scrollbar-width: none; /* Firefox scrollbar hide */
+        }
+        .category-row::-webkit-scrollbar { display: none; /* Chrome scrollbar hide */ }
+
+        .category-item {
+            flex: 0 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.7); /* ফুল হোয়াইট শ্যাডো */
+            animation: floatBox 3s ease-in-out infinite; /* হাওয়ায় ভাসবে */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 65px;
+        }
+
+        .category-item:active { transform: scale(0.9); }
+        
+        .category-item.active-cat {
+            border-color: #ffffff;
+            box-shadow: 0 0 18px rgba(255, 255, 255, 1); /* সিলেক্ট করলে শ্যাডো আরো উজ্জ্বল হবে */
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .category-item img {
+            width: 34px; /* নিচের ইমোজির (26px) চেয়ে বড় */
+            height: 34px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .category-item span {
+            font-size: 11px;
+            margin-top: 6px;
+            color: #fff;
+            font-weight: 600;
+        }
+
         /* --- Expandable Emoji Section --- */
         .emoji-wrapper {
             position: relative;
@@ -118,13 +176,13 @@
         }
 
         .emoji-scroll-area {
-            max-height: 145px; /* ৩ লাইন ইমোজি দেখানোর জন্য */
+            max-height: 145px; 
             overflow: hidden;
             transition: max-height 0.4s ease;
         }
 
         .emoji-scroll-area.expanded {
-            max-height: 50vh; /* খোলার পর স্ক্রল করা যাবে */
+            max-height: 50vh; 
             overflow-y: auto;
         }
 
@@ -140,13 +198,13 @@
         }
 
         .emoji-scroll-area.expanded + .emoji-fade {
-            opacity: 0; /* খুললে ফেড মুছে যাবে */
+            opacity: 0; 
         }
 
         /* --- Smaller Emojis --- */
         .emoji-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); /* সাইজ ছোট করা হয়েছে */
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); 
             gap: 8px;
         }
 
@@ -154,7 +212,7 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 10px;
-            padding: 6px 4px; /* প্যাডিং কমানো হয়েছে */
+            padding: 6px 4px; 
             cursor: pointer;
             text-align: center;
             transition: all 0.15s ease;
@@ -167,7 +225,7 @@
         }
 
         .emoji-item img {
-            width: 26px; /* ছবি অনেক ছোট করা হয়েছে */
+            width: 26px; 
             height: 26px;
             object-fit: contain;
             display: block;
@@ -265,6 +323,13 @@
     </div>
 
     <div class="section">
+        <div class="section-title">Emoji Categories</div>
+        <div class="category-hint">👇 Click an emoji below to select category/section</div>
+        <div class="category-row" id="categoryRow">
+            </div>
+    </div>
+
+    <div class="section">
         <div class="section-title">Premium Keyboard</div>
         <div class="emoji-wrapper">
             <div class="emoji-scroll-area" id="emojiArea">
@@ -298,12 +363,13 @@
         const emojiArea = document.getElementById('emojiArea');
         const toggleText = document.getElementById('toggleText');
         const toggleIcon = document.getElementById('toggleIcon');
+        const categoryRow = document.getElementById('categoryRow');
         
-        let emojis = [];
+        let allEmojisData = []; // সব ইমোজি সেভ রাখার জন্য
         let emojiMap = {};
         let emojiCounter = 1;
 
-        // --- Rain Animation Logic ---
+        // --- Rain Animation Logic (Purple) ---
         function createRainDrop() {
             const drop = document.createElement('div');
             drop.classList.add('rain-drop');
@@ -314,7 +380,7 @@
             
             setTimeout(() => { drop.remove(); }, 2500);
         }
-        setInterval(createRainDrop, 100); // প্রতি ১০০ মিলিসেকেন্ডে বৃষ্টি পড়বে
+        setInterval(createRainDrop, 100); 
 
         // --- Emoji Toggle Logic ---
         function toggleEmojiList() {
@@ -325,7 +391,7 @@
             } else {
                 toggleText.textContent = "Show All Emojis";
                 toggleIcon.textContent = "🔽";
-                emojiArea.scrollTop = 0; // গুটিয়ে ফেলার সময় উপরে চলে যাবে
+                emojiArea.scrollTop = 0; 
             }
         }
 
@@ -344,41 +410,112 @@
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                emojis = await res.json();
+                
+                allEmojisData = await res.json(); // ডাটা সেভ রাখলাম
 
-                if (emojis.length === 0) {
+                if (allEmojisData.length === 0) {
                     keyboard.innerHTML = '<div class="empty">No emojis in database.<br>Ask admin to add some!</div>';
                     return;
                 }
 
-                keyboard.innerHTML = '';
-                emojis.forEach((emoji) => {
-                    const div = document.createElement('div');
-                    div.className = 'emoji-item';
-                    div.title = emoji.type === 'mapped' ? `${emoji.symbol} (${emoji.id})` : emoji.id;
+                buildCategories(allEmojisData);
+                renderEmojiGrid(allEmojisData); // শুরুতে সব দেখাবে
 
-                    const img = document.createElement('img');
-                    img.src = emoji.image_url;
-                    img.alt = emoji.symbol || emoji.id;
-                    img.loading = 'lazy';
-                    img.onerror = function() {
-                        this.style.opacity = '0.3';
-                        this.parentElement.style.cursor = 'not-allowed';
-                    };
-
-                    const label = document.createElement('div');
-                    label.className = 'label';
-                    label.textContent = emoji.symbol || emoji.id.slice(-6);
-
-                    div.appendChild(img);
-                    div.appendChild(label);
-                    div.onclick = () => insertEmoji(emoji);
-                    keyboard.appendChild(div);
-                });
             } catch (err) {
                 keyboard.innerHTML = '<div class="error">❌ Failed to load emojis.<br>Check API connection.</div>';
                 console.error(err);
             }
+        }
+
+        // --- Category Builder Logic ---
+        function buildCategories(data) {
+            categoryRow.innerHTML = '';
+            const catMap = {};
+
+            // সিম্বল অনুযায়ী গ্রুপ করা
+            data.forEach(e => {
+                const sym = e.symbol || '⭐';
+                if (!catMap[sym]) {
+                    catMap[sym] = e; // রিপ্রেজেন্টেটিভ ইমোজি সেভ করলাম
+                }
+            });
+
+            // "All" ক্যাটাগরি বাটন
+            const allBtn = document.createElement('div');
+            allBtn.className = 'category-item active-cat';
+            allBtn.innerHTML = `<div style="font-size: 28px; line-height:34px;">🌐</div><span>All</span>`;
+            allBtn.onclick = () => {
+                document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
+                allBtn.classList.add('active-cat');
+                renderEmojiGrid(allEmojisData);
+            };
+            categoryRow.appendChild(allBtn);
+
+            // ডাটাবেজের সিম্বল অনুযায়ী ক্যাটাগরি তৈরি
+            Object.keys(catMap).forEach(sym => {
+                const repEmoji = catMap[sym];
+                const div = document.createElement('div');
+                div.className = 'category-item';
+                
+                div.onclick = () => {
+                    // একটিভ ক্লাস অ্যাড করা
+                    document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
+                    div.classList.add('active-cat');
+                    
+                    // ফিল্টার করা
+                    const filtered = allEmojisData.filter(e => (e.symbol || '⭐') === sym);
+                    renderEmojiGrid(filtered);
+
+                    // ফিল্টার করলে অটোমেটিক লিস্ট এক্সপান্ড করে দেওয়া যাতে ইউজার সব দেখতে পায়
+                    if (!emojiArea.classList.contains('expanded')) {
+                        toggleEmojiList();
+                    }
+                };
+
+                const img = document.createElement('img');
+                img.src = repEmoji.image_url;
+                img.loading = 'lazy';
+
+                const span = document.createElement('span');
+                span.textContent = sym;
+
+                div.appendChild(img);
+                div.appendChild(span);
+                categoryRow.appendChild(div);
+            });
+        }
+
+        // --- Emoji Grid Renderer ---
+        function renderEmojiGrid(dataToRender) {
+            keyboard.innerHTML = '';
+            if (dataToRender.length === 0) {
+                keyboard.innerHTML = '<div class="empty">No emojis found in this category.</div>';
+                return;
+            }
+
+            dataToRender.forEach((emoji) => {
+                const div = document.createElement('div');
+                div.className = 'emoji-item';
+                div.title = emoji.type === 'mapped' ? `${emoji.symbol} (${emoji.id})` : emoji.id;
+
+                const img = document.createElement('img');
+                img.src = emoji.image_url;
+                img.alt = emoji.symbol || emoji.id;
+                img.loading = 'lazy';
+                img.onerror = function() {
+                    this.style.opacity = '0.3';
+                    this.parentElement.style.cursor = 'not-allowed';
+                };
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = emoji.symbol || emoji.id.slice(-6);
+
+                div.appendChild(img);
+                div.appendChild(label);
+                div.onclick = () => insertEmoji(emoji);
+                keyboard.appendChild(div);
+            });
         }
 
         function insertEmoji(emoji) {
