@@ -77,7 +77,7 @@
             border-top: 4px solid #b829ff;
             border-radius: 50%;
             margin: 0 auto 15px auto;
-            animation: spinLoader 1s linear infinite; /* স্পিনারটা ঘুরতে হবে, তাই এটা রাখা হলো */
+            animation: spinLoader 1s linear infinite; 
             box-shadow: 0 0 15px rgba(160, 32, 240, 0.4);
         }
 
@@ -372,7 +372,7 @@
             <div class="loader-emojis">✨👑🚀</div>
             <div class="loader-title">Premium Manager</div>
             <div class="loader-spinner"></div>
-            <div class="loader-text">Please wait, loading all premium emojis...</div>
+            <div class="loader-text">Please wait, connecting...</div>
         </div>
     </div>
 
@@ -432,11 +432,16 @@
         const categoryRow = document.getElementById('categoryRow');
         const loaderScreen = document.getElementById('loaderScreen'); 
         
-        let allEmojisData = [];
         let emojiMap = {};
         let emojiCounter = 1;
 
-        // 🔥 NEW: Lazy Loading Observer (Only loads images when they appear on screen)
+        // 🔥 Pagination & Filter Variables
+        let currentPage = 1;
+        const PAGE_LIMIT = 100; // একবারে ১০০টা করে লোড হবে
+        let catMap = {}; 
+        let activeCategory = 'all';
+
+        // Lazy Loading Observer 
         const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -450,7 +455,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '100px 0px', // স্ক্রিনে আসার 100px আগেই লোড শুরু করবে যাতে ইউজার গ্যাপ না দেখে
+            rootMargin: '100px 0px', 
             threshold: 0.01
         });
 
@@ -470,61 +475,89 @@
             charCount.textContent = draft.value.length + ' chars';
         });
 
+        function setupAllCategoryButton() {
+            const allBtn = document.createElement('div');
+            allBtn.className = 'category-item active-cat';
+            allBtn.innerHTML = `
+                <div style="font-size: 26px; line-height:30px; margin-bottom:2px;">🌐</div>
+                <div class="normal-emoji">All</div>
+            `;
+            allBtn.onclick = () => filterEmojis('all', allBtn);
+            categoryRow.appendChild(allBtn);
+        }
+
         async function loadEmojis() {
             if (!apiBase) {
                 loaderScreen.classList.add('fade-out'); 
                 keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
+            
+            setupAllCategoryButton();
+            fetchNextPage(); // প্রথম পেজ লোড শুরু
+        }
 
+        // 🔥 ব্যাকগ্রাউন্ডে অল্প অল্প করে ডাটা ফেচ করার ম্যাজিক ফাংশন
+        async function fetchNextPage() {
             try {
-                const res = await fetch(`${apiBase}/api/emojis`, {
+                const res = await fetch(`${apiBase}/api/emojis?page=${currentPage}&limit=${PAGE_LIMIT}`, {
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 
-                const allEmojisData = await res.json(); 
+                const data = await res.json(); 
 
-                if (allEmojisData.length === 0) {
+                if (data.length > 0) {
+                    appendEmojisToGrid(data);
+                    
+                    // প্রথম ১০০টা লোড হলেই স্ক্রিন থেকে লোডার গায়েব! ইউজার আর ওয়েট করবে না।
+                    if (currentPage === 1) {
+                        setTimeout(() => {
+                            loaderScreen.classList.add('fade-out');
+                        }, 300);
+                    }
+
+                    currentPage++;
+                    // বাকি ডাটাগুলো নীরবে ব্যাকগ্রাউন্ডে লোড হবে, সার্ভারকে ৫ সেকেন্ড রেস্ট দিয়ে!
+                    setTimeout(fetchNextPage, 500); 
+                } else if (currentPage === 1 && data.length === 0) {
+                    // যদি ডাটাবেজ একদমই খালি থাকে
                     loaderScreen.classList.add('fade-out');
                     keyboard.innerHTML = '<div class="empty">No emojis in database.<br>Ask admin to add some!</div>';
-                    return;
                 }
 
-                buildCategoriesAndGrid(allEmojisData);
-
-                setTimeout(() => {
-                    loaderScreen.classList.add('fade-out');
-                }, 300);
-
             } catch (err) {
-                loaderScreen.classList.add('fade-out'); 
-                keyboard.innerHTML = '<div class="error">❌ Failed to load emojis.<br>Check API connection.</div>';
+                if (currentPage === 1) {
+                    loaderScreen.classList.add('fade-out'); 
+                    keyboard.innerHTML = '<div class="error">❌ Failed to load emojis.<br>Check API connection.</div>';
+                }
                 console.error(err);
             }
         }
 
-        function buildCategoriesAndGrid(data) {
-            categoryRow.innerHTML = '';
-            keyboard.innerHTML = '';
-            
-            const catMap = {};
+        function appendEmojisToGrid(data) {
             const gridFragment = document.createDocumentFragment();
 
             data.forEach((emoji) => {
                 const sym = emoji.symbol || '⭐';
                 
+                // নতুন কোনো ইমোজির ক্যাটাগরি পেলে উপরে বাটন অ্যাড করবে
                 if (!catMap[sym]) {
-                    catMap[sym] = emoji; 
+                    catMap[sym] = true; 
+                    createCategoryButton(sym, emoji.image_url);
                 }
 
                 const div = document.createElement('div');
                 div.className = 'emoji-item';
                 div.dataset.category = sym; 
                 div.title = emoji.type === 'mapped' ? `${sym} (${emoji.id})` : emoji.id;
+                
+                // যদি ইউজার অন্য কোনো ক্যাটাগরিতে ক্লিক করে থাকে, তবে নতুন ইমোজিটা হাইড থাকবে
+                if (activeCategory !== 'all' && sym !== activeCategory) {
+                    div.classList.add('hidden-emoji');
+                }
 
                 const img = document.createElement('img');
-                // 🔥 Lazy Loading Logic: src এর বদলে data-src এ লিংক রাখা হলো
                 img.dataset.src = emoji.image_url; 
                 img.alt = sym;
                 img.loading = 'lazy';
@@ -542,43 +575,32 @@
                 div.onclick = () => insertEmoji(emoji);
                 gridFragment.appendChild(div);
 
-                // 🔥 Observer এ ইমেজ অ্যাড করা হলো
                 lazyLoadObserver.observe(img);
             });
 
             keyboard.appendChild(gridFragment);
+        }
 
-            const allBtn = document.createElement('div');
-            allBtn.className = 'category-item active-cat';
-            allBtn.innerHTML = `
-                <div style="font-size: 26px; line-height:30px; margin-bottom:2px;">🌐</div>
-                <div class="normal-emoji">All</div>
-            `;
-            allBtn.onclick = () => filterEmojis('all', allBtn);
-            categoryRow.appendChild(allBtn);
+        function createCategoryButton(sym, imageUrl) {
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            div.onclick = () => filterEmojis(sym, div);
 
-            Object.keys(catMap).forEach(sym => {
-                const repEmoji = catMap[sym];
-                const div = document.createElement('div');
-                div.className = 'category-item';
-                
-                div.onclick = () => filterEmojis(sym, div);
+            const img = document.createElement('img');
+            img.src = imageUrl; 
+            img.loading = 'lazy';
 
-                const img = document.createElement('img');
-                img.src = repEmoji.image_url; // ক্যাটাগরির ইমেজ সাথে সাথে লোড হবে
-                img.loading = 'lazy';
+            const span = document.createElement('div');
+            span.className = 'normal-emoji';
+            span.textContent = sym;
 
-                const span = document.createElement('div');
-                span.className = 'normal-emoji';
-                span.textContent = sym;
-
-                div.appendChild(img);
-                div.appendChild(span);
-                categoryRow.appendChild(div);
-            });
+            div.appendChild(img);
+            div.appendChild(span);
         }
 
         function filterEmojis(sym, clickedBtn) {
+            activeCategory = sym; // কারেন্ট ক্যাটাগরি সেট করলাম
+            
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
