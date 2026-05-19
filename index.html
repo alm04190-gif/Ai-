@@ -30,7 +30,7 @@
         .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
         .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
         .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
-        .emoji-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 6px 4px; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .emoji-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 6px 4px; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateZ(0); }
         .hidden-emoji { display: none !important; }
         .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: rgba(160, 32, 240, 0.2); }
         .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
@@ -110,21 +110,27 @@
 
         const lottieInstances = new Map();
 
-        // 100% Safe Lazy Loader
+        // 🔥 100% LAGG-FREE VIRTUAL SCROLLER 🔥
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
-                    if (el.dataset.lottieData) {
+                    // Item came into view - Render it!
+                    if (el.dataset.rawAnim && !lottieInstances.has(el)) {
                         try {
-                            const b64Data = el.dataset.lottieData.split(',')[1];
-                            const jsonStr = decodeURIComponent(escape(atob(b64Data)));
+                            const b64Data = el.dataset.rawAnim.split(',')[1];
+                            let jsonStr;
+                            try {
+                                jsonStr = decodeURIComponent(escape(atob(b64Data)));
+                            } catch(e) {
+                                jsonStr = atob(b64Data);
+                            }
                             const animationData = JSON.parse(jsonStr);
                             
                             const anim = lottie.loadAnimation({
                                 container: el,
-                                renderer: 'svg', // 🔥 Reverted to safe SVG mode
+                                renderer: 'canvas', // 🔥 Canvas is 10x faster than SVG for multiple items
                                 loop: true,
                                 autoplay: true,
                                 animationData: animationData
@@ -133,7 +139,6 @@
                         } catch (e) {
                             console.error("Lottie init error", e);
                         }
-                        el.removeAttribute('data-lottie-data');
                     } else if (lottieInstances.has(el)) {
                         lottieInstances.get(el).play();
                     } else if (el.tagName === 'VIDEO') {
@@ -150,8 +155,12 @@
                         el.removeAttribute('data-src');
                     }
                 } else {
+                    // 🔥 Item out of view - DESTROY completely to free RAM instantly!
                     if (lottieInstances.has(el)) {
-                        lottieInstances.get(el).pause();
+                        const anim = lottieInstances.get(el);
+                        anim.destroy(); // Destroys WebGL/Canvas context
+                        lottieInstances.delete(el);
+                        el.innerHTML = ''; // Clean DOM completely
                     } else if (el.tagName === 'VIDEO') {
                         el.pause();
                     }
@@ -159,7 +168,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '50px 0px',
+            rootMargin: '100px 0px', // Load just before entering screen to prevent blank flash
             threshold: 0.01
         });
 
@@ -200,7 +209,6 @@
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
                 
-                // 🔥 Advanced Error Detector
                 if (!res.ok) throw new Error(`Server Error: HTTP ${res.status}`);
                 
                 let text = await res.text();
@@ -224,7 +232,6 @@
                 }
 
             } catch (err) {
-                // 🔥 Shows EXACT reason on screen
                 if (currentPage === 1) {
                     keyboard.innerHTML = `<div class="error">❌ Error Details:<br>${err.message}</div>`;
                 }
@@ -240,12 +247,14 @@
                 mediaEl = document.createElement('div');
                 mediaEl.className = 'media-container';
                 if (!isCategory) {
-                    mediaEl.dataset.lottieData = url; 
+                    mediaEl.dataset.rawAnim = url; // Preserve raw data for recycling
                 } else {
                     try {
                         const b64Data = url.split(',')[1];
-                        const jsonStr = decodeURIComponent(escape(atob(b64Data)));
-                        lottie.loadAnimation({ container: mediaEl, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(jsonStr) });
+                        let jsonStr;
+                        try { jsonStr = decodeURIComponent(escape(atob(b64Data))); }
+                        catch(e) { jsonStr = atob(b64Data); }
+                        lottie.loadAnimation({ container: mediaEl, renderer: 'canvas', loop: true, autoplay: true, animationData: JSON.parse(jsonStr) });
                     } catch(e) {}
                 }
             } else if (url.startsWith('data:video/webm')) {
@@ -342,5 +351,3 @@
     </script>
 </body>
 </html>
-
-
