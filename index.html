@@ -7,6 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
+        /* CSS আগের মতোই আছে, কোনো পরিবর্তন নেই */
         :root {
             --bg: #0f0f0f;
             --surface: #1a1a1a;
@@ -17,294 +18,44 @@
             --text-secondary: #888888;
             --purple-glow: rgba(160, 32, 240, 0.4);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 16px;
-            padding-bottom: 100px;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-top: 8px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .header h1 {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
-        }
-
-        .header p {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 16px; padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
+        .header { text-align: center; margin-bottom: 24px; padding-top: 8px; position: relative; z-index: 10; }
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+        .header p { font-size: 13px; color: var(--text-secondary); }
         .section { margin-bottom: 20px; position: relative; z-index: 10; }
-
-        .section-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        /* --- Draft Area --- */
-        .draft-area {
-            width: 100%;
-            min-height: 140px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px;
-            color: var(--text);
-            font-size: 15px;
-            line-height: 1.5;
-            resize: vertical;
-            font-family: inherit;
-            transition: border-color 0.2s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px var(--purple-glow);
-            transform: translateZ(0);
-            will-change: transform;
-        }
-
-        .draft-area:focus {
-            outline: none;
-            border-color: #a020f0;
-            box-shadow: 0 0 20px rgba(160, 32, 240, 0.8);
-        }
-
+        .section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .draft-area { width: 100%; min-height: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: var(--text); font-size: 15px; line-height: 1.5; resize: vertical; font-family: inherit; transition: border-color 0.2s, box-shadow 0.3s; box-shadow: 0 4px 15px var(--purple-glow); transform: translateZ(0); will-change: transform; }
+        .draft-area:focus { outline: none; border-color: #a020f0; box-shadow: 0 0 20px rgba(160, 32, 240, 0.8); }
         .draft-area::placeholder { color: #555; }
-
-        /* --- Category Section --- */
-        .category-hint {
-            font-size: 11px;
-            color: #aaaaaa;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-
-        .category-row {
-            display: flex;
-            overflow-x: auto;
-            gap: 12px;
-            padding: 10px 5px 25px 5px;
-            margin-bottom: 5px;
-            scrollbar-width: none; 
-            -webkit-overflow-scrolling: touch; 
-            scroll-behavior: smooth;
-        }
+        .category-hint { font-size: 11px; color: #aaaaaa; margin-bottom: 10px; font-style: italic; }
+        .category-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px 25px 5px; margin-bottom: 5px; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
         .category-row::-webkit-scrollbar { display: none; }
-
-        .category-item {
-            flex: 0 0 auto;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 10px;
-            cursor: pointer;
-            text-align: center;
-            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); 
-            transform: translateZ(0);
-            will-change: transform;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 60px;
-        }
-
+        .category-item { flex: 0 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: center; transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); transform: translateZ(0); will-change: transform; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; }
         .category-item:active { transform: scale(0.95); }
-        
-        .category-item.active-cat {
-            border-color: #ffffff;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); 
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        /* 🔥 UPDATED: Replaced img with .media-container for category items */
-        .category-item .media-container {
-            width: 32px; 
-            height: 32px;
-            object-fit: contain;
-            pointer-events: none;
-            display: block;
-        }
-
-        .category-item .normal-emoji {
-            font-size: 14px;
-            line-height: 1;
-            margin-top: 4px;
-        }
-
-        /* --- Expandable Emoji Section --- */
-        .emoji-wrapper {
-            position: relative;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 10px;
-            overflow: hidden;
-            transform: translateZ(0); 
-        }
-
-        .emoji-scroll-area {
-            max-height: 145px; 
-            overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .emoji-scroll-area.expanded {
-            max-height: 50vh; 
-            overflow-y: auto;
-        }
-
-        .emoji-fade {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(transparent, var(--surface));
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-
-        .emoji-scroll-area.expanded + .emoji-fade {
-            opacity: 0; 
-        }
-
-        /* --- Smaller Emojis Grid --- */
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); 
-            gap: 8px;
-        }
-
-        .emoji-item {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 6px 4px; 
-            cursor: pointer;
-            text-align: center;
-            transition: transform 0.1s ease, background-color 0.2s ease;
-            will-change: transform;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
+        .category-item.active-cat { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+        .category-item .media-container { width: 32px; height: 32px; object-fit: contain; pointer-events: none; display: block; }
+        .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
+        .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; transform: translateZ(0); }
+        .emoji-scroll-area { max-height: 145px; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); -webkit-overflow-scrolling: touch; }
+        .emoji-scroll-area.expanded { max-height: 50vh; overflow-y: auto; }
+        .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; transition: opacity 0.3s; }
+        .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
+        .emoji-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 6px 4px; cursor: pointer; text-align: center; transition: transform 0.1s ease, background-color 0.2s ease; will-change: transform; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .hidden-emoji { display: none !important; }
-
-        .emoji-item:active {
-            transform: scale(0.85);
-            border-color: var(--accent);
-            background: rgba(160, 32, 240, 0.2);
-        }
-
-        /* 🔥 UPDATED: Class for rendering both static img and animated divs/videos */
-        .emoji-item .media-container {
-            width: 26px; 
-            height: 26px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-            pointer-events: none;
-        }
-
-        .emoji-item .label {
-            font-size: 9px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Expand Button */
-        .toggle-btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 600;
-            padding-top: 12px;
-            cursor: pointer;
-            border-top: 1px solid var(--border);
-            margin-top: 5px;
-            transition: color 0.2s;
-        }
-        
+        .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: rgba(160, 32, 240, 0.2); }
+        .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
+        .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .toggle-btn { display: flex; justify-content: center; align-items: center; width: 100%; background: transparent; border: none; color: var(--accent); font-size: 13px; font-weight: 600; padding-top: 12px; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; transition: color 0.2s; }
         .toggle-btn:active { color: var(--text); }
         .toggle-btn span { margin-right: 5px; pointer-events: none; }
-
-        .loading, .empty, .error {
-            text-align: center;
-            padding: 30px 10px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            grid-column: 1 / -1;
-        }
-
+        .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; }
         .error { color: #ff4444; }
-
-        .send-btn {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg);
-            padding: 16px;
-            border-top: 1px solid var(--border);
-            z-index: 100;
-        }
-
-        .send-btn button {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s ease, background 0.2s;
-            box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3);
-            will-change: transform;
-        }
-
+        .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); padding: 16px; border-top: 1px solid var(--border); z-index: 100; }
+        .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, background 0.2s; box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3); will-change: transform; }
         .send-btn button:active { background: var(--accent-hover); transform: scale(0.96); }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
+        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); }
     </style>
 </head>
 <body>
@@ -371,50 +122,57 @@
         let catMap = {}; 
         let activeCategory = 'all';
 
-        // 🔥 UPDATED: Smart Lazy Loading for Animations and Videos
-        const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+        // 🔥 Lottie Player স্টোর করার জন্য Map তৈরি করলাম
+        const lottiePlayers = new Map();
+
+        // 🔥 UPDATED: Super Optimized Lazy Loader (Play/Pause on scroll)
+        const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                const el = entry.target;
+                
                 if (entry.isIntersecting) {
-                    const el = entry.target;
-                    
+                    // স্ক্রিনে আসলে প্লে হবে
                     if (el.dataset.lottieData) {
-                        // Decode and load Lottie animation
                         try {
                             const b64Data = el.dataset.lottieData.split(',')[1];
                             const jsonStr = decodeURIComponent(escape(atob(b64Data)));
                             const animationData = JSON.parse(jsonStr);
                             
-                            lottie.loadAnimation({
+                            const anim = lottie.loadAnimation({
                                 container: el,
-                                renderer: 'svg',
+                                renderer: 'canvas', // 🔥 Canvas রেন্ডারার ব্যবহার করা হয়েছে (অনেক ফাস্ট)
                                 loop: true,
                                 autoplay: true,
                                 animationData: animationData
                             });
-                        } catch (e) {
-                            console.error("Failed to load Lottie animation", e);
-                        }
+                            lottiePlayers.set(el, anim);
+                        } catch (e) {}
                         el.removeAttribute('data-lottie-data');
-                        observer.unobserve(el);
-                    } 
-                    else if (el.tagName === 'VIDEO' && el.dataset.src) {
-                        // Load WebM Video
+                    } else if (lottiePlayers.has(el)) {
+                        // আগে লোড হয়ে থাকলে শুধু Resume করবে
+                        lottiePlayers.get(el).play();
+                    } else if (el.tagName === 'VIDEO') {
+                        if (el.dataset.src) {
+                            el.src = el.dataset.src;
+                            el.removeAttribute('data-src');
+                        }
+                        el.play();
+                    } else if (el.tagName === 'IMG' && el.dataset.src) {
                         el.src = el.dataset.src;
                         el.removeAttribute('data-src');
-                        el.load();
-                        observer.unobserve(el);
                     }
-                    else if (el.tagName === 'IMG' && el.dataset.src) {
-                        // Load static Image
-                        el.src = el.dataset.src;
-                        el.removeAttribute('data-src');
-                        observer.unobserve(el);
+                } else {
+                    // 🔥 স্ক্রিনের বাইরে চলে গেলে পজ করে দিবে (ল্যাগ বন্ধ করার আসল ট্রিক)
+                    if (lottiePlayers.has(el)) {
+                        lottiePlayers.get(el).pause();
+                    } else if (el.tagName === 'VIDEO') {
+                        el.pause();
                     }
                 }
             });
         }, {
             root: emojiArea,
-            rootMargin: '150px 0px', // Pre-load slightly before they scroll into view
+            rootMargin: '20px 0px', // মার্জিন কমিয়ে দেওয়া হয়েছে যাতে দ্রুত পজ হয়
             threshold: 0.01
         });
 
@@ -450,7 +208,6 @@
                 keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
-            
             setupAllCategoryButton();
             fetchNextPage(); 
         }
@@ -476,27 +233,23 @@
                 if (currentPage === 1) {
                     keyboard.innerHTML = '<div class="error">❌ Failed to load emojis.<br>Check API connection.</div>';
                 }
-                console.error(err);
             }
         }
 
-        // 🔥 UPDATED: Function to generate correct DOM element based on media type
         function createMediaElement(url, isCategory = false) {
             let mediaEl;
             if (url.startsWith('data:application/json')) {
-                // TGS / Lottie Animation
                 mediaEl = document.createElement('div');
                 mediaEl.className = 'media-container';
                 if (!isCategory) {
-                    mediaEl.dataset.lottieData = url; // Save for lazy loading
+                    mediaEl.dataset.lottieData = url; 
                 } else {
-                    // Instantly load for category bar (since it's always visible)
                     try {
                         const b64Data = url.split(',')[1];
                         const jsonStr = decodeURIComponent(escape(atob(b64Data)));
                         lottie.loadAnimation({
                             container: mediaEl,
-                            renderer: 'svg',
+                            renderer: 'canvas', // এখানেও canvas
                             loop: true,
                             autoplay: true,
                             animationData: JSON.parse(jsonStr)
@@ -504,7 +257,6 @@
                     } catch(e) {}
                 }
             } else if (url.startsWith('data:video/webm')) {
-                // WEBM Video
                 mediaEl = document.createElement('video');
                 mediaEl.className = 'media-container';
                 mediaEl.autoplay = true;
@@ -512,29 +264,25 @@
                 mediaEl.muted = true;
                 mediaEl.playsInline = true;
                 if (!isCategory) {
-                    mediaEl.dataset.src = url; // Save for lazy loading
+                    mediaEl.dataset.src = url; 
                 } else {
                     mediaEl.src = url;
                 }
             } else {
-                // Static Image (WEBP)
                 mediaEl = document.createElement('img');
                 mediaEl.className = 'media-container';
                 if (!isCategory) {
-                    mediaEl.dataset.src = url; // Save for lazy loading
+                    mediaEl.dataset.src = url; 
                 } else {
                     mediaEl.src = url;
                 }
-                mediaEl.onerror = function() {
-                    this.style.opacity = '0.3';
-                };
+                mediaEl.onerror = function() { this.style.opacity = '0.3'; };
             }
             return mediaEl;
         }
 
         function appendEmojisToGrid(data) {
             const gridFragment = document.createDocumentFragment();
-
             data.forEach((emoji) => {
                 const sym = emoji.symbol || '⭐';
                 const packId = emoji.pack_id || 'Other'; 
@@ -553,9 +301,7 @@
                     div.classList.add('hidden-emoji');
                 }
 
-                // Create proper media element
                 const mediaEl = createMediaElement(emoji.image_url, false);
-
                 const label = document.createElement('div');
                 label.className = 'label';
                 label.textContent = sym; 
@@ -565,10 +311,9 @@
                 div.onclick = () => insertEmoji(emoji);
                 gridFragment.appendChild(div);
 
-                // Observe for lazy loading
+                // এখানে আনঅবজার্ভ (unobserve) সরিয়ে দিয়েছি, যাতে স্ক্রল করার সময় বারবার কল হয়
                 lazyLoadObserver.observe(mediaEl);
             });
-
             keyboard.appendChild(gridFragment);
         }
 
@@ -576,16 +321,13 @@
             const div = document.createElement('div');
             div.className = 'category-item';
             div.onclick = () => filterEmojis(packId, div);
-
             const mediaEl = createMediaElement(imageUrl, true);
             div.appendChild(mediaEl);
-            
             categoryRow.appendChild(div);
         }
 
         function filterEmojis(categoryId, clickedBtn) {
             activeCategory = categoryId; 
-            
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
@@ -601,43 +343,28 @@
             if (categoryId !== 'all' && !emojiArea.classList.contains('expanded')) {
                 toggleEmojiList();
             }
-            
-            if (Telegram.HapticFeedback) {
-                Telegram.HapticFeedback.selectionChanged();
-            }
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
         function insertEmoji(emoji) {
             const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
             emojiMap[shortCode] = `[${emoji.id}]`;
             emojiCounter++;
-
             const textToInsert = shortCode + ' ';
             const start = draft.selectionStart;
             const end = draft.selectionEnd;
             const text = draft.value;
-
             draft.value = text.substring(0, start) + textToInsert + text.substring(end);
             draft.focus();
             draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
             draft.dispatchEvent(new Event('input'));
-
-            if (Telegram.HapticFeedback) {
-                Telegram.HapticFeedback.impactOccurred('light');
-            }
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
         function sendData() {
             let text = draft.value;
-            if (!text.trim()) {
-                Telegram.showAlert('Please write something first!');
-                return;
-            }
-
-            for (let code in emojiMap) {
-                text = text.split(code).join(emojiMap[code]);
-            }
-
+            if (!text.trim()) { Telegram.showAlert('Please write something first!'); return; }
+            for (let code in emojiMap) { text = text.split(code).join(emojiMap[code]); }
             Telegram.sendData(JSON.stringify({ text: text }));
         }
 
