@@ -7,31 +7,40 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
-        /* 🔥 Premium UI is Back 🔥 */
-        :root { --bg: #0f0f0f; --surface: #1a1a1a; --border: #2a2a2a; --accent: #0088cc; --accent-hover: #0077b3; --text: #ffffff; --text-secondary: #888888; --purple-glow: rgba(160, 32, 240, 0.4); }
+        /* 🔥 White Premium UI 🔥 */
+        :root { 
+            --bg: #f0f2f5; 
+            --surface: #ffffff; 
+            --border: #e4e6eb; 
+            --accent: #0088cc; 
+            --accent-hover: #0077b3; 
+            --text: #050505; 
+            --text-secondary: #65676b; 
+            --glow: rgba(0, 136, 204, 0.15); 
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 16px; padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
         
         .header { text-align: center; margin-bottom: 24px; padding-top: 8px; position: relative; z-index: 10; }
-        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
-        .header p { font-size: 13px; color: var(--text-secondary); }
+        .header h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px; color: #1c1e21; }
+        .header p { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
         
         .section { margin-bottom: 20px; position: relative; z-index: 10; }
-        .section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
         
-        .draft-area { width: 100%; min-height: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: var(--text); font-size: 15px; line-height: 1.5; resize: vertical; font-family: inherit; transition: border-color 0.2s, box-shadow 0.3s; box-shadow: 0 4px 15px var(--purple-glow); }
-        .draft-area:focus { outline: none; border-color: #a020f0; box-shadow: 0 0 20px rgba(160, 32, 240, 0.8); }
+        .draft-area { width: 100%; min-height: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: var(--text); font-size: 15px; line-height: 1.5; resize: vertical; font-family: inherit; transition: border-color 0.2s, box-shadow 0.3s; box-shadow: 0 4px 15px var(--glow); }
+        .draft-area:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
         
-        .category-hint { font-size: 11px; color: #aaaaaa; margin-bottom: 10px; font-style: italic; }
+        .category-hint { font-size: 11px; color: #888888; margin-bottom: 10px; font-style: italic; }
         .category-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px 25px 5px; margin-bottom: 5px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .category-row::-webkit-scrollbar { display: none; }
         
-        .category-item { flex: 0 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; transition: transform 0.1s; }
-        .category-item.active-cat { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
+        .category-item { flex: 0 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; transition: transform 0.1s, box-shadow 0.2s; }
+        .category-item.active-cat { border-color: var(--accent); box-shadow: 0 4px 15px var(--glow); background: #f2f9ff; transform: translateY(-2px); }
         .category-item .media-container { width: 32px; height: 32px; object-fit: contain; pointer-events: none; display: block; }
         .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
         
-        .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .emoji-scroll-area { max-height: 145px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; position: relative; }
         .emoji-scroll-area.expanded { max-height: 50vh; }
         .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; transition: opacity 0.3s; }
@@ -46,7 +55,7 @@
             position: relative;
         }
         .emoji-item { 
-            background: rgba(255, 255, 255, 0.03); 
+            background: #f8f9fa; 
             border: 1px solid var(--border); 
             border-radius: 10px; 
             padding: 6px 4px; 
@@ -62,19 +71,19 @@
             height: 54px;
             min-height: 54px;
         }
-        .emoji-item:active { transform: scale(0.9) translateZ(0); border-color: var(--accent); background: rgba(160, 32, 240, 0.2); }
+        .emoji-item:active { transform: scale(0.9) translateZ(0); border-color: var(--accent); background: #e6f3ff; }
         .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
-        .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+        .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-weight: 500; }
         
-        .toggle-btn { display: flex; justify-content: center; align-items: center; width: 100%; background: transparent; border: none; color: var(--accent); font-size: 13px; font-weight: 600; padding-top: 12px; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; }
+        .toggle-btn { display: flex; justify-content: center; align-items: center; width: 100%; background: transparent; border: none; color: var(--accent); font-size: 13px; font-weight: 700; padding-top: 12px; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; }
         
-        .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; }
-        .error { color: #ff4444; font-weight: bold; }
+        .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; font-weight: 600; }
+        .error { color: #dc3545; }
         
-        .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); padding: 16px; border-top: 1px solid var(--border); z-index: 100; }
-        .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3); transition: transform 0.1s, background 0.2s; }
+        .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); padding: 16px; border-top: 1px solid var(--border); z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.03); }
+        .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px var(--glow); transition: transform 0.1s, background 0.2s; }
         .send-btn button:active { background: var(--accent-hover); transform: scale(0.96); }
-        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); }
+        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); font-weight: 600;}
         
         /* Loading Spinner */
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -145,8 +154,8 @@
         // 🚀 VIRTUAL SCROLLING ENGINE - Ultra Fast Performance 🚀
         const lottieInstances = new Map();
         const jsonCache = new Map();
-        const renderedElements = new Map();
-        const CHUNK_SIZE = 30; // 30 emojis load instantly
+        // 🔥 RAM OPTIMIZATION: Removed renderedElements cache. Elements are destroyed when switching.
+        const CHUNK_SIZE = 45; // 45 emojis load instantly in the blink of an eye (1/3rd of a big pack)
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
         
         let currentChunkIndex = 0;
@@ -154,14 +163,13 @@
         let isRendering = false;
         let renderSessionId = 0;
 
-        // 🔥 Ultra-Fast Intersection Observer (Removed idle delay)
+        // 🔥 Ultra-Fast Intersection Observer (Fixed blank emoji bug)
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
                     if (el.dataset.lottieUrl && !lottieInstances.has(el)) {
-                        // Using setTimeout(..., 0) forces immediate execution without blocking UI completely
                         setTimeout(() => {
                             const b64Data = el.dataset.lottieUrl.split(',')[1];
                             let animData = jsonCache.get(b64Data);
@@ -183,9 +191,7 @@
                                 autoplay: true,
                                 animationData: animData,
                                 rendererSettings: {
-                                    progressiveLoad: true,
-                                    hideOnTransparent: true,
-                                    preserveAspectRatio: 'xMidYMid slice'
+                                    preserveAspectRatio: 'xMidYMid meet' // Ensures it fits perfectly
                                 }
                             });
                             lottieInstances.set(el, anim);
@@ -199,6 +205,7 @@
                         el.play().catch(()=>{});
                     }
                 } else {
+                    // Destroy off-screen immediately to save RAM
                     if (lottieInstances.has(el)) {
                         const anim = lottieInstances.get(el);
                         anim.destroy();
@@ -213,7 +220,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '100px 0px', // Pre-load slightly off-screen
+            rootMargin: '400px 0px', // Loads them long before they appear on screen
             threshold: 0
         });
 
@@ -244,8 +251,6 @@
             }
             
             keyboard.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Loading emojis...</div>';
-            
-            // 🚀 STEP 1: Fetch Page 1 instantly to show UI
             await fetchFirstPage();
         }
 
@@ -273,14 +278,13 @@
                     }
                 });
                 
-                // Auto-select first pack instantly
+                // 🔥 INSTANT LOAD: Auto-select first pack and show instantly
                 if (isFirstCategory && activeCategory === null) {
                     const firstPack = Object.keys(catMap)[0];
                     const firstBtn = document.querySelector('.category-item');
                     if (firstBtn) filterEmojis(firstPack, firstBtn);
                 }
                 
-                // 🚀 STEP 2: Background fetch remaining pages secretly!
                 if (data.length === limit) {
                     fetchRemainingPages(2, limit);
                 }
@@ -309,7 +313,6 @@
                     
                     allEmojis.push(...data);
                     
-                    // Add new categories silently
                     data.forEach(emoji => {
                         const packId = emoji.pack_id || 'Other';
                         if (!catMap[packId]) {
@@ -318,12 +321,10 @@
                         }
                     });
 
-                    // If new emojis belong to current category, add them to filtered list seamlessly
                     if (activeCategory) {
                         const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
                         if (newlyAdded.length > 0) {
                             filteredEmojis.push(...newlyAdded);
-                            // It will automatically render when user scrolls down
                         }
                     }
                     
@@ -350,7 +351,7 @@
         }
 
         function renderNextChunk(sessionId) {
-            if (sessionId !== renderSessionId) return; // INSTANT CANCEL if changed category
+            if (sessionId !== renderSessionId) return; // INSTANT CANCEL
             if (isRendering) return;
             if (currentChunkIndex >= filteredEmojis.length) return;
             
@@ -375,7 +376,6 @@
                 currentChunkIndex = end;
                 isRendering = false;
                 
-                // 🔥 FAST RENDER: Use setTimeout(..., 10) instead of requestIdleCallback
                 if (currentChunkIndex < filteredEmojis.length) {
                     setTimeout(() => renderNextChunk(sessionId), 10);
                 }
@@ -383,12 +383,6 @@
         }
 
         function createEmojiElement(emoji) {
-            const cacheKey = `${emoji.id}_${activeCategory}`;
-            
-            if (renderedElements.has(cacheKey)) {
-                return renderedElements.get(cacheKey).cloneNode(true);
-            }
-            
             const div = document.createElement('div');
             div.className = 'emoji-item';
             div.dataset.emojiId = emoji.id;
@@ -402,7 +396,6 @@
             div.appendChild(label);
             div.onclick = () => insertEmoji(emoji);
             
-            renderedElements.set(cacheKey, div.cloneNode(true));
             lazyLoadObserver.observe(mediaEl);
             
             return div;
@@ -418,7 +411,6 @@
                 if (!isCategory) {
                     mediaEl.dataset.lottieUrl = url;
                 } else {
-                    // Category icons load instantly via setTimeout
                     setTimeout(() => {
                         try {
                             const b64Data = url.split(',')[1];
@@ -430,7 +422,8 @@
                                 renderer: 'svg', 
                                 loop: true, 
                                 autoplay: true, 
-                                animationData: JSON.parse(jsonStr) 
+                                animationData: JSON.parse(jsonStr),
+                                rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
                             });
                         } catch(e) {}
                     }, 0);
@@ -441,7 +434,8 @@
                 mediaEl.autoplay = true; 
                 mediaEl.loop = true; 
                 mediaEl.muted = true; 
-                mediaEl.playsInline = true;
+                mediaEl.setAttribute('playsinline', ''); 
+                mediaEl.setAttribute('webkit-playsinline', ''); // 🔥 iOS/Mobile Fix
                 if (!isCategory) mediaEl.dataset.realSrc = url; 
                 else mediaEl.src = url;
             } else {
@@ -474,14 +468,20 @@
             if (activeCategory === categoryId) return; 
             
             activeCategory = categoryId;
-            renderSessionId++; // 🔥 INSTANTLY stop any previous category from rendering
+            renderSessionId++; 
             
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
-            // Kill all running animations to free RAM
+            // 🔥 FULL MEMORY WIPE: Destroys old animations and DOM to keep RAM at 0%
             lottieInstances.forEach(anim => anim.destroy());
             lottieInstances.clear();
+            document.querySelectorAll('.emoji-item video').forEach(v => {
+                v.pause();
+                v.removeAttribute('src');
+                v.load();
+            });
+            keyboard.innerHTML = ''; // Complete wipe
             
             startChunkedRender();
             
