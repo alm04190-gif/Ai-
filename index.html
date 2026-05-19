@@ -41,13 +41,19 @@
         .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
         
         .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .emoji-scroll-area { max-height: 130px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; position: relative; }
-        /* 🔥 Reduced expanded height to prevent too many renders at once 🔥 */
-        .emoji-scroll-area.expanded { max-height: 38vh; }
-        .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; transition: opacity 0.3s; }
-        .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
         
-        /* 🔥 Virtual Scroll Optimized Grid 🔥 */
+        /* 🔥 Ultra-Optimized Small Height Box 🔥 */
+        .emoji-scroll-area { 
+            height: 120px; /* Reduced by 2/3rds as requested */
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            -webkit-overflow-scrolling: touch; 
+            will-change: scroll-position; 
+            position: relative; 
+        }
+        
+        .emoji-fade { position: absolute; bottom: 35px; left: 0; right: 0; height: 25px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
+        
         .emoji-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); 
@@ -55,6 +61,7 @@
             contain: layout style paint;
             position: relative;
         }
+        
         .emoji-item { 
             background: #f8f9fa; 
             border: 1px solid var(--border); 
@@ -76,7 +83,13 @@
         .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
         .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-weight: 500; }
         
-        .toggle-btn { display: flex; justify-content: center; align-items: center; width: 100%; background: transparent; border: none; color: var(--accent); font-size: 13px; font-weight: 700; padding-top: 12px; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; }
+        /* 🔥 Static Helper Text (Unclickable) 🔥 */
+        .scroll-hint { 
+            display: flex; justify-content: center; align-items: center; 
+            width: 100%; background: transparent; color: var(--text-secondary); 
+            font-size: 11.5px; font-weight: 600; padding-top: 10px; 
+            border-top: 1px solid var(--border); margin-top: 5px; pointer-events: none; 
+        }
         
         .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; font-weight: 600; }
         .error { color: #dc3545; }
@@ -114,9 +127,9 @@
                 <div id="emojiKeyboard" class="emoji-grid"></div>
             </div>
             <div class="emoji-fade" id="fadeEffect"></div>
-            <button class="toggle-btn" onclick="toggleEmojiList()">
-                <span id="toggleText">Show All Emojis</span> <span id="toggleIcon">🔽</span>
-            </button>
+            <div class="scroll-hint">
+                👇 Scroll down for more emojis 👇
+            </div>
         </div>
     </div>
 
@@ -137,8 +150,6 @@
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
-        const toggleText = document.getElementById('toggleText');
-        const toggleIcon = document.getElementById('toggleIcon');
         const categoryRow = document.getElementById('categoryRow');
         
         let emojiMap = {};
@@ -150,11 +161,10 @@
 
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
         
-        // 🔥 Separate memory maps for strict memory control 🔥
         const emojiLotties = new Map();
         const catLotties = new Map();
 
-        // 🚀 Category Observer: Pauses animations of inactive/off-screen categories
+        // 🚀 Category Observer: Only plays the active one, freezes the rest
         const catObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
@@ -162,27 +172,31 @@
                     if (!catLotties.has(el)) {
                         let anim;
                         if (el.dataset.lottieJson) {
-                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(el.dataset.lottieJson), rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
+                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: false, animationData: JSON.parse(el.dataset.lottieJson), rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
                         } else if (el.dataset.lottieUrl) {
-                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
+                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: false, path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
                         }
-                        if (anim) catLotties.set(el, anim);
+                        if (anim) {
+                            catLotties.set(el, anim);
+                            const parent = el.closest('.category-item');
+                            if (parent && parent.classList.contains('active-cat')) anim.play();
+                        }
                     } else {
-                        // Play only if it is the active category
                         const parent = el.closest('.category-item');
-                        if (parent && (parent.classList.contains('active-cat') || !activeCategory)) {
+                        if (parent && parent.classList.contains('active-cat')) {
                             catLotties.get(el).play();
                         }
                     }
                 } else {
                     if (catLotties.has(el)) {
-                        catLotties.get(el).pause(); // Freeze memory to save CPU
+                        // Freeze frame to 0 to wipe visual rendering cache
+                        catLotties.get(el).goToAndStop(0, true); 
                     }
                 }
             });
         }, { root: categoryRow, rootMargin: '50px 0px', threshold: 0 });
 
-        // 🚀 Emoji Observer: Extremely aggressive memory cleaner
+        // 🚀 Emoji Observer: Extremely aggressive memory cleaner (Only 50px buffer)
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
@@ -202,10 +216,10 @@
                         el.play().catch(()=>{});
                     }
                 } else {
-                    // 🔥 INSTANT RAM CLEANUP: Destroys emoji completely when 100px outside the box
+                    // 🔥 INSTANT RAM CLEANUP when out of the tiny box
                     if (emojiLotties.has(el)) {
                         const anim = emojiLotties.get(el);
-                        anim.destroy();
+                        try { anim.destroy(); } catch(e) {}
                         emojiLotties.delete(el);
                         el.innerHTML = '';
                     } else if (el.tagName === 'VIDEO') {
@@ -220,7 +234,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '100px 0px', // 🔥 Magic Fix: Reduced from 400px to 100px to stop massive background rendering
+            rootMargin: '50px 0px', // 🔥 Magic Fix: Reduced to 50px so it unloads instantly
             threshold: 0
         });
 
@@ -231,18 +245,6 @@
                 charCount.textContent = draft.value.length + ' chars';
             }, 100);
         });
-
-        function toggleEmojiList() {
-            emojiArea.classList.toggle('expanded');
-            if (emojiArea.classList.contains('expanded')) {
-                toggleText.textContent = "Show Less Emojis";
-                toggleIcon.textContent = "🔼";
-            } else {
-                toggleText.textContent = "Show All Emojis";
-                toggleIcon.textContent = "🔽";
-                emojiArea.scrollTop = 0; 
-            }
-        }
 
         async function loadEmojis() {
             if (!apiBase) {
@@ -309,7 +311,6 @@
                     if (activeCategory) {
                         const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
                         if (newlyAdded.length > 0) {
-                            // If user is currently on this category, inject empty divs silently
                             const fragment = document.createDocumentFragment();
                             newlyAdded.forEach(emoji => {
                                 const div = createEmojiElement(emoji);
@@ -330,15 +331,16 @@
                 keyboard.innerHTML = '<div class="empty">Loading emojis...</div>';
                 return;
             }
-            keyboard.innerHTML = '';
             
-            // 🔥 Renders all divs instantly (takes ~1ms), IntersectionObserver handles the actual lazy loading effortlessly
             const fragment = document.createDocumentFragment();
             filteredEmojis.forEach(emoji => {
                 const div = createEmojiElement(emoji);
                 fragment.appendChild(div);
             });
             keyboard.appendChild(fragment);
+            
+            // Scroll to top when category changes
+            emojiArea.scrollTop = 0;
         }
 
         function createEmojiElement(emoji) {
@@ -410,7 +412,6 @@
             div.appendChild(label);
             categoryRow.appendChild(div);
             
-            // Track categories to pause them when not active
             catObserver.observe(mediaEl);
         }
 
@@ -421,23 +422,32 @@
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
-            // 🔥 Control Category Animations (Pause all, Play only active)
+            // 🔥 Strict Category Memory Control: Pause all inactive, play only active
             catLotties.forEach((anim, el) => {
                 const parent = el.closest('.category-item');
-                if (parent === clickedBtn) anim.play();
-                else anim.pause();
+                if (parent === clickedBtn) {
+                    anim.play();
+                } else {
+                    anim.goToAndStop(0, true); // Totally reset RAM usage for hidden cats
+                }
             });
             
-            // 🔥 Complete Memory Wipe ONLY for old Emojis 
-            emojiLotties.forEach(anim => anim.destroy());
+            // 🔥 ABSOLUTE WIPE OF PREVIOUS EMOJIS (Clears RAM/CPU entirely)
+            emojiLotties.forEach(anim => {
+                try { anim.destroy(); } catch(e) {}
+            });
             emojiLotties.clear();
+            
             document.querySelectorAll('.emoji-item video').forEach(v => {
                 v.pause(); v.removeAttribute('src'); v.load();
             });
+            
+            // Wipe DOM
             keyboard.innerHTML = ''; 
             
+            // Render new category
             renderEmojis();
-            if (!emojiArea.classList.contains('expanded')) toggleEmojiList();
+            
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
