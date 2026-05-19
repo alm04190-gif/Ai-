@@ -71,6 +71,40 @@
         .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; }
         .error { color: #ff4444; font-weight: bold; }
         
+        /* 🎯 Choose Category Prompt - Stylish & Prominent */
+        .choose-category-prompt {
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .choose-category-prompt .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: bounce 2s infinite;
+        }
+        .choose-category-prompt .main-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .choose-category-prompt .sub-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
         .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); padding: 16px; border-top: 1px solid var(--border); z-index: 100; }
         .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3); transition: transform 0.1s, background 0.2s; }
         .send-btn button:active { background: var(--accent-hover); transform: scale(0.96); }
@@ -98,14 +132,22 @@
     <div class="section">
         <div class="section-title">Emoji Categories</div>
         <div class="category-hint">👇 Click a pack to view its premium emojis</div>
-        <div class="category-row" id="categoryRow"></div>
+        <div class="category-row" id="categoryRow">
+            <div class="loading"><div class="loading-spinner"></div> Loading categories...</div>
+        </div>
     </div>
 
     <div class="section">
         <div class="section-title">Premium Keyboard</div>
         <div class="emoji-wrapper">
             <div class="emoji-scroll-area" id="emojiArea">
-                <div id="emojiKeyboard" class="emoji-grid"></div>
+                <div id="emojiKeyboard" class="emoji-grid">
+                    <div class="choose-category-prompt">
+                        <div class="icon">👆</div>
+                        <div class="main-text">Choose Category</div>
+                        <div class="sub-text">Select an emoji pack above to get started</div>
+                    </div>
+                </div>
             </div>
             <div class="emoji-fade" id="fadeEffect"></div>
             <button class="toggle-btn" onclick="toggleEmojiList()">
@@ -238,12 +280,12 @@
 
         async function loadEmojis() {
             if (!apiBase) {
-                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
+                categoryRow.innerHTML = '<div class="error">❌ Missing API URL</div>';
+                keyboard.innerHTML = '<div class="error">Please open this app via the Telegram Bot</div>';
                 return;
             }
             
-            keyboard.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Loading emojis...</div>';
-            
+            console.log('🚀 Starting emoji fetch from:', apiBase);
             await fetchAllEmojis();
         }
 
@@ -253,19 +295,28 @@
             
             let page = 1;
             const limit = 100;
+            let totalFetched = 0;
             
             try {
                 while (true) {
-                    const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
+                    const url = `${apiBase}/api/emojis?page=${page}&limit=${limit}`;
+                    console.log(`📥 Fetching page ${page}:`, url);
+                    
+                    const res = await fetch(url, {
                         headers: { 'ngrok-skip-browser-warning': 'true' }
                     });
                     
-                    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+                    
                     const data = await res.json();
+                    console.log(`✅ Page ${page} received:`, data.length, 'emojis');
                     
                     if (data.length === 0) break;
                     
                     allEmojis.push(...data);
+                    totalFetched += data.length;
                     
                     // Categorize emojis
                     data.forEach(emoji => {
@@ -277,22 +328,38 @@
                     });
                     
                     page++;
-                }
-                
-                // Create category buttons after all emojis loaded
-                createCategoryButtons();
-                
-                // Auto-select first category
-                const firstCategory = Object.keys(categorizedEmojis)[0];
-                if (firstCategory) {
-                    const firstBtn = categoryRow.querySelector('.category-item');
-                    if (firstBtn) {
-                        filterEmojis(firstCategory, firstBtn);
+                    
+                    // Safety limit to prevent infinite loops
+                    if (page > 50) {
+                        console.warn('⚠️ Reached page limit, stopping fetch');
+                        break;
                     }
                 }
                 
+                console.log('🎉 Total emojis fetched:', totalFetched);
+                console.log('📦 Categories found:', Object.keys(categorizedEmojis).length);
+                
+                // Create category buttons after all emojis loaded
+                if (Object.keys(categorizedEmojis).length === 0) {
+                    categoryRow.innerHTML = '<div class="error">❌ No emoji packs found</div>';
+                    keyboard.innerHTML = '<div class="empty">No emojis available. Please check your bot configuration.</div>';
+                } else {
+                    createCategoryButtons();
+                    
+                    // Keep the "Choose Category" prompt until user selects
+                    keyboard.innerHTML = `
+                        <div class="choose-category-prompt">
+                            <div class="icon">👆</div>
+                            <div class="main-text">Choose Category</div>
+                            <div class="sub-text">Select an emoji pack above to get started</div>
+                        </div>
+                    `;
+                }
+                
             } catch (err) {
-                keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
+                console.error('❌ Fetch error:', err);
+                categoryRow.innerHTML = `<div class="error">❌ Failed to load</div>`;
+                keyboard.innerHTML = `<div class="error">❌ ${err.message}<br><br>Check your API connection</div>`;
             } finally {
                 isLoading = false;
             }
@@ -301,6 +368,9 @@
         function createCategoryButtons() {
             categoryRow.innerHTML = ''; // Clear loading state
             
+            const categoryCount = Object.keys(categorizedEmojis).length;
+            console.log(`🎨 Creating ${categoryCount} category buttons`);
+            
             for (const packId in categorizedEmojis) {
                 const emojis = categorizedEmojis[packId];
                 if (emojis.length > 0) {
@@ -308,6 +378,8 @@
                     createCategoryButton(packId, firstEmoji.image_url);
                 }
             }
+            
+            console.log('✅ Category buttons created');
         }
 
         function createCategoryButton(packId, imageUrl) {
@@ -328,6 +400,8 @@
         }
 
         function filterEmojis(categoryId, clickedBtn) {
+            console.log(`🎯 Filtering category: ${categoryId}`);
+            
             // 🔥 CRITICAL: Cancel any ongoing rendering immediately
             if (abortController) {
                 abortController.abort();
@@ -379,6 +453,8 @@
         // 🚀 CHUNKED RENDERING - Only Active Category, 30 at a time
         function startChunkedRender(signal) {
             const emojis = categorizedEmojis[activeCategory] || [];
+            
+            console.log(`🎬 Starting render for ${activeCategory}: ${emojis.length} emojis`);
             
             if (emojis.length === 0) {
                 keyboard.innerHTML = '<div class="empty">No emojis in this category.</div>';
@@ -471,7 +547,9 @@
                                 autoplay: true, 
                                 animationData: JSON.parse(jsonStr) 
                             });
-                        } catch(e) {}
+                        } catch(e) {
+                            console.error('Lottie load error:', e);
+                        }
                     });
                 }
             } else if (url.startsWith('data:video/webm')) {
@@ -545,6 +623,7 @@
         }
 
         // Initialize
+        console.log('🎯 Initializing Premium Post Manager');
         loadEmojis();
     </script>
 </body>
