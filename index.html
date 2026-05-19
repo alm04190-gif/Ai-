@@ -41,8 +41,9 @@
         .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
         
         .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .emoji-scroll-area { max-height: 145px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; position: relative; }
-        .emoji-scroll-area.expanded { max-height: 50vh; }
+        .emoji-scroll-area { max-height: 130px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; position: relative; }
+        /* 🔥 Reduced expanded height to prevent too many renders at once 🔥 */
+        .emoji-scroll-area.expanded { max-height: 38vh; }
         .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; transition: opacity 0.3s; }
         .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
         
@@ -84,10 +85,6 @@
         .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px var(--glow); transition: transform 0.1s, background 0.2s; }
         .send-btn button:active { background: var(--accent-hover); transform: scale(0.96); }
         .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); font-weight: 600;}
-        
-        /* Loading Spinner */
-        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -151,57 +148,79 @@
         let activeCategory = null;
         let isLoading = false;
 
-        // 🚀 VIRTUAL SCROLLING ENGINE 
-        const lottieInstances = new Map();
-        let CHUNK_SIZE = 15; // Initial chunk size, will be dynamically calculated
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
         
-        let currentChunkIndex = 0;
-        let filteredEmojis = [];
-        let isRendering = false;
-        let renderSessionId = 0;
+        // 🔥 Separate memory maps for strict memory control 🔥
+        const emojiLotties = new Map();
+        const catLotties = new Map();
 
-        // 🔥 Ultra-Fast Native Loader (Direct URL processing)
+        // 🚀 Category Observer: Pauses animations of inactive/off-screen categories
+        const catObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const el = entry.target;
+                if (entry.isIntersecting) {
+                    if (!catLotties.has(el)) {
+                        let anim;
+                        if (el.dataset.lottieJson) {
+                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(el.dataset.lottieJson), rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
+                        } else if (el.dataset.lottieUrl) {
+                            anim = lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
+                        }
+                        if (anim) catLotties.set(el, anim);
+                    } else {
+                        // Play only if it is the active category
+                        const parent = el.closest('.category-item');
+                        if (parent && (parent.classList.contains('active-cat') || !activeCategory)) {
+                            catLotties.get(el).play();
+                        }
+                    }
+                } else {
+                    if (catLotties.has(el)) {
+                        catLotties.get(el).pause(); // Freeze memory to save CPU
+                    }
+                }
+            });
+        }, { root: categoryRow, rootMargin: '50px 0px', threshold: 0 });
+
+        // 🚀 Emoji Observer: Extremely aggressive memory cleaner
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
-                    if (el.dataset.lottieUrl && !lottieInstances.has(el)) {
+                    if (el.dataset.lottieUrl && !emojiLotties.has(el)) {
                         const anim = lottie.loadAnimation({
-                            container: el,
-                            renderer: 'svg',
-                            loop: true,
-                            autoplay: true,
-                            path: el.dataset.lottieUrl, // 🔥 Fetching natively from URL! No base64 lag!
-                            rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+                            container: el, renderer: 'svg', loop: true, autoplay: true,
+                            path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
                         });
-                        lottieInstances.set(el, anim);
+                        emojiLotties.set(el, anim);
                     } else if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         el.src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
-                    } else if (el.tagName === 'VIDEO' && el.dataset.realSrc) {
-                        el.src = el.dataset.realSrc;
-                        el.removeAttribute('data-real-src');
+                    } else if (el.tagName === 'VIDEO') {
+                        if (el.dataset.realSrc) { el.src = el.dataset.realSrc; }
                         el.play().catch(()=>{});
                     }
                 } else {
-                    // RAM CLEANUP: Instantly destroy when out of view/category switched
-                    if (lottieInstances.has(el)) {
-                        const anim = lottieInstances.get(el);
+                    // 🔥 INSTANT RAM CLEANUP: Destroys emoji completely when 100px outside the box
+                    if (emojiLotties.has(el)) {
+                        const anim = emojiLotties.get(el);
                         anim.destroy();
-                        lottieInstances.delete(el);
+                        emojiLotties.delete(el);
                         el.innerHTML = '';
                     } else if (el.tagName === 'VIDEO') {
                         el.pause();
-                        el.removeAttribute('src');
-                        el.load();
+                        if (el.src && !el.src.includes('data:image')) {
+                            el.dataset.realSrc = el.src; 
+                            el.removeAttribute('src');
+                            el.load();
+                        }
                     }
                 }
             });
         }, {
             root: emojiArea,
-            rootMargin: '400px 0px', 
+            rootMargin: '100px 0px', // 🔥 Magic Fix: Reduced from 400px to 100px to stop massive background rendering
             threshold: 0
         });
 
@@ -237,18 +256,12 @@
         async function fetchFirstPage() {
             isLoading = true;
             const limit = 100;
-            
             try {
-                // Fetch fast (no base64 from python)
-                const res = await fetch(`${apiBase}/api/emojis?page=1&limit=${limit}`, {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-                
+                const res = await fetch(`${apiBase}/api/emojis?page=1&limit=${limit}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
                 
                 allEmojis.push(...data);
-                
                 let isFirstCategory = Object.keys(catMap).length === 0;
 
                 data.forEach(emoji => {
@@ -259,7 +272,6 @@
                     }
                 });
                 
-                // Load the first category automatically
                 if (isFirstCategory && activeCategory === null) {
                     const firstPack = Object.keys(catMap)[0];
                     const firstBtn = document.querySelector('.category-item');
@@ -267,7 +279,6 @@
                 }
                 
                 if (data.length === limit) fetchRemainingPages(2, limit);
-                
             } catch (err) {
                 keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
             } finally {
@@ -280,9 +291,7 @@
             const MAX_PAGES = 20;
             try {
                 while (page <= MAX_PAGES) {
-                    const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
-                        headers: { 'ngrok-skip-browser-warning': 'true' }
-                    });
+                    const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
                     if (!res.ok) break;
                     const data = await res.json();
                     if (data.length === 0) break;
@@ -299,60 +308,37 @@
 
                     if (activeCategory) {
                         const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
-                        if (newlyAdded.length > 0) filteredEmojis.push(...newlyAdded);
+                        if (newlyAdded.length > 0) {
+                            // If user is currently on this category, inject empty divs silently
+                            const fragment = document.createDocumentFragment();
+                            newlyAdded.forEach(emoji => {
+                                const div = createEmojiElement(emoji);
+                                fragment.appendChild(div);
+                            });
+                            keyboard.appendChild(fragment);
+                        }
                     }
-                    
                     if (data.length < limit) break; 
                     page++;
                 }
             } catch (err) {}
         }
 
-        function startChunkedRender() {
-            filteredEmojis = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+        function renderEmojis() {
+            let filteredEmojis = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
             if (filteredEmojis.length === 0) {
                 keyboard.innerHTML = '<div class="empty">Loading emojis...</div>';
                 return;
             }
             keyboard.innerHTML = '';
             
-            // 🔥 LOGIC: Calculate 1/3 of the emojis in this category (Min 15 to cover small packs)
-            CHUNK_SIZE = Math.max(15, Math.ceil(filteredEmojis.length / 3)); 
-            
-            currentChunkIndex = 0;
-            renderSessionId++; 
-            renderNextChunk(renderSessionId);
-        }
-
-        function renderNextChunk(sessionId) {
-            if (sessionId !== renderSessionId) return;
-            if (isRendering) return;
-            if (currentChunkIndex >= filteredEmojis.length) return;
-            
-            isRendering = true;
-            requestAnimationFrame(() => {
-                if (sessionId !== renderSessionId) {
-                    isRendering = false;
-                    return;
-                }
-
-                const fragment = document.createDocumentFragment();
-                const end = Math.min(currentChunkIndex + CHUNK_SIZE, filteredEmojis.length);
-                
-                for (let i = currentChunkIndex; i < end; i++) {
-                    const div = createEmojiElement(filteredEmojis[i]);
-                    fragment.appendChild(div);
-                }
-                
-                keyboard.appendChild(fragment);
-                currentChunkIndex = end;
-                isRendering = false;
-                
-                if (currentChunkIndex < filteredEmojis.length) {
-                    // Load the rest smoothly in the background
-                    setTimeout(() => renderNextChunk(sessionId), 50);
-                }
+            // 🔥 Renders all divs instantly (takes ~1ms), IntersectionObserver handles the actual lazy loading effortlessly
+            const fragment = document.createDocumentFragment();
+            filteredEmojis.forEach(emoji => {
+                const div = createEmojiElement(emoji);
+                fragment.appendChild(div);
             });
+            keyboard.appendChild(fragment);
         }
 
         function createEmojiElement(emoji) {
@@ -378,25 +364,20 @@
             if (!url) url = "";
             const fullUrl = url.startsWith('/') ? apiBase + url : url; 
 
-            // Checking for json URL or base64 (for category icons if any)
             if (url.endsWith('.json') || url.startsWith('data:application/json')) {
                 mediaEl = document.createElement('div');
                 mediaEl.className = 'media-container';
                 if (!isCategory) {
                     mediaEl.dataset.lottieUrl = fullUrl;
                 } else {
-                    setTimeout(() => {
-                        try {
-                            if(url.startsWith('data:')) {
-                                const b64Data = url.split(',')[1];
-                                let jsonStr;
-                                try { jsonStr = decodeURIComponent(escape(atob(b64Data))); } catch(e) { jsonStr = atob(b64Data); }
-                                lottie.loadAnimation({ container: mediaEl, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(jsonStr), rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
-                            } else {
-                                lottie.loadAnimation({ container: mediaEl, renderer: 'svg', loop: true, autoplay: true, path: fullUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
-                            }
-                        } catch(e) {}
-                    }, 0);
+                    if(url.startsWith('data:')) {
+                        const b64Data = url.split(',')[1];
+                        let jsonStr;
+                        try { jsonStr = decodeURIComponent(escape(atob(b64Data))); } catch(e) { jsonStr = atob(b64Data); }
+                        mediaEl.dataset.lottieJson = jsonStr;
+                    } else {
+                        mediaEl.dataset.lottieUrl = fullUrl;
+                    }
                 }
             } else if (url.endsWith('.webm') || url.startsWith('data:video')) {
                 mediaEl = document.createElement('video');
@@ -428,34 +409,37 @@
             label.textContent = packId.substring(0, 8);
             div.appendChild(label);
             categoryRow.appendChild(div);
+            
+            // Track categories to pause them when not active
+            catObserver.observe(mediaEl);
         }
 
         function filterEmojis(categoryId, clickedBtn) {
             if (activeCategory === categoryId) return; 
             activeCategory = categoryId;
-            renderSessionId++; // Stop previous category from loading further
             
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
-            // 🔥 COMPLETE MEMORY WIPE: Stops all animations and clears RAM for old category instantly
-            lottieInstances.forEach(anim => anim.destroy());
-            lottieInstances.clear();
+            // 🔥 Control Category Animations (Pause all, Play only active)
+            catLotties.forEach((anim, el) => {
+                const parent = el.closest('.category-item');
+                if (parent === clickedBtn) anim.play();
+                else anim.pause();
+            });
+            
+            // 🔥 Complete Memory Wipe ONLY for old Emojis 
+            emojiLotties.forEach(anim => anim.destroy());
+            emojiLotties.clear();
             document.querySelectorAll('.emoji-item video').forEach(v => {
                 v.pause(); v.removeAttribute('src'); v.load();
             });
             keyboard.innerHTML = ''; 
             
-            startChunkedRender();
+            renderEmojis();
             if (!emojiArea.classList.contains('expanded')) toggleEmojiList();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
-
-        emojiArea.addEventListener('scroll', () => {
-            if (emojiArea.scrollHeight - emojiArea.scrollTop - emojiArea.clientHeight < 300) {
-                renderNextChunk(renderSessionId);
-            }
-        });
 
         function insertEmoji(emoji) {
             const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
