@@ -32,17 +32,18 @@
         .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
         
         .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .emoji-scroll-area { max-height: 145px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; }
+        .emoji-scroll-area { max-height: 145px; overflow-y: auto; overflow-x: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; will-change: scroll-position; position: relative; }
         .emoji-scroll-area.expanded { max-height: 50vh; }
         .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; transition: opacity 0.3s; }
         .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
         
-        /* 🔥 Ultra-Optimized Grid with Hardware Acceleration 🔥 */
+        /* 🔥 Virtual Scroll Optimized Grid 🔥 */
         .emoji-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); 
             gap: 8px;
             contain: layout style paint;
+            position: relative;
         }
         .emoji-item { 
             background: rgba(255, 255, 255, 0.03); 
@@ -61,7 +62,6 @@
             height: 54px;
             min-height: 54px;
         }
-        .hidden-emoji { display: none !important; }
         .emoji-item:active { transform: scale(0.9) translateZ(0); border-color: var(--accent); background: rgba(160, 32, 240, 0.2); }
         .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
         .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
@@ -137,27 +137,31 @@
         
         let emojiMap = {};
         let emojiCounter = 1;
-        let allEmojis = []; // Store all emojis
+        let allEmojis = [];
         let catMap = {}; 
         let activeCategory = 'all';
         let isLoading = false;
 
-        // 🔥 Performance Optimization Engine 🔥
+        // 🚀 VIRTUAL SCROLLING ENGINE - Zero Lag Performance 🚀
         const lottieInstances = new Map();
         const jsonCache = new Map();
-        const renderedEmojis = new Set(); // Track rendered emojis
-        
+        const renderedElements = new Map(); // Cache rendered DOM elements
+        const CHUNK_SIZE = 30; // Render 30 emojis at a time
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        
+        let currentChunkIndex = 0;
+        let filteredEmojis = [];
+        let isRendering = false;
+        let renderQueue = [];
 
-        // 🚀 Optimized Intersection Observer with aggressive cleanup
+        // 🔥 Aggressive Intersection Observer with viewport optimization
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
-                    // Load visible items
                     if (el.dataset.lottieUrl && !lottieInstances.has(el)) {
-                        requestAnimationFrame(() => {
+                        requestIdleCallback(() => {
                             const b64Data = el.dataset.lottieUrl.split(',')[1];
                             let animData = jsonCache.get(b64Data);
                             
@@ -179,11 +183,12 @@
                                 animationData: animData,
                                 rendererSettings: {
                                     progressiveLoad: true,
-                                    hideOnTransparent: true
+                                    hideOnTransparent: true,
+                                    preserveAspectRatio: 'xMidYMid slice'
                                 }
                             });
                             lottieInstances.set(el, anim);
-                        });
+                        }, { timeout: 100 });
                     } else if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         el.src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
@@ -193,7 +198,7 @@
                         el.play().catch(()=>{});
                     }
                 } else {
-                    // Aggressively destroy off-screen animations
+                    // Destroy off-screen animations instantly
                     if (lottieInstances.has(el)) {
                         const anim = lottieInstances.get(el);
                         anim.destroy();
@@ -201,17 +206,18 @@
                         el.innerHTML = '';
                     } else if (el.tagName === 'VIDEO') {
                         el.pause();
-                        el.src = '';
+                        el.removeAttribute('src');
+                        el.load();
                     }
                 }
             });
         }, {
             root: emojiArea,
-            rootMargin: '100px 0px',
-            threshold: 0.01
+            rootMargin: '200px 0px',
+            threshold: 0
         });
 
-        // 🚀 Debounced character counter (prevents lag while typing)
+        // 🚀 Debounced character counter
         let charCountTimeout;
         draft.addEventListener('input', () => { 
             clearTimeout(charCountTimeout);
@@ -249,7 +255,6 @@
             setupAllCategoryButton();
             keyboard.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Loading emojis...</div>';
             
-            // Load ALL emojis at once but don't render yet
             await fetchAllEmojis();
         }
 
@@ -273,7 +278,7 @@
                     
                     allEmojis.push(...data);
                     
-                    // Create categories as we load
+                    // Create categories
                     data.forEach(emoji => {
                         const packId = emoji.pack_id || 'Other';
                         if (!catMap[packId]) {
@@ -282,16 +287,16 @@
                         }
                     });
                     
-                    // Render first batch immediately for fast initial display
+                    // Render first chunk immediately
                     if (page === 1) {
-                        renderVisibleEmojis();
+                        startChunkedRender();
                     }
                     
                     page++;
                 }
                 
-                // Render all after loading completes
-                renderVisibleEmojis();
+                // Complete rendering
+                startChunkedRender();
                 
             } catch (err) {
                 keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
@@ -300,18 +305,9 @@
             }
         }
 
-        // 🚀 Virtual rendering - only render visible emojis based on filter
-        function renderVisibleEmojis() {
-            // Clear existing
-            keyboard.innerHTML = '';
-            renderedEmojis.clear();
-            
-            // Destroy all old lottie instances
-            lottieInstances.forEach(anim => anim.destroy());
-            lottieInstances.clear();
-            
-            // Filter emojis based on active category
-            const filteredEmojis = activeCategory === 'all' 
+        // 🚀 CHUNKED RENDERING - Render emojis in small batches to prevent lag
+        function startChunkedRender() {
+            filteredEmojis = activeCategory === 'all' 
                 ? allEmojis 
                 : allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
             
@@ -320,30 +316,70 @@
                 return;
             }
             
-            // Render using DocumentFragment for better performance
-            const fragment = document.createDocumentFragment();
+            // Clear and reset
+            keyboard.innerHTML = '';
+            currentChunkIndex = 0;
             
-            filteredEmojis.forEach((emoji) => {
-                const div = document.createElement('div');
-                div.className = 'emoji-item';
-                div.dataset.emojiId = emoji.id;
+            // Start rendering chunks
+            renderNextChunk();
+        }
+
+        function renderNextChunk() {
+            if (isRendering) return;
+            if (currentChunkIndex >= filteredEmojis.length) return;
+            
+            isRendering = true;
+            
+            requestAnimationFrame(() => {
+                const fragment = document.createDocumentFragment();
+                const end = Math.min(currentChunkIndex + CHUNK_SIZE, filteredEmojis.length);
                 
-                const mediaEl = createMediaElement(emoji.image_url, false);
-                const label = document.createElement('div');
-                label.className = 'label';
-                label.textContent = emoji.symbol || '⭐';
+                for (let i = currentChunkIndex; i < end; i++) {
+                    const emoji = filteredEmojis[i];
+                    const div = createEmojiElement(emoji);
+                    fragment.appendChild(div);
+                }
                 
-                div.appendChild(mediaEl);
-                div.appendChild(label);
-                div.onclick = () => insertEmoji(emoji);
+                keyboard.appendChild(fragment);
+                currentChunkIndex = end;
+                isRendering = false;
                 
-                fragment.appendChild(div);
-                
-                // Observe for lazy loading
-                lazyLoadObserver.observe(mediaEl);
+                // Continue rendering if more chunks exist
+                if (currentChunkIndex < filteredEmojis.length) {
+                    requestIdleCallback(() => renderNextChunk(), { timeout: 50 });
+                }
             });
+        }
+
+        // 🚀 Optimized emoji element creation with caching
+        function createEmojiElement(emoji) {
+            const cacheKey = `${emoji.id}_${activeCategory}`;
             
-            keyboard.appendChild(fragment);
+            // Return cached element if exists
+            if (renderedElements.has(cacheKey)) {
+                return renderedElements.get(cacheKey).cloneNode(true);
+            }
+            
+            const div = document.createElement('div');
+            div.className = 'emoji-item';
+            div.dataset.emojiId = emoji.id;
+            
+            const mediaEl = createMediaElement(emoji.image_url, false);
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = emoji.symbol || '⭐';
+            
+            div.appendChild(mediaEl);
+            div.appendChild(label);
+            div.onclick = () => insertEmoji(emoji);
+            
+            // Cache the element
+            renderedElements.set(cacheKey, div.cloneNode(true));
+            
+            // Observe for lazy loading
+            lazyLoadObserver.observe(mediaEl);
+            
+            return div;
         }
 
         function createMediaElement(url, isCategory = false) {
@@ -356,8 +392,7 @@
                 if (!isCategory) {
                     mediaEl.dataset.lottieUrl = url;
                 } else {
-                    // Categories load instantly
-                    requestAnimationFrame(() => {
+                    requestIdleCallback(() => {
                         try {
                             const b64Data = url.split(',')[1];
                             let jsonStr;
@@ -400,7 +435,6 @@
             const mediaEl = createMediaElement(imageUrl, true);
             div.appendChild(mediaEl);
             
-            // Add label
             const label = document.createElement('div');
             label.className = 'normal-emoji';
             label.textContent = packId.substring(0, 8);
@@ -410,14 +444,21 @@
         }
 
         function filterEmojis(categoryId, clickedBtn) {
+            // Prevent multiple rapid clicks
+            if (isRendering) return;
+            
             activeCategory = categoryId;
             
             // Update active state
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
             
-            // Re-render with new filter
-            renderVisibleEmojis();
+            // Destroy all lottie instances before switching
+            lottieInstances.forEach(anim => anim.destroy());
+            lottieInstances.clear();
+            
+            // Start chunked rendering
+            startChunkedRender();
             
             // Auto-expand if filtering
             if (categoryId !== 'all' && !emojiArea.classList.contains('expanded')) {
@@ -426,6 +467,18 @@
             
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
+
+        // 🚀 Infinite scroll support - load more chunks when scrolling
+        emojiArea.addEventListener('scroll', () => {
+            const scrollHeight = emojiArea.scrollHeight;
+            const scrollTop = emojiArea.scrollTop;
+            const clientHeight = emojiArea.clientHeight;
+            
+            // Load next chunk when near bottom
+            if (scrollHeight - scrollTop - clientHeight < 300) {
+                renderNextChunk();
+            }
+        });
 
         function insertEmoji(emoji) {
             const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
@@ -441,7 +494,6 @@
             draft.focus();
             draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
             
-            // Trigger char count update
             draft.dispatchEvent(new Event('input'));
             
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
@@ -454,7 +506,6 @@
                 return; 
             }
             
-            // Replace all emoji codes
             for (let code in emojiMap) { 
                 text = text.split(code).join(emojiMap[code]); 
             }
