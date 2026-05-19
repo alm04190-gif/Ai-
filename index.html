@@ -138,23 +138,21 @@
         let emojiMap = {};
         let emojiCounter = 1;
         let allEmojis = [];
-        let catMap = {}; 
-        let activeCategory = 'all';
+        let categorizedEmojis = {}; // { packId: [emojis...] }
+        let activeCategory = null;
         let isLoading = false;
+        let abortController = null; // For cancelling ongoing renders
 
-        // 🚀 VIRTUAL SCROLLING ENGINE - Zero Lag Performance 🚀
+        // 🚀 OPTIMIZED RENDERING ENGINE - Only Active Category Loads 🚀
         const lottieInstances = new Map();
         const jsonCache = new Map();
-        const renderedElements = new Map(); // Cache rendered DOM elements
         const CHUNK_SIZE = 30; // Render 30 emojis at a time
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
         
         let currentChunkIndex = 0;
-        let filteredEmojis = [];
         let isRendering = false;
-        let renderQueue = [];
 
-        // 🔥 Aggressive Intersection Observer with viewport optimization
+        // 🔥 Aggressive Intersection Observer - Only for Active Category
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
@@ -238,21 +236,12 @@
             }
         }
 
-        function setupAllCategoryButton() {
-            const allBtn = document.createElement('div');
-            allBtn.className = 'category-item active-cat';
-            allBtn.innerHTML = `<div style="font-size: 26px; line-height:30px;">🌐</div><div class="normal-emoji">All</div>`;
-            allBtn.onclick = () => filterEmojis('all', allBtn);
-            categoryRow.appendChild(allBtn);
-        }
-
         async function loadEmojis() {
             if (!apiBase) {
                 keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
             
-            setupAllCategoryButton();
             keyboard.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Loading emojis...</div>';
             
             await fetchAllEmojis();
@@ -278,25 +267,29 @@
                     
                     allEmojis.push(...data);
                     
-                    // Create categories
+                    // Categorize emojis
                     data.forEach(emoji => {
                         const packId = emoji.pack_id || 'Other';
-                        if (!catMap[packId]) {
-                            catMap[packId] = true;
-                            createCategoryButton(packId, emoji.image_url);
+                        if (!categorizedEmojis[packId]) {
+                            categorizedEmojis[packId] = [];
                         }
+                        categorizedEmojis[packId].push(emoji);
                     });
-                    
-                    // Render first chunk immediately
-                    if (page === 1) {
-                        startChunkedRender();
-                    }
                     
                     page++;
                 }
                 
-                // Complete rendering
-                startChunkedRender();
+                // Create category buttons after all emojis loaded
+                createCategoryButtons();
+                
+                // Auto-select first category
+                const firstCategory = Object.keys(categorizedEmojis)[0];
+                if (firstCategory) {
+                    const firstBtn = categoryRow.querySelector('.category-item');
+                    if (firstBtn) {
+                        filterEmojis(firstCategory, firstBtn);
+                    }
+                }
                 
             } catch (err) {
                 keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
@@ -305,61 +298,137 @@
             }
         }
 
-        // 🚀 CHUNKED RENDERING - Render emojis in small batches to prevent lag
-        function startChunkedRender() {
-            filteredEmojis = activeCategory === 'all' 
-                ? allEmojis 
-                : allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+        function createCategoryButtons() {
+            categoryRow.innerHTML = ''; // Clear loading state
             
-            if (filteredEmojis.length === 0) {
+            for (const packId in categorizedEmojis) {
+                const emojis = categorizedEmojis[packId];
+                if (emojis.length > 0) {
+                    const firstEmoji = emojis[0];
+                    createCategoryButton(packId, firstEmoji.image_url);
+                }
+            }
+        }
+
+        function createCategoryButton(packId, imageUrl) {
+            const div = document.createElement('div');
+            div.className = 'category-item';
+            div.dataset.packId = packId;
+            div.onclick = () => filterEmojis(packId, div);
+            
+            const mediaEl = createMediaElement(imageUrl, true);
+            div.appendChild(mediaEl);
+            
+            const label = document.createElement('div');
+            label.className = 'normal-emoji';
+            label.textContent = packId.substring(0, 8);
+            div.appendChild(label);
+            
+            categoryRow.appendChild(div);
+        }
+
+        function filterEmojis(categoryId, clickedBtn) {
+            // 🔥 CRITICAL: Cancel any ongoing rendering immediately
+            if (abortController) {
+                abortController.abort();
+            }
+            abortController = new AbortController();
+            
+            // 🔥 CRITICAL: Destroy ALL lottie instances before switching
+            destroyAllAnimations();
+            
+            // Update active category
+            activeCategory = categoryId;
+            
+            // Update UI state
+            document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
+            clickedBtn.classList.add('active-cat');
+            
+            // Clear keyboard
+            keyboard.innerHTML = '';
+            currentChunkIndex = 0;
+            
+            // Start rendering ONLY this category
+            startChunkedRender(abortController.signal);
+            
+            // Auto-expand
+            if (!emojiArea.classList.contains('expanded')) {
+                toggleEmojiList();
+            }
+            
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
+        }
+
+        // 🔥 DESTROY ALL ANIMATIONS - Deep Sleep Mode
+        function destroyAllAnimations() {
+            lottieInstances.forEach(anim => {
+                try {
+                    anim.destroy();
+                } catch(e) {}
+            });
+            lottieInstances.clear();
+            
+            // Stop all videos
+            document.querySelectorAll('video').forEach(v => {
+                v.pause();
+                v.removeAttribute('src');
+                v.load();
+            });
+        }
+
+        // 🚀 CHUNKED RENDERING - Only Active Category, 30 at a time
+        function startChunkedRender(signal) {
+            const emojis = categorizedEmojis[activeCategory] || [];
+            
+            if (emojis.length === 0) {
                 keyboard.innerHTML = '<div class="empty">No emojis in this category.</div>';
                 return;
             }
             
-            // Clear and reset
-            keyboard.innerHTML = '';
             currentChunkIndex = 0;
-            
-            // Start rendering chunks
-            renderNextChunk();
+            renderNextChunk(emojis, signal);
         }
 
-        function renderNextChunk() {
+        function renderNextChunk(emojis, signal) {
+            if (signal.aborted) return; // Stop if category changed
             if (isRendering) return;
-            if (currentChunkIndex >= filteredEmojis.length) return;
+            if (currentChunkIndex >= emojis.length) return;
             
             isRendering = true;
             
             requestAnimationFrame(() => {
+                if (signal.aborted) {
+                    isRendering = false;
+                    return;
+                }
+                
                 const fragment = document.createDocumentFragment();
-                const end = Math.min(currentChunkIndex + CHUNK_SIZE, filteredEmojis.length);
+                const end = Math.min(currentChunkIndex + CHUNK_SIZE, emojis.length);
                 
                 for (let i = currentChunkIndex; i < end; i++) {
-                    const emoji = filteredEmojis[i];
+                    if (signal.aborted) break;
+                    
+                    const emoji = emojis[i];
                     const div = createEmojiElement(emoji);
                     fragment.appendChild(div);
                 }
                 
-                keyboard.appendChild(fragment);
-                currentChunkIndex = end;
+                if (!signal.aborted) {
+                    keyboard.appendChild(fragment);
+                    currentChunkIndex = end;
+                }
+                
                 isRendering = false;
                 
                 // Continue rendering if more chunks exist
-                if (currentChunkIndex < filteredEmojis.length) {
-                    requestIdleCallback(() => renderNextChunk(), { timeout: 50 });
+                if (currentChunkIndex < emojis.length && !signal.aborted) {
+                    requestIdleCallback(() => renderNextChunk(emojis, signal), { timeout: 50 });
                 }
             });
         }
 
-        // 🚀 Optimized emoji element creation with caching
+        // 🚀 Optimized emoji element creation
         function createEmojiElement(emoji) {
-            const cacheKey = `${emoji.id}_${activeCategory}`;
-            
-            // Return cached element if exists
-            if (renderedElements.has(cacheKey)) {
-                return renderedElements.get(cacheKey).cloneNode(true);
-            }
-            
             const div = document.createElement('div');
             div.className = 'emoji-item';
             div.dataset.emojiId = emoji.id;
@@ -372,9 +441,6 @@
             div.appendChild(mediaEl);
             div.appendChild(label);
             div.onclick = () => insertEmoji(emoji);
-            
-            // Cache the element
-            renderedElements.set(cacheKey, div.cloneNode(true));
             
             // Observe for lazy loading
             lazyLoadObserver.observe(mediaEl);
@@ -428,55 +494,20 @@
             return mediaEl;
         }
 
-        function createCategoryButton(packId, imageUrl) {
-            const div = document.createElement('div');
-            div.className = 'category-item';
-            div.onclick = () => filterEmojis(packId, div);
-            const mediaEl = createMediaElement(imageUrl, true);
-            div.appendChild(mediaEl);
-            
-            const label = document.createElement('div');
-            label.className = 'normal-emoji';
-            label.textContent = packId.substring(0, 8);
-            div.appendChild(label);
-            
-            categoryRow.appendChild(div);
-        }
-
-        function filterEmojis(categoryId, clickedBtn) {
-            // Prevent multiple rapid clicks
-            if (isRendering) return;
-            
-            activeCategory = categoryId;
-            
-            // Update active state
-            document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
-            clickedBtn.classList.add('active-cat');
-            
-            // Destroy all lottie instances before switching
-            lottieInstances.forEach(anim => anim.destroy());
-            lottieInstances.clear();
-            
-            // Start chunked rendering
-            startChunkedRender();
-            
-            // Auto-expand if filtering
-            if (categoryId !== 'all' && !emojiArea.classList.contains('expanded')) {
-                toggleEmojiList();
-            }
-            
-            if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
-        }
-
         // 🚀 Infinite scroll support - load more chunks when scrolling
         emojiArea.addEventListener('scroll', () => {
+            if (!activeCategory) return;
+            
             const scrollHeight = emojiArea.scrollHeight;
             const scrollTop = emojiArea.scrollTop;
             const clientHeight = emojiArea.clientHeight;
             
             // Load next chunk when near bottom
             if (scrollHeight - scrollTop - clientHeight < 300) {
-                renderNextChunk();
+                const emojis = categorizedEmojis[activeCategory] || [];
+                if (abortController && !abortController.signal.aborted) {
+                    renderNextChunk(emojis, abortController.signal);
+                }
             }
         });
 
