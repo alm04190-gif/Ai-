@@ -3,51 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Post Manager</title>
+    <title>Premium Post Manager (Lite)</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
-        :root { --bg: #0f0f0f; --surface: #1a1a1a; --border: #2a2a2a; --accent: #0088cc; --accent-hover: #0077b3; --text: #ffffff; --text-secondary: #888888; --purple-glow: rgba(160, 32, 240, 0.4); }
+        /* 🔥 No extra effects, flat and minimal for Android 🔥 */
+        :root { --bg: #121212; --surface: #1e1e1e; --border: #333333; --accent: #0088cc; --text: #ffffff; --text-secondary: #aaaaaa; }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; padding: 16px; padding-bottom: 100px; min-height: 100vh; overflow-x: hidden; }
-        .header { text-align: center; margin-bottom: 24px; padding-top: 8px; position: relative; z-index: 10; }
-        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
-        .header p { font-size: 13px; color: var(--text-secondary); }
-        .section { margin-bottom: 20px; position: relative; z-index: 10; }
-        .section-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
-        .draft-area { width: 100%; min-height: 140px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; color: var(--text); font-size: 15px; line-height: 1.5; resize: vertical; font-family: inherit; transition: border-color 0.2s, box-shadow 0.3s; box-shadow: 0 4px 15px var(--purple-glow); }
-        .draft-area:focus { outline: none; border-color: #a020f0; box-shadow: 0 0 20px rgba(160, 32, 240, 0.8); }
-        .category-hint { font-size: 11px; color: #aaaaaa; margin-bottom: 10px; font-style: italic; }
-        .category-row { display: flex; overflow-x: auto; gap: 12px; padding: 10px 5px 25px 5px; margin-bottom: 5px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 12px; padding-bottom: 80px; min-height: 100vh; overflow-x: hidden; }
+        
+        .header { text-align: center; margin-bottom: 16px; }
+        .header h1 { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+        .header p { font-size: 12px; color: var(--text-secondary); }
+        
+        .section { margin-bottom: 16px; }
+        .section-title { font-size: 12px; font-weight: bold; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; }
+        
+        /* Removed all shadows and transitions */
+        .draft-area { width: 100%; height: 120px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 10px; color: var(--text); font-size: 15px; resize: none; font-family: inherit; }
+        .draft-area:focus { outline: none; border-color: var(--accent); }
+        
+        .category-row { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 10px; margin-bottom: 5px; scrollbar-width: none; }
         .category-row::-webkit-scrollbar { display: none; }
-        .category-item { flex: 0 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; cursor: pointer; text-align: center; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; }
-        .category-item.active-cat { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
-        .category-item .media-container { width: 32px; height: 32px; object-fit: contain; pointer-events: none; display: block; }
-        .category-item .normal-emoji { font-size: 14px; line-height: 1; margin-top: 4px; }
-        .emoji-wrapper { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px; overflow: hidden; }
-        .emoji-scroll-area { max-height: 145px; overflow: hidden; transition: max-height 0.3s; -webkit-overflow-scrolling: touch; }
-        .emoji-scroll-area.expanded { max-height: 50vh; overflow-y: auto; }
-        .emoji-fade { position: absolute; bottom: 40px; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
-        .emoji-scroll-area.expanded + .emoji-fade { opacity: 0; }
-        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 8px; }
-        .emoji-item { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 6px 4px; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateZ(0); }
+        
+        /* Simplified category items */
+        .category-item { flex: 0 0 auto; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 60px; }
+        .category-item.active-cat { border-color: var(--accent); background: #2a2a2a; }
+        .category-item .media-container { width: 28px; height: 28px; object-fit: contain; pointer-events: none; display: block; }
+        .category-item .normal-emoji { font-size: 14px; margin-top: 2px; }
+        
+        .emoji-wrapper { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 8px; }
+        
+        /* Removed animation for expanding */
+        .emoji-scroll-area { max-height: 150px; overflow-y: auto; }
+        .emoji-scroll-area.expanded { max-height: 55vh; }
+        
+        /* Simplified grid and items to reduce DOM stress */
+        .emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 6px; }
+        .emoji-item { 
+            background: #222; 
+            border: 1px solid #333; 
+            border-radius: 6px; 
+            padding: 4px; 
+            text-align: center; 
+            contain: content; /* Hardware optimization */
+        }
         .hidden-emoji { display: none !important; }
-        .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: rgba(160, 32, 240, 0.2); }
-        .emoji-item .media-container { width: 26px; height: 26px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
-        .emoji-item .label { font-size: 9px; color: var(--text-secondary); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .toggle-btn { display: flex; justify-content: center; align-items: center; width: 100%; background: transparent; border: none; color: var(--accent); font-size: 13px; font-weight: 600; padding-top: 12px; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; }
-        .loading, .empty, .error { text-align: center; padding: 30px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; }
-        .error { color: #ff4444; font-weight: bold; }
-        .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); padding: 16px; border-top: 1px solid var(--border); z-index: 100; }
-        .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 136, 204, 0.3); }
-        .send-btn button:active { background: var(--accent-hover); transform: scale(0.96); }
-        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--text-secondary); }
+        .emoji-item:active { background: #444; border-color: var(--text-secondary); }
+        .emoji-item .media-container { width: 28px; height: 28px; display: block; margin: 0 auto; pointer-events: none; }
+        .emoji-item .label { font-size: 10px; color: var(--text-secondary); margin-top: 2px; overflow: hidden; }
+        
+        .toggle-btn { width: 100%; background: transparent; border: none; color: var(--accent); font-size: 14px; font-weight: bold; padding: 10px 0; cursor: pointer; border-top: 1px solid var(--border); margin-top: 5px; }
+        .loading, .empty, .error { text-align: center; padding: 20px 10px; color: var(--text-secondary); font-size: 13px; grid-column: 1 / -1; }
+        
+        .send-btn { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg); padding: 12px; border-top: 1px solid var(--border); z-index: 100; }
+        .send-btn button { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: bold; }
+        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 12px; color: var(--text-secondary); }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>✨ Premium Post Manager</h1>
-        <p>Compose & send premium emoji posts</p>
+        <h1>⚡ Premium Post Manager</h1>
+        <p>Lite Version for Android</p>
     </div>
 
     <div class="section">
@@ -55,39 +72,34 @@
             <span class="section-title">Draft</span>
             <span id="charCount">0 chars</span>
         </div>
-        <textarea class="draft-area" id="draft" placeholder="Type your post here... Tap emojis below to insert them."></textarea>
+        <textarea class="draft-area" id="draft" placeholder="Type here... Tap emojis to insert."></textarea>
     </div>
 
     <div class="section">
-        <div class="section-title">Emoji Categories</div>
-        <div class="category-hint">👇 Click a pack to view its premium emojis</div>
-        <div class="category-row" id="categoryRow">
-        </div>
+        <div class="section-title">Emoji Packs</div>
+        <div class="category-row" id="categoryRow"></div>
     </div>
 
     <div class="section">
-        <div class="section-title">Premium Keyboard</div>
+        <div class="section-title">Keyboard</div>
         <div class="emoji-wrapper">
             <div class="emoji-scroll-area" id="emojiArea">
-                <div id="emojiKeyboard" class="emoji-grid">
-                </div>
+                <div id="emojiKeyboard" class="emoji-grid"></div>
             </div>
-            <div class="emoji-fade" id="fadeEffect"></div>
             <button class="toggle-btn" onclick="toggleEmojiList()">
-                <span id="toggleText">Show All Emojis</span> <span id="toggleIcon">🔽</span>
+                <span id="toggleText">Show All Emojis 🔽</span>
             </button>
         </div>
     </div>
 
     <div class="send-btn">
-        <button id="sendBtn" onclick="sendData()">📤 Send to Bot</button>
+        <button id="sendBtn" onclick="sendData()">📤 Send Post</button>
     </div>
 
     <script>
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
         Telegram.ready();
-        Telegram.enableClosingConfirmation();
 
         const urlParams = new URLSearchParams(window.location.search);
         const apiBase = urlParams.get('api');
@@ -97,89 +109,90 @@
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
         const toggleText = document.getElementById('toggleText');
-        const toggleIcon = document.getElementById('toggleIcon');
         const categoryRow = document.getElementById('categoryRow');
         
         let emojiMap = {};
         let emojiCounter = 1;
-
         let currentPage = 1;
         const PAGE_LIMIT = 100; 
         let catMap = {}; 
         let activeCategory = 'all';
 
         const lottieInstances = new Map();
+        const parsedJsonCache = new Map(); 
 
-        // 🔥 100% LAGG-FREE VIRTUAL SCROLLER 🔥
+        const initQueue = [];
+        let isQueueRunning = false;
+
+        // Even faster processing limit for normal Androids
+        function processInitQueue() {
+            if (initQueue.length === 0) {
+                isQueueRunning = false;
+                return;
+            }
+            isQueueRunning = true;
+            const start = performance.now();
+            
+            while (initQueue.length > 0 && (performance.now() - start < 2)) {
+                const el = initQueue.shift();
+                if (el.dataset.inView === 'true' && !lottieInstances.has(el)) {
+                    try {
+                        const b64Data = el.dataset.rawAnim.split(',')[1];
+                        let animationData = parsedJsonCache.get(b64Data);
+                        if (!animationData) {
+                            let jsonStr;
+                            try { jsonStr = decodeURIComponent(escape(atob(b64Data))); }
+                            catch(e) { jsonStr = atob(b64Data); }
+                            animationData = JSON.parse(jsonStr);
+                            parsedJsonCache.set(b64Data, animationData);
+                        }
+                        const anim = lottie.loadAnimation({
+                            container: el,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            animationData: animationData
+                        });
+                        lottieInstances.set(el, anim);
+                    } catch (e) {}
+                }
+            }
+            requestAnimationFrame(processInitQueue);
+        }
+
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
-                
                 if (entry.isIntersecting) {
-                    // Item came into view - Render it!
-                    if (el.dataset.rawAnim && !lottieInstances.has(el)) {
-                        try {
-                            const b64Data = el.dataset.rawAnim.split(',')[1];
-                            let jsonStr;
-                            try {
-                                jsonStr = decodeURIComponent(escape(atob(b64Data)));
-                            } catch(e) {
-                                jsonStr = atob(b64Data);
-                            }
-                            const animationData = JSON.parse(jsonStr);
-                            
-                            const anim = lottie.loadAnimation({
-                                container: el,
-                                renderer: 'canvas', // 🔥 Canvas is 10x faster than SVG for multiple items
-                                loop: true,
-                                autoplay: true,
-                                animationData: animationData
-                            });
-                            lottieInstances.set(el, anim);
-                        } catch (e) {
-                            console.error("Lottie init error", e);
-                        }
-                    } else if (lottieInstances.has(el)) {
-                        lottieInstances.get(el).play();
-                    } else if (el.tagName === 'VIDEO') {
-                        if (el.dataset.src) {
-                            el.src = el.dataset.src;
-                            el.removeAttribute('data-src');
-                        }
-                        let playPromise = el.play();
-                        if (playPromise !== undefined) {
-                            playPromise.catch(error => {});
+                    el.dataset.inView = 'true';
+                    el.style.visibility = 'visible'; 
+                    
+                    if (el.dataset.rawAnim) {
+                        if (!lottieInstances.has(el)) {
+                            initQueue.push(el);
+                            if (!isQueueRunning) processInitQueue();
+                        } else {
+                            lottieInstances.get(el).play();
                         }
                     } else if (el.tagName === 'IMG' && el.dataset.src) {
-                        el.src = el.dataset.src;
-                        el.removeAttribute('data-src');
+                        el.src = el.dataset.src; el.removeAttribute('data-src');
                     }
                 } else {
-                    // 🔥 Item out of view - DESTROY completely to free RAM instantly!
+                    el.dataset.inView = 'false';
                     if (lottieInstances.has(el)) {
-                        const anim = lottieInstances.get(el);
-                        anim.destroy(); // Destroys WebGL/Canvas context
-                        lottieInstances.delete(el);
-                        el.innerHTML = ''; // Clean DOM completely
-                    } else if (el.tagName === 'VIDEO') {
-                        el.pause();
+                        lottieInstances.get(el).pause();
+                        el.style.visibility = 'hidden'; 
                     }
                 }
             });
-        }, {
-            root: emojiArea,
-            rootMargin: '100px 0px', // Load just before entering screen to prevent blank flash
-            threshold: 0.01
-        });
+        }, { root: emojiArea, rootMargin: '100px 0px', threshold: 0 });
 
         function toggleEmojiList() {
             emojiArea.classList.toggle('expanded');
             if (emojiArea.classList.contains('expanded')) {
-                toggleText.textContent = "Show Less Emojis";
-                toggleIcon.textContent = "🔼";
+                toggleText.textContent = "Show Less Emojis 🔼";
             } else {
-                toggleText.textContent = "Show All Emojis";
-                toggleIcon.textContent = "🔽";
+                toggleText.textContent = "Show All Emojis 🔽";
                 emojiArea.scrollTop = 0; 
             }
         }
@@ -189,16 +202,13 @@
         function setupAllCategoryButton() {
             const allBtn = document.createElement('div');
             allBtn.className = 'category-item active-cat';
-            allBtn.innerHTML = `<div style="font-size: 26px; line-height:30px;">🌐</div><div class="normal-emoji">All</div>`;
+            allBtn.innerHTML = `<div style="font-size: 20px;">🌐</div><div class="normal-emoji">All</div>`;
             allBtn.onclick = () => filterEmojis('all', allBtn);
             categoryRow.appendChild(allBtn);
         }
 
         async function loadEmojis() {
-            if (!apiBase) {
-                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
-                return;
-            }
+            if (!apiBase) { keyboard.innerHTML = '<div class="error">❌ Missing API URL</div>'; return; }
             setupAllCategoryButton();
             fetchNextPage(); 
         }
@@ -208,65 +218,40 @@
                 const res = await fetch(`${apiBase}/api/emojis?page=${currentPage}&limit=${PAGE_LIMIT}`, {
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
-                
-                if (!res.ok) throw new Error(`Server Error: HTTP ${res.status}`);
-                
-                let text = await res.text();
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch(e) {
-                    throw new Error(`Data Error: Failed to parse JSON. Got HTML or Corrupt Data.`);
-                }
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                let data = JSON.parse(await res.text());
 
                 if (data.length > 0) {
-                    try {
-                        appendEmojisToGrid(data);
-                    } catch (jsErr) {
-                        throw new Error(`Code Error: ${jsErr.message}`);
-                    }
+                    appendEmojisToGrid(data);
                     currentPage++;
                     setTimeout(fetchNextPage, 500); 
-                } else if (currentPage === 1 && data.length === 0) {
-                    keyboard.innerHTML = '<div class="empty">No emojis in database.<br>Ask admin to add some!</div>';
+                } else if (currentPage === 1) {
+                    keyboard.innerHTML = '<div class="empty">No emojis found.</div>';
                 }
-
             } catch (err) {
-                if (currentPage === 1) {
-                    keyboard.innerHTML = `<div class="error">❌ Error Details:<br>${err.message}</div>`;
-                }
-                console.error(err);
+                if (currentPage === 1) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
             }
         }
 
         function createMediaElement(url, isCategory = false) {
             let mediaEl;
-            if (!url) url = "";
-
-            if (url.startsWith('data:application/json')) {
+            if (url && url.startsWith('data:application/json')) {
                 mediaEl = document.createElement('div');
                 mediaEl.className = 'media-container';
                 if (!isCategory) {
-                    mediaEl.dataset.rawAnim = url; // Preserve raw data for recycling
+                    mediaEl.dataset.rawAnim = url; 
                 } else {
                     try {
                         const b64Data = url.split(',')[1];
                         let jsonStr;
-                        try { jsonStr = decodeURIComponent(escape(atob(b64Data))); }
-                        catch(e) { jsonStr = atob(b64Data); }
-                        lottie.loadAnimation({ container: mediaEl, renderer: 'canvas', loop: true, autoplay: true, animationData: JSON.parse(jsonStr) });
+                        try { jsonStr = decodeURIComponent(escape(atob(b64Data))); } catch(e) { jsonStr = atob(b64Data); }
+                        lottie.loadAnimation({ container: mediaEl, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(jsonStr) });
                     } catch(e) {}
                 }
-            } else if (url.startsWith('data:video/webm')) {
-                mediaEl = document.createElement('video');
-                mediaEl.className = 'media-container';
-                mediaEl.autoplay = true; mediaEl.loop = true; mediaEl.muted = true; mediaEl.playsInline = true;
-                if (!isCategory) mediaEl.dataset.src = url; else mediaEl.src = url;
             } else {
                 mediaEl = document.createElement('img');
                 mediaEl.className = 'media-container';
-                if (!isCategory) mediaEl.dataset.src = url; else mediaEl.src = url;
-                mediaEl.onerror = function() { this.style.opacity = '0.3'; };
+                if (!isCategory) mediaEl.dataset.src = url || ""; else mediaEl.src = url || "";
             }
             return mediaEl;
         }
@@ -285,8 +270,6 @@
                 const div = document.createElement('div');
                 div.className = 'emoji-item';
                 div.dataset.category = packId; 
-                div.title = emoji.type === 'mapped' ? `${sym} (${emoji.id})` : emoji.id;
-                
                 if (activeCategory !== 'all' && packId !== activeCategory) div.classList.add('hidden-emoji');
 
                 const mediaEl = createMediaElement(emoji.image_url, false);
@@ -297,7 +280,6 @@
                 div.appendChild(mediaEl); div.appendChild(label);
                 div.onclick = () => insertEmoji(emoji);
                 gridFragment.appendChild(div);
-
                 lazyLoadObserver.observe(mediaEl);
             });
             keyboard.appendChild(gridFragment);
@@ -316,8 +298,7 @@
             activeCategory = categoryId; 
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
-            const allItems = document.querySelectorAll('#emojiKeyboard .emoji-item');
-            allItems.forEach(item => {
+            document.querySelectorAll('#emojiKeyboard .emoji-item').forEach(item => {
                 if (categoryId === 'all' || item.dataset.category === categoryId) item.classList.remove('hidden-emoji');
                 else item.classList.add('hidden-emoji');
             });
@@ -342,7 +323,7 @@
 
         function sendData() {
             let text = draft.value;
-            if (!text.trim()) { Telegram.showAlert('Please write something first!'); return; }
+            if (!text.trim()) { Telegram.showAlert('Please type something!'); return; }
             for (let code in emojiMap) { text = text.split(code).join(emojiMap[code]); }
             Telegram.sendData(JSON.stringify({ text: text }));
         }
