@@ -139,28 +139,30 @@
         let emojiCounter = 1;
         let allEmojis = [];
         let catMap = {}; 
-        let activeCategory = null; // 🔥 Changed: No default 'all' category
+        let activeCategory = null;
         let isLoading = false;
 
-        // 🚀 VIRTUAL SCROLLING ENGINE - Zero Lag Performance 🚀
+        // 🚀 VIRTUAL SCROLLING ENGINE - Ultra Fast Performance 🚀
         const lottieInstances = new Map();
         const jsonCache = new Map();
         const renderedElements = new Map();
-        const CHUNK_SIZE = 30;
+        const CHUNK_SIZE = 30; // 30 emojis load instantly
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
         
         let currentChunkIndex = 0;
         let filteredEmojis = [];
         let isRendering = false;
-        let renderSessionId = 0; // 🔥 Added: Stops old renders when switching tabs
+        let renderSessionId = 0;
 
+        // 🔥 Ultra-Fast Intersection Observer (Removed idle delay)
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
                     if (el.dataset.lottieUrl && !lottieInstances.has(el)) {
-                        requestIdleCallback(() => {
+                        // Using setTimeout(..., 0) forces immediate execution without blocking UI completely
+                        setTimeout(() => {
                             const b64Data = el.dataset.lottieUrl.split(',')[1];
                             let animData = jsonCache.get(b64Data);
                             
@@ -187,7 +189,7 @@
                                 }
                             });
                             lottieInstances.set(el, anim);
-                        }, { timeout: 100 });
+                        }, 0);
                     } else if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         el.src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
@@ -211,7 +213,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '200px 0px',
+            rootMargin: '100px 0px', // Pre-load slightly off-screen
             threshold: 0
         });
 
@@ -242,56 +244,45 @@
             }
             
             keyboard.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Loading emojis...</div>';
-            await fetchAllEmojis();
+            
+            // 🚀 STEP 1: Fetch Page 1 instantly to show UI
+            await fetchFirstPage();
         }
 
-        async function fetchAllEmojis() {
-            if (isLoading) return;
+        async function fetchFirstPage() {
             isLoading = true;
-            
-            let page = 1;
             const limit = 100;
-            const MAX_PAGES = 20; // 🔥 Safe Limit: Server will never crash
             
             try {
-                while (page <= MAX_PAGES) {
-                    const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
-                        headers: { 'ngrok-skip-browser-warning': 'true' }
-                    });
-                    
-                    if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-                    const data = await res.json();
-                    
-                    if (data.length === 0) break;
-                    
-                    allEmojis.push(...data);
-                    
-                    // Create categories
-                    let isFirstCategory = Object.keys(catMap).length === 0;
+                const res = await fetch(`${apiBase}/api/emojis?page=1&limit=${limit}`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                const data = await res.json();
+                
+                allEmojis.push(...data);
+                
+                let isFirstCategory = Object.keys(catMap).length === 0;
 
-                    data.forEach(emoji => {
-                        const packId = emoji.pack_id || 'Other';
-                        if (!catMap[packId]) {
-                            catMap[packId] = true;
-                            createCategoryButton(packId, emoji.image_url);
-                        }
-                    });
-                    
-                    // 🔥 Magic Fix: Select the first pack automatically instead of 'All'
-                    if (isFirstCategory && activeCategory === null) {
-                        const firstPack = Object.keys(catMap)[0];
-                        const firstBtn = document.querySelector('.category-item');
-                        if (firstBtn) filterEmojis(firstPack, firstBtn);
+                data.forEach(emoji => {
+                    const packId = emoji.pack_id || 'Other';
+                    if (!catMap[packId]) {
+                        catMap[packId] = true;
+                        createCategoryButton(packId, emoji.image_url);
                     }
-                    
-                    // 🔥 Anti-Crash Fix: Break loop if data received is less than limit
-                    if (data.length < limit) break; 
-                    
-                    page++;
+                });
+                
+                // Auto-select first pack instantly
+                if (isFirstCategory && activeCategory === null) {
+                    const firstPack = Object.keys(catMap)[0];
+                    const firstBtn = document.querySelector('.category-item');
+                    if (firstBtn) filterEmojis(firstPack, firstBtn);
                 }
                 
-                if (allEmojis.length === 0) {
-                    keyboard.innerHTML = '<div class="empty">No emojis in database.</div>';
+                // 🚀 STEP 2: Background fetch remaining pages secretly!
+                if (data.length === limit) {
+                    fetchRemainingPages(2, limit);
                 }
                 
             } catch (err) {
@@ -301,22 +292,65 @@
             }
         }
 
+        // Silent background downloader
+        async function fetchRemainingPages(startPage, limit) {
+            let page = startPage;
+            const MAX_PAGES = 20;
+            
+            try {
+                while (page <= MAX_PAGES) {
+                    const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
+                        headers: { 'ngrok-skip-browser-warning': 'true' }
+                    });
+                    
+                    if (!res.ok) break;
+                    const data = await res.json();
+                    if (data.length === 0) break;
+                    
+                    allEmojis.push(...data);
+                    
+                    // Add new categories silently
+                    data.forEach(emoji => {
+                        const packId = emoji.pack_id || 'Other';
+                        if (!catMap[packId]) {
+                            catMap[packId] = true;
+                            createCategoryButton(packId, emoji.image_url);
+                        }
+                    });
+
+                    // If new emojis belong to current category, add them to filtered list seamlessly
+                    if (activeCategory) {
+                        const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
+                        if (newlyAdded.length > 0) {
+                            filteredEmojis.push(...newlyAdded);
+                            // It will automatically render when user scrolls down
+                        }
+                    }
+                    
+                    if (data.length < limit) break; 
+                    page++;
+                }
+            } catch (err) {
+                console.log("Background fetch stopped.");
+            }
+        }
+
         function startChunkedRender() {
             filteredEmojis = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
             
             if (filteredEmojis.length === 0) {
-                keyboard.innerHTML = '<div class="empty">No emojis in this category.</div>';
+                keyboard.innerHTML = '<div class="empty">Loading emojis...</div>';
                 return;
             }
             
             keyboard.innerHTML = '';
             currentChunkIndex = 0;
-            renderSessionId++; // Update session to cancel old renders
+            renderSessionId++; 
             renderNextChunk(renderSessionId);
         }
 
         function renderNextChunk(sessionId) {
-            if (sessionId !== renderSessionId) return; // 🔥 Instantly stop if switched tab!
+            if (sessionId !== renderSessionId) return; // INSTANT CANCEL if changed category
             if (isRendering) return;
             if (currentChunkIndex >= filteredEmojis.length) return;
             
@@ -341,8 +375,9 @@
                 currentChunkIndex = end;
                 isRendering = false;
                 
+                // 🔥 FAST RENDER: Use setTimeout(..., 10) instead of requestIdleCallback
                 if (currentChunkIndex < filteredEmojis.length) {
-                    requestIdleCallback(() => renderNextChunk(sessionId), { timeout: 50 });
+                    setTimeout(() => renderNextChunk(sessionId), 10);
                 }
             });
         }
@@ -383,7 +418,8 @@
                 if (!isCategory) {
                     mediaEl.dataset.lottieUrl = url;
                 } else {
-                    requestIdleCallback(() => {
+                    // Category icons load instantly via setTimeout
+                    setTimeout(() => {
                         try {
                             const b64Data = url.split(',')[1];
                             let jsonStr;
@@ -397,7 +433,7 @@
                                 animationData: JSON.parse(jsonStr) 
                             });
                         } catch(e) {}
-                    });
+                    }, 0);
                 }
             } else if (url.startsWith('data:video/webm')) {
                 mediaEl = document.createElement('video');
@@ -435,7 +471,7 @@
         }
 
         function filterEmojis(categoryId, clickedBtn) {
-            if (activeCategory === categoryId) return; // Prevent useless re-renders
+            if (activeCategory === categoryId) return; 
             
             activeCategory = categoryId;
             renderSessionId++; // 🔥 INSTANTLY stop any previous category from rendering
