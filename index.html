@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Premium Post Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
         :root {
             --bg: #0f0f0f;
@@ -135,12 +136,13 @@
             transform: translateY(-2px);
         }
 
-        .category-item img {
+        /* 🔥 UPDATED: Replaced img with .media-container for category items */
+        .category-item .media-container {
             width: 32px; 
             height: 32px;
             object-fit: contain;
             pointer-events: none;
-            /* margin-bottom সরানো হয়েছে কারণ নামের টেক্সট আর নেই */
+            display: block;
         }
 
         .category-item .normal-emoji {
@@ -203,6 +205,10 @@
             text-align: center;
             transition: transform 0.1s ease, background-color 0.2s ease;
             will-change: transform;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .hidden-emoji { display: none !important; }
@@ -213,7 +219,8 @@
             background: rgba(160, 32, 240, 0.2);
         }
 
-        .emoji-item img {
+        /* 🔥 UPDATED: Class for rendering both static img and animated divs/videos */
+        .emoji-item .media-container {
             width: 26px; 
             height: 26px;
             object-fit: contain;
@@ -326,7 +333,7 @@
         <div class="emoji-wrapper">
             <div class="emoji-scroll-area" id="emojiArea">
                 <div id="emojiKeyboard" class="emoji-grid">
-                    </div>
+                </div>
             </div>
             <div class="emoji-fade" id="fadeEffect"></div>
             <button class="toggle-btn" onclick="toggleEmojiList()">
@@ -359,27 +366,55 @@
         let emojiMap = {};
         let emojiCounter = 1;
 
-        // 🔥 Pagination Variables
         let currentPage = 1;
-        const PAGE_LIMIT = 100; // একবারে ১০০টা ইমোজি আনবে
+        const PAGE_LIMIT = 100; 
         let catMap = {}; 
         let activeCategory = 'all';
 
-        // 🔥 Lazy Loading Observer
+        // 🔥 UPDATED: Smart Lazy Loading for Animations and Videos
         const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const img = entry.target;
-                    if (img.dataset.src) {
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        observer.unobserve(img);
+                    const el = entry.target;
+                    
+                    if (el.dataset.lottieData) {
+                        // Decode and load Lottie animation
+                        try {
+                            const b64Data = el.dataset.lottieData.split(',')[1];
+                            const jsonStr = decodeURIComponent(escape(atob(b64Data)));
+                            const animationData = JSON.parse(jsonStr);
+                            
+                            lottie.loadAnimation({
+                                container: el,
+                                renderer: 'svg',
+                                loop: true,
+                                autoplay: true,
+                                animationData: animationData
+                            });
+                        } catch (e) {
+                            console.error("Failed to load Lottie animation", e);
+                        }
+                        el.removeAttribute('data-lottie-data');
+                        observer.unobserve(el);
+                    } 
+                    else if (el.tagName === 'VIDEO' && el.dataset.src) {
+                        // Load WebM Video
+                        el.src = el.dataset.src;
+                        el.removeAttribute('data-src');
+                        el.load();
+                        observer.unobserve(el);
+                    }
+                    else if (el.tagName === 'IMG' && el.dataset.src) {
+                        // Load static Image
+                        el.src = el.dataset.src;
+                        el.removeAttribute('data-src');
+                        observer.unobserve(el);
                     }
                 }
             });
         }, {
             root: emojiArea,
-            rootMargin: '100px 0px', 
+            rootMargin: '150px 0px', // Pre-load slightly before they scroll into view
             threshold: 0.01
         });
 
@@ -417,7 +452,7 @@
             }
             
             setupAllCategoryButton();
-            fetchNextPage(); // ডাটা টানা শুরু!
+            fetchNextPage(); 
         }
 
         async function fetchNextPage() {
@@ -432,8 +467,6 @@
                 if (data.length > 0) {
                     appendEmojisToGrid(data);
                     currentPage++;
-                    
-                    // সার্ভারকে একটু রিলাক্স দিয়ে পরের ১০০টা টানবে
                     setTimeout(fetchNextPage, 500); 
                 } else if (currentPage === 1 && data.length === 0) {
                     keyboard.innerHTML = '<div class="empty">No emojis in database.<br>Ask admin to add some!</div>';
@@ -447,15 +480,65 @@
             }
         }
 
+        // 🔥 UPDATED: Function to generate correct DOM element based on media type
+        function createMediaElement(url, isCategory = false) {
+            let mediaEl;
+            if (url.startsWith('data:application/json')) {
+                // TGS / Lottie Animation
+                mediaEl = document.createElement('div');
+                mediaEl.className = 'media-container';
+                if (!isCategory) {
+                    mediaEl.dataset.lottieData = url; // Save for lazy loading
+                } else {
+                    // Instantly load for category bar (since it's always visible)
+                    try {
+                        const b64Data = url.split(',')[1];
+                        const jsonStr = decodeURIComponent(escape(atob(b64Data)));
+                        lottie.loadAnimation({
+                            container: mediaEl,
+                            renderer: 'svg',
+                            loop: true,
+                            autoplay: true,
+                            animationData: JSON.parse(jsonStr)
+                        });
+                    } catch(e) {}
+                }
+            } else if (url.startsWith('data:video/webm')) {
+                // WEBM Video
+                mediaEl = document.createElement('video');
+                mediaEl.className = 'media-container';
+                mediaEl.autoplay = true;
+                mediaEl.loop = true;
+                mediaEl.muted = true;
+                mediaEl.playsInline = true;
+                if (!isCategory) {
+                    mediaEl.dataset.src = url; // Save for lazy loading
+                } else {
+                    mediaEl.src = url;
+                }
+            } else {
+                // Static Image (WEBP)
+                mediaEl = document.createElement('img');
+                mediaEl.className = 'media-container';
+                if (!isCategory) {
+                    mediaEl.dataset.src = url; // Save for lazy loading
+                } else {
+                    mediaEl.src = url;
+                }
+                mediaEl.onerror = function() {
+                    this.style.opacity = '0.3';
+                };
+            }
+            return mediaEl;
+        }
+
         function appendEmojisToGrid(data) {
             const gridFragment = document.createDocumentFragment();
 
             data.forEach((emoji) => {
                 const sym = emoji.symbol || '⭐';
-                // টেলিগ্রাম প্যাকের আইডি ধরবে, না থাকলে ডিফল্ট হিসেবে প্যাক-১ ধরবে (ব্যাকএন্ড আপডেট হলে এটা ঠিকঠাক প্যাক আইডি পাবে)
                 const packId = emoji.pack_id || 'Other'; 
                 
-                // নতুন প্যাক পেলে অটোমেটিক বাটন বানিয়ে ফেলবে
                 if (!catMap[packId]) {
                     catMap[packId] = true; 
                     createCategoryButton(packId, emoji.image_url);
@@ -466,31 +549,24 @@
                 div.dataset.category = packId; 
                 div.title = emoji.type === 'mapped' ? `${sym} (${emoji.id})` : emoji.id;
                 
-                // ফিল্টার করা থাকলে হাইড করে রাখবে
                 if (activeCategory !== 'all' && packId !== activeCategory) {
                     div.classList.add('hidden-emoji');
                 }
 
-                const img = document.createElement('img');
-                img.dataset.src = emoji.image_url; 
-                img.alt = sym;
-                img.loading = 'lazy';
-                img.onerror = function() {
-                    this.style.opacity = '0.3';
-                    this.parentElement.style.cursor = 'not-allowed';
-                };
+                // Create proper media element
+                const mediaEl = createMediaElement(emoji.image_url, false);
 
                 const label = document.createElement('div');
                 label.className = 'label';
                 label.textContent = sym; 
 
-                div.appendChild(img);
+                div.appendChild(mediaEl);
                 div.appendChild(label);
                 div.onclick = () => insertEmoji(emoji);
                 gridFragment.appendChild(div);
 
-                // Lazy Load চালু
-                lazyLoadObserver.observe(img);
+                // Observe for lazy loading
+                lazyLoadObserver.observe(mediaEl);
             });
 
             keyboard.appendChild(gridFragment);
@@ -501,12 +577,9 @@
             div.className = 'category-item';
             div.onclick = () => filterEmojis(packId, div);
 
-            const img = document.createElement('img');
-            img.src = imageUrl; 
-            img.loading = 'lazy';
-            // প্যাকের নামের টেক্সট সরানো হয়েছে, শুধু ছবি থাকবে
-
-            div.appendChild(img);
+            const mediaEl = createMediaElement(imageUrl, true);
+            div.appendChild(mediaEl);
+            
             categoryRow.appendChild(div);
         }
 
