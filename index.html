@@ -196,18 +196,24 @@
             });
         }, { root: categoryRow, rootMargin: '50px 0px', threshold: 0 });
 
-        // 🚀 Emoji Observer: Extremely aggressive memory cleaner (Only 50px buffer)
+        // 🚀 Emoji Observer: Pause instead of destroy for smoother scrolling
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 
                 if (entry.isIntersecting) {
-                    if (el.dataset.lottieUrl && !emojiLotties.has(el)) {
-                        const anim = lottie.loadAnimation({
-                            container: el, renderer: 'svg', loop: true, autoplay: true,
-                            path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
-                        });
-                        emojiLotties.set(el, anim);
+                    if (el.dataset.lottieUrl) {
+                        if (!emojiLotties.has(el)) {
+                            // প্রথমবার ভিউতে আসলে লোড হবে
+                            const anim = lottie.loadAnimation({
+                                container: el, renderer: 'svg', loop: true, autoplay: true,
+                                path: el.dataset.lottieUrl, rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+                            });
+                            emojiLotties.set(el, anim);
+                        } else {
+                            // আগে থেকেই থাকলে শুধু প্লে হবে
+                            emojiLotties.get(el).play();
+                        }
                     } else if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         el.src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
@@ -216,12 +222,10 @@
                         el.play().catch(()=>{});
                     }
                 } else {
-                    // 🔥 INSTANT RAM CLEANUP when out of the tiny box
+                    // 🔥 PAUSE ANIMATION (ডিলিট বা ডেস্ট্রয় না করে শুধু থামিয়ে রাখা হচ্ছে)
                     if (emojiLotties.has(el)) {
                         const anim = emojiLotties.get(el);
-                        try { anim.destroy(); } catch(e) {}
-                        emojiLotties.delete(el);
-                        el.innerHTML = '';
+                        anim.pause(); 
                     } else if (el.tagName === 'VIDEO') {
                         el.pause();
                         if (el.src && !el.src.includes('data:image')) {
@@ -234,7 +238,7 @@
             });
         }, {
             root: emojiArea,
-            rootMargin: '50px 0px', // 🔥 Magic Fix: Reduced to 50px so it unloads instantly
+            rootMargin: '50px 0px', 
             threshold: 0
         });
 
