@@ -18,9 +18,25 @@
             --glow: rgba(0, 122, 255, 0.2); 
             --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
             --shadow-strong: 0 12px 32px rgba(0, 122, 255, 0.15);
+            --rain-color: rgba(0, 0, 0, 0.35); /* Light mode rain */
+        }
+
+        /* 🔥 Dark Mode Variables 🔥 */
+        [data-theme="dark"] {
+            --bg: #0a0a0a; 
+            --surface: #1c1c1e; 
+            --border: #2c2c2e; 
+            --accent: #0a84ff; 
+            --accent-hover: #0066cc; 
+            --text: #f5f5f7; 
+            --text-secondary: #98989d; 
+            --glow: rgba(10, 132, 255, 0.2); 
+            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --shadow-strong: 0 12px 32px rgba(10, 132, 255, 0.15);
+            --rain-color: rgba(148, 0, 211, 0.7); /* Deep Purple rain */
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
         
         body { 
             background: var(--bg); 
@@ -32,7 +48,7 @@
             position: relative;
         }
 
-        /* 🔥 Visible Black Rain Effect 🔥 */
+        /* 🔥 Visible & Slow Rain Effect 🔥 */
         .rain-container {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -42,10 +58,10 @@
         }
         .drop {
             position: absolute;
-            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
-            width: 2px;
-            height: 25px;
-            border-radius: 2px;
+            background: linear-gradient(to bottom, transparent, var(--rain-color));
+            width: 2.5px;
+            height: 30px;
+            border-radius: 3px;
             animation: fall linear infinite;
         }
         @keyframes fall {
@@ -55,31 +71,61 @@
             100% { transform: translateY(100vh); opacity: 0; }
         }
 
-        /* 🔥 Header 🔥 */
-        .header { text-align: center; margin-bottom: 28px; position: relative; z-index: 10; animation: fadeInDown 0.6s ease-out; }
-        .header h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; color: #111; text-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .header p { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+        /* 🔥 Premium Header with Settings 🔥 */
+        .header-container {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface); padding: 16px 20px; border-radius: 18px;
+            box-shadow: var(--shadow-soft); margin-bottom: 24px;
+            border: 1px solid var(--border); position: relative; z-index: 20;
+        }
+        .header-title {
+            font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+            background: linear-gradient(45deg, var(--accent), #00c6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .settings-btn {
+            background: none; border: none; font-size: 22px; cursor: pointer;
+            color: var(--text-secondary); transition: transform 0.2s;
+        }
+        .settings-btn:active { transform: rotate(45deg); }
+
+        /* Settings Dropdown */
+        .settings-menu {
+            position: absolute; top: 65px; right: 0; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-strong);
+            padding: 8px; display: none; flex-direction: column; gap: 5px; min-width: 150px;
+            transform-origin: top right; animation: scaleIn 0.2s ease-out;
+        }
+        .settings-menu.show { display: flex; }
+        .settings-item {
+            padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
+            color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 10px;
+            background: transparent; border: none; text-align: left; width: 100%;
+        }
+        .settings-item:hover { background: var(--bg); }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* 🔥 Main Sections 🔥 */
+        .main-view { display: block; animation: fadeIn 0.4s ease-out; }
+        .history-view { display: none; position: relative; z-index: 10; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .section { margin-bottom: 24px; position: relative; z-index: 10; }
         
-        .section { margin-bottom: 24px; position: relative; z-index: 10; animation: fadeInUp 0.6s ease-out backwards; }
-        
-        /* 🔥 Animated Section Titles 🔥 */
+        /* Fixed Title (No Blinking Cursor) */
         .section-title { 
             font-size: 13px; font-weight: 800; color: var(--text-secondary); 
             margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; 
-            display: inline-block; overflow: hidden; white-space: nowrap;
-            border-right: 2px solid var(--accent);
-            animation: typing 1.5s steps(30, end), blink-caret .75s step-end infinite;
+            display: flex; align-items: center; gap: 6px;
         }
-        @keyframes typing { from { width: 0 } to { width: 100% } }
-        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--accent); } }
         
         /* 🔥 Draft Area 🔥 */
         .draft-area { 
             width: 100%; min-height: 150px; background: var(--surface); 
             border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; 
             color: var(--text); font-size: 16px; line-height: 1.6; resize: vertical; 
-            font-family: inherit; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            box-shadow: var(--shadow-soft); 
+            font-family: inherit; box-shadow: var(--shadow-soft); 
         }
         .draft-area:focus { outline: none; border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
         .draft-area::placeholder { color: #999; font-style: italic; }
@@ -97,11 +143,10 @@
             border-radius: 14px; padding: 10px 12px; cursor: pointer; text-align: center; 
             box-shadow: var(--shadow-soft); display: flex; flex-direction: column; 
             align-items: center; justify-content: center; min-width: 65px; 
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
         }
         .category-item.active-cat { 
             border-color: var(--accent); box-shadow: var(--shadow-strong); 
-            background: #f0f7ff; transform: translateY(-4px) scale(1.05); 
+            background: var(--glow); transform: translateY(-4px) scale(1.05); 
         }
         .category-item img { width: 34px; height: 34px; object-fit: contain; pointer-events: none; display: block; }
         .category-item .normal-emoji { font-size: 12px; font-weight: 600; line-height: 1; margin-top: 6px; color: var(--text-secondary); }
@@ -112,13 +157,12 @@
             position: relative; background: var(--surface); border: 1.5px solid var(--border); 
             border-radius: 16px; padding: 12px; overflow: hidden; box-shadow: var(--shadow-soft); 
         }
-        
         .emoji-scroll-area { 
             height: 160px; overflow-y: auto; overflow-x: hidden; 
             -webkit-overflow-scrolling: touch; position: relative; 
         }
         .emoji-scroll-area::-webkit-scrollbar { width: 4px; }
-        .emoji-scroll-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .emoji-scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         
         .emoji-fade { position: absolute; bottom: 35px; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
         
@@ -128,12 +172,12 @@
         }
         
         .emoji-item { 
-            background: #f8f9fa; border: 1px solid var(--border); border-radius: 12px; 
+            background: var(--bg); border: 1px solid var(--border); border-radius: 12px; 
             padding: 8px 4px; cursor: pointer; text-align: center; display: flex; 
             flex-direction: column; align-items: center; justify-content: center; 
-            transition: all 0.15s ease; height: 58px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            height: 58px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
-        .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: #e6f3ff; box-shadow: none; }
+        .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: var(--glow); box-shadow: none; }
         .emoji-item img { width: 28px; height: 28px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
         .emoji-item .label { font-size: 10px; color: var(--text-secondary); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-weight: 600; }
         
@@ -144,8 +188,7 @@
             margin-top: 8px; pointer-events: none; 
         }
         
-        .loading, .empty, .error { text-align: center; padding: 40px 10px; color: var(--text-secondary); font-size: 14px; grid-column: 1 / -1; font-weight: 600; animation: pulse 1.5s infinite; }
-        .error { color: #ff3b30; animation: none; }
+        .loading, .empty, .error { text-align: center; padding: 40px 10px; color: var(--text-secondary); font-size: 14px; grid-column: 1 / -1; font-weight: 600; }
         
         /* 🔥 Floating Action Button 🔥 */
         .send-btn-wrapper { 
@@ -157,73 +200,118 @@
             color: #fff; border: none; border-radius: 100px; padding: 16px; 
             font-size: 17px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; 
             box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4); 
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
             display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         .send-btn:active { transform: scale(0.94); box-shadow: 0 5px 15px rgba(0, 122, 255, 0.3); }
         .send-btn svg { width: 20px; height: 20px; fill: currentColor; }
         
         .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); font-weight: 600;}
-        
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+        /* 🔥 History UI 🔥 */
+        .history-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+            padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-soft);
+        }
+        .history-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; }
+        .history-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
+        .btn-danger { background: #ff3b30; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
     </style>
 </head>
 <body>
-    <!-- 🔥 Black Rain Background 🔥 -->
+    <!-- 🔥 Black/Purple Rain Background 🔥 -->
     <div class="rain-container" id="rainContainer"></div>
 
-    <div class="header">
-        <h1>✨ Premium Post Manager</h1>
-        <p>Compose & send premium emoji posts</p>
-    </div>
-
-    <div class="section">
-        <div class="stats">
-            <span class="section-title" style="width: 80px;">📝 Draft</span>
-            <span id="charCount">0 chars</span>
-        </div>
-        <textarea class="draft-area" id="draft"></textarea>
-    </div>
-
-    <div class="section">
-        <div class="section-title" style="width: 160px;">📁 Emoji Categories</div>
-        <div class="category-hint">👇 Click a pack to view its premium emojis</div>
-        <div class="category-row" id="categoryRow"></div>
-    </div>
-
-    <div class="section">
-        <div class="section-title" style="width: 170px;">⌨️ Premium Keyboard</div>
-        <div class="emoji-wrapper">
-            <div class="emoji-scroll-area" id="emojiArea">
-                <div id="emojiKeyboard" class="emoji-grid"></div>
-            </div>
-            <div class="emoji-fade" id="fadeEffect"></div>
-            <div class="scroll-hint">
-                👇 Scroll down for more emojis 👇
-            </div>
+    <!-- 🔥 Premium Header 🔥 -->
+    <div class="header-container">
+        <div class="header-title">✨ Premium Post</div>
+        <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+        
+        <div class="settings-menu" id="settingsMenu">
+            <button class="settings-item" onclick="toggleTheme()">🌗 Toggle Theme</button>
+            <button class="settings-item" onclick="showHistory()">🕒 History</button>
         </div>
     </div>
 
-    <!-- 🔥 Floating Action Button 🔥 -->
-    <div class="send-btn-wrapper">
-        <button class="send-btn" id="sendBtn" onclick="sendData()">
-            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-            Send to Bot
-        </button>
+    <!-- 🔥 MAIN EDITOR VIEW 🔥 -->
+    <div id="mainView" class="main-view">
+        <div class="section">
+            <div class="stats">
+                <span class="section-title">📝 Draft</span>
+                <span id="charCount">0 chars</span>
+            </div>
+            <textarea class="draft-area" id="draft"></textarea>
+        </div>
+
+        <div class="section">
+            <div class="section-title">📁 Emoji Categories</div>
+            <div class="category-hint">👇 Click a pack to view its premium emojis</div>
+            <div class="category-row" id="categoryRow"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">⌨️ Premium Keyboard</div>
+            <div class="emoji-wrapper">
+                <div class="emoji-scroll-area" id="emojiArea">
+                    <div id="emojiKeyboard" class="emoji-grid"></div>
+                </div>
+                <div class="emoji-fade" id="fadeEffect"></div>
+                <div class="scroll-hint">
+                    👇 Scroll down for more emojis 👇
+                </div>
+            </div>
+        </div>
+
+        <div class="send-btn-wrapper">
+            <button class="send-btn" id="sendBtn" onclick="sendData()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                Send to Bot
+            </button>
+        </div>
+    </div>
+
+    <!-- 🔥 HISTORY VIEW 🔥 -->
+    <div id="historyView" class="history-view">
+        <div class="section-title" style="font-size: 16px; margin-bottom: 16px;">🕒 Your Post History</div>
+        <div id="historyList"></div>
+        
+        <div class="history-actions">
+            <button class="btn-secondary" onclick="showMain()">🏠 Home</button>
+            <button class="btn-danger" onclick="clearHistory()">🗑 Clear All</button>
+        </div>
     </div>
 
     <script>
-        // 🔥 Rain Effect Generator 🔥
+        // 🔥 Theme Management 🔥
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            toggleSettings();
+        }
+        // Load saved theme
+        if(localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        // 🔥 Settings Menu Toggle 🔥
+        function toggleSettings() {
+            const menu = document.getElementById('settingsMenu');
+            menu.classList.toggle('show');
+        }
+
+        // 🔥 Slower Rain Effect Generator 🔥
         function createRain() {
             const container = document.getElementById('rainContainer');
-            const dropCount = 40; 
+            const dropCount = 25; // Less drops for cleaner look
             for (let i = 0; i < dropCount; i++) {
                 let drop = document.createElement('div');
                 drop.className = 'drop';
                 drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
+                // Slower animation (2s to 4s)
+                drop.style.animationDuration = (Math.random() * 2 + 2) + 's';
                 drop.style.animationDelay = Math.random() * 2 + 's';
                 container.appendChild(drop);
             }
@@ -264,9 +352,56 @@
             }
         });
         
-        // Start typing effect
         typePlaceholder();
 
+        // 🔥 History Management 🔥
+        function saveToHistory(text) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            history.unshift({ text: text, date: new Date().toLocaleString() });
+            if(history.length > 20) history.pop(); // Keep last 20 posts
+            localStorage.setItem('postHistory', JSON.stringify(history));
+        }
+
+        function showHistory() {
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('historyView').style.display = 'block';
+            toggleSettings();
+            
+            const list = document.getElementById('historyList');
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            
+            if(history.length === 0) {
+                list.innerHTML = '<div class="empty">No history found.</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            history.forEach((item, index) => {
+                list.innerHTML += `
+                    <div class="history-card">
+                        <div class="history-header">
+                            <span>#${history.length - index}</span>
+                            <span>${item.date}</span>
+                        </div>
+                        <div class="history-text">${item.text}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function showMain() {
+            document.getElementById('historyView').style.display = 'none';
+            document.getElementById('mainView').style.display = 'block';
+        }
+
+        function clearHistory() {
+            if(confirm("Are you sure you want to clear all history?")) {
+                localStorage.removeItem('postHistory');
+                showHistory();
+            }
+        }
+
+        // 🔥 Emoji System 🔥
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
         Telegram.ready();
@@ -286,6 +421,21 @@
         let catMap = {}; 
         let activeCategory = null;
 
+        const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
+        const lazyLoadObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const el = entry.target;
+                if (entry.isIntersecting) {
+                    if (el.tagName === 'IMG' && el.dataset.realSrc) {
+                        el.src = el.dataset.realSrc;
+                        el.removeAttribute('data-real-src');
+                        lazyLoadObserver.unobserve(el); 
+                    }
+                }
+            });
+        }, { root: emojiArea, rootMargin: '100px 0px', threshold: 0 });
+
         let charCountTimeout;
         draft.addEventListener('input', () => { 
             clearTimeout(charCountTimeout);
@@ -294,18 +444,13 @@
             }, 100);
         });
 
-        // 🔥 Smart Background Loading System 🔥
         async function loadEmojis() {
             if (!apiBase) {
                 keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
             keyboard.innerHTML = '<div class="loading">Loading emojis...</div>';
-            
-            // Step 1: Fetch first 100 instantly
-            await fetchPage(1, 100, true);
-            
-            // Step 2: Fetch the rest silently in background
+            await fetchPage(1, 1000, true);
             fetchRemainingInBackground();
         }
 
@@ -319,12 +464,10 @@
 
                 allEmojis.push(...data);
                 
-                let newCategoryAdded = false;
                 data.forEach(emoji => {
                     const packId = emoji.pack_id || 'Other';
                     if (!catMap[packId]) {
                         catMap[packId] = true;
-                        newCategoryAdded = true;
                         createCategoryButton(packId, emoji.image_url);
                     }
                 });
@@ -334,7 +477,6 @@
                     const firstBtn = document.querySelector('.category-item');
                     if (firstBtn) filterEmojis(firstPack, firstBtn);
                 } else if (!isFirstLoad && activeCategory) {
-                    // If background fetch brings emojis for currently viewed category, update view
                     const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
                     if (newlyAdded.length > 0) {
                         appendEmojisToGrid(newlyAdded);
@@ -349,10 +491,10 @@
 
         async function fetchRemainingInBackground() {
             let page = 2;
-            const limit = 100;
+            const limit = 1000;
             while (true) {
                 const count = await fetchPage(page, limit, false);
-                if (count < limit) break; // Stop if no more data
+                if (count < limit) break; 
                 page++;
             }
         }
@@ -384,15 +526,14 @@
             
             const mediaEl = document.createElement('img');
             mediaEl.className = 'media-container';
+            mediaEl.src = TRANSPARENT_PIXEL;
             
             let fullUrl = emoji.image_url;
             if (fullUrl && fullUrl.startsWith('/')) {
                 fullUrl = apiBase + fullUrl;
             }
             
-            // Lazy loading attribute for speed
-            mediaEl.setAttribute('loading', 'lazy');
-            mediaEl.src = fullUrl || TRANSPARENT_PIXEL;
+            mediaEl.dataset.realSrc = fullUrl;
             mediaEl.onerror = function() { this.style.opacity = '0.3'; };
             
             const label = document.createElement('div');
@@ -403,6 +544,7 @@
             div.appendChild(label);
             div.onclick = () => insertEmoji(emoji);
             
+            lazyLoadObserver.observe(mediaEl);
             return div;
         }
 
@@ -413,7 +555,6 @@
             
             const mediaEl = document.createElement('img');
             mediaEl.className = 'media-container';
-            mediaEl.setAttribute('loading', 'lazy');
             
             let fullUrl = imageUrl;
             if (fullUrl && fullUrl.startsWith('/')) {
@@ -464,11 +605,14 @@
         function sendData() {
             let text = draft.value;
             if (!text.trim()) { Telegram.showAlert('Please write something first!'); return; }
+            
+            // Save to history before sending
+            saveToHistory(text);
+
             for (let code in emojiMap) text = text.split(code).join(emojiMap[code]); 
             Telegram.sendData(JSON.stringify({ text: text }));
         }
 
-        // Start the magic
         loadEmojis();
     </script>
 </body>
