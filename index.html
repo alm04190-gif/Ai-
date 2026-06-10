@@ -423,14 +423,28 @@
 
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
+        // 🔥 NGOROK BYPASS + LAZY LOADING 🔥
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const el = entry.target;
                 if (entry.isIntersecting) {
                     if (el.tagName === 'IMG' && el.dataset.realSrc) {
-                        el.src = el.dataset.realSrc;
+                        const src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
                         lazyLoadObserver.unobserve(el); 
+                        
+                        // Fetch the image to bypass ngrok warning, then convert to blob URL
+                        fetch(src, { headers: { 'ngrok-skip-browser-warning': '69420' } })
+                            .then(response => {
+                                if (!response.ok) throw new Error('Network response failed');
+                                return response.blob();
+                            })
+                            .then(blob => {
+                                el.src = URL.createObjectURL(blob);
+                            })
+                            .catch(err => {
+                                el.style.opacity = '0.3';
+                            });
                     }
                 }
             });
@@ -456,7 +470,11 @@
 
         async function fetchPage(page, limit, isFirstLoad = false) {
             try {
-                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { headers: { 'ngrok-skip-browser-warning': 'true' } });
+                // Header added to bypass ngrok warning page completely
+                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { 
+                    headers: { 'ngrok-skip-browser-warning': '69420' } 
+                });
+                
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
                 
@@ -534,7 +552,6 @@
             }
             
             mediaEl.dataset.realSrc = fullUrl;
-            mediaEl.onerror = function() { this.style.opacity = '0.3'; };
             
             const label = document.createElement('div');
             label.className = 'label';
@@ -555,13 +572,20 @@
             
             const mediaEl = document.createElement('img');
             mediaEl.className = 'media-container';
+            mediaEl.src = TRANSPARENT_PIXEL;
             
             let fullUrl = imageUrl;
             if (fullUrl && fullUrl.startsWith('/')) {
                 fullUrl = apiBase + fullUrl;
             }
-            mediaEl.src = fullUrl || TRANSPARENT_PIXEL;
-            mediaEl.onerror = function() { this.style.opacity = '0.3'; };
+            
+            // 🔥 NGROK BYPASS For Category Icons
+            if (fullUrl) {
+                fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
+                    .then(res => res.blob())
+                    .then(blob => { mediaEl.src = URL.createObjectURL(blob); })
+                    .catch(() => { mediaEl.style.opacity = '0.3'; });
+            }
             
             div.appendChild(mediaEl);
             
