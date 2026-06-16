@@ -130,6 +130,49 @@
         .draft-area:focus { outline: none; border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
         .draft-area::placeholder { color: #999; font-style: italic; }
         
+        /* 🔥 Custom Selection Menu 🔥 */
+        #customSelectionMenu {
+            display: none;
+            position: absolute;
+            bottom: 100%; left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow-strong);
+            border-radius: 12px;
+            padding: 8px;
+            z-index: 9999;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            width: 95%;
+            margin-bottom: 10px;
+            animation: popInMenu 0.2s ease-out;
+        }
+        #customSelectionMenu.show-menu {
+            display: flex;
+        }
+        .format-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .format-btn:active {
+            background: var(--glow);
+            border-color: var(--accent);
+            transform: scale(0.95);
+        }
+        @keyframes popInMenu { 
+            from { opacity: 0; transform: translate(-50%, 10px) scale(0.95); } 
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); } 
+        }
+
         /* 🔥 Category Row 🔥 */
         .category-hint { font-size: 12px; color: #888; margin-bottom: 12px; font-style: italic; }
         .category-row { 
@@ -220,10 +263,8 @@
     </style>
 </head>
 <body>
-    <!-- 🔥 Black/Purple Rain Background 🔥 -->
     <div class="rain-container" id="rainContainer"></div>
 
-    <!-- 🔥 Premium Header 🔥 -->
     <div class="header-container">
         <div class="header-title">✨ Premium Post</div>
         <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
@@ -234,13 +275,25 @@
         </div>
     </div>
 
-    <!-- 🔥 MAIN EDITOR VIEW 🔥 -->
     <div id="mainView" class="main-view">
         <div class="section">
             <div class="stats">
                 <span class="section-title">📝 Draft</span>
                 <span id="charCount">0 chars</span>
             </div>
+            
+            <div id="customSelectionMenu">
+                <button class="format-btn" onclick="applyFormat('b')"><b>B</b></button>
+                <button class="format-btn" onclick="applyFormat('i')"><i>I</i></button>
+                <button class="format-btn" onclick="applyFormat('u')"><u>U</u></button>
+                <button class="format-btn" onclick="applyFormat('s')"><s>S</s></button>
+                <button class="format-btn" onclick="applyFormat('code')">Mono</button>
+                <button class="format-btn" onclick="applyFormat('tg-spoiler')">Spoiler</button>
+                <button class="format-btn" onclick="applyFormat('blockquote')">Quote</button>
+                <button class="format-btn" onclick="applyFormat('copy')">Copy</button>
+                <button class="format-btn" onclick="applyFormat('cut')">Cut</button>
+            </div>
+
             <textarea class="draft-area" id="draft"></textarea>
         </div>
 
@@ -271,7 +324,6 @@
         </div>
     </div>
 
-    <!-- 🔥 HISTORY VIEW 🔥 -->
     <div id="historyView" class="history-view">
         <div class="section-title" style="font-size: 16px; margin-bottom: 16px;">🕒 Your Post History</div>
         <div id="historyList"></div>
@@ -414,6 +466,7 @@
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
         const categoryRow = document.getElementById('categoryRow');
+        const selectionMenu = document.getElementById('customSelectionMenu');
         
         let emojiMap = {};
         let emojiCounter = 1;
@@ -457,6 +510,60 @@
                 charCount.textContent = draft.value.length + ' chars';
             }, 100);
         });
+
+        // 🔥 Selection Popup Logic 🔥
+        function checkSelection() {
+            setTimeout(() => {
+                if (draft.selectionStart !== draft.selectionEnd) {
+                    selectionMenu.classList.add('show-menu');
+                } else {
+                    selectionMenu.classList.remove('show-menu');
+                }
+            }, 10);
+        }
+
+        draft.addEventListener('mouseup', checkSelection);
+        draft.addEventListener('touchend', checkSelection);
+        draft.addEventListener('keyup', checkSelection);
+        document.addEventListener('selectionchange', () => {
+            if (document.activeElement === draft) {
+                checkSelection();
+            }
+        });
+
+        function applyFormat(tag) {
+            const start = draft.selectionStart;
+            const end = draft.selectionEnd;
+            if (start === end) return;
+            
+            const selectedText = draft.value.substring(start, end);
+            let replacement = '';
+            
+            if (tag === 'copy') {
+                navigator.clipboard.writeText(selectedText);
+                if(Telegram.showAlert) Telegram.showAlert('Text copied!');
+                selectionMenu.classList.remove('show-menu');
+                return;
+            } else if (tag === 'cut') {
+                navigator.clipboard.writeText(selectedText);
+                draft.value = draft.value.substring(0, start) + draft.value.substring(end);
+                if(Telegram.showAlert) Telegram.showAlert('Text cut!');
+                selectionMenu.classList.remove('show-menu');
+                draft.dispatchEvent(new Event('input'));
+                return;
+            } else {
+                replacement = `<${tag}>${selectedText}</${tag}>`;
+            }
+            
+            draft.value = draft.value.substring(0, start) + replacement + draft.value.substring(end);
+            
+            // Re-select and trigger input update
+            draft.setSelectionRange(start, start + replacement.length);
+            draft.dispatchEvent(new Event('input'));
+            
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+            selectionMenu.classList.remove('show-menu');
+        }
 
         async function loadEmojis() {
             if (!apiBase) {
