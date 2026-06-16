@@ -130,47 +130,23 @@
         .draft-area:focus { outline: none; border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
         .draft-area::placeholder { color: #999; font-style: italic; }
         
-        /* 🔥 Custom Selection Menu 🔥 */
-        #customSelectionMenu {
-            display: none;
-            position: absolute;
-            bottom: 100%; left: 50%;
-            transform: translateX(-50%);
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            box-shadow: var(--shadow-strong);
-            border-radius: 12px;
-            padding: 8px;
-            z-index: 9999;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            width: 95%;
-            margin-bottom: 10px;
-            animation: popInMenu 0.2s ease-out;
+        /* 🔥 Fixed Formatting Toolbar 🔥 */
+        .format-toolbar {
+            display: flex; overflow-x: auto; gap: 8px; margin-bottom: 10px;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+            background: var(--surface); padding: 8px; border-radius: 12px;
+            border: 1.5px solid var(--border); box-shadow: var(--shadow-soft);
         }
-        #customSelectionMenu.show-menu {
-            display: flex;
-        }
+        .format-toolbar::-webkit-scrollbar { display: none; }
         .format-btn {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
+            background: var(--bg); border: 1px solid var(--border);
+            color: var(--text); padding: 6px 12px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
+            transition: 0.2s;
         }
         .format-btn:active {
-            background: var(--glow);
-            border-color: var(--accent);
+            background: var(--glow); border-color: var(--accent);
             transform: scale(0.95);
-        }
-        @keyframes popInMenu { 
-            from { opacity: 0; transform: translate(-50%, 10px) scale(0.95); } 
-            to { opacity: 1; transform: translate(-50%, 0) scale(1); } 
         }
 
         /* 🔥 Category Row 🔥 */
@@ -282,7 +258,7 @@
                 <span id="charCount">0 chars</span>
             </div>
             
-            <div id="customSelectionMenu">
+            <div class="format-toolbar" id="formatToolbar">
                 <button class="format-btn" onclick="applyFormat('b')"><b>B</b></button>
                 <button class="format-btn" onclick="applyFormat('i')"><i>I</i></button>
                 <button class="format-btn" onclick="applyFormat('u')"><u>U</u></button>
@@ -290,8 +266,6 @@
                 <button class="format-btn" onclick="applyFormat('code')">Mono</button>
                 <button class="format-btn" onclick="applyFormat('tg-spoiler')">Spoiler</button>
                 <button class="format-btn" onclick="applyFormat('blockquote')">Quote</button>
-                <button class="format-btn" onclick="applyFormat('copy')">Copy</button>
-                <button class="format-btn" onclick="applyFormat('cut')">Cut</button>
             </div>
 
             <textarea class="draft-area" id="draft"></textarea>
@@ -466,7 +440,6 @@
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
         const categoryRow = document.getElementById('categoryRow');
-        const selectionMenu = document.getElementById('customSelectionMenu');
         
         let emojiMap = {};
         let emojiCounter = 1;
@@ -511,58 +484,28 @@
             }, 100);
         });
 
-        // 🔥 Selection Popup Logic 🔥
-        function checkSelection() {
-            setTimeout(() => {
-                if (draft.selectionStart !== draft.selectionEnd) {
-                    selectionMenu.classList.add('show-menu');
-                } else {
-                    selectionMenu.classList.remove('show-menu');
-                }
-            }, 10);
-        }
-
-        draft.addEventListener('mouseup', checkSelection);
-        draft.addEventListener('touchend', checkSelection);
-        draft.addEventListener('keyup', checkSelection);
-        document.addEventListener('selectionchange', () => {
-            if (document.activeElement === draft) {
-                checkSelection();
-            }
-        });
-
+        // 🔥 Formatting Toolbar Logic 🔥
         function applyFormat(tag) {
             const start = draft.selectionStart;
             const end = draft.selectionEnd;
-            if (start === end) return;
+            
+            // যদি কোনো টেক্সট সিলেক্ট করা না থাকে, তাহলে অ্যালার্ট দেবে
+            if (start === end) {
+                if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
+                return;
+            }
             
             const selectedText = draft.value.substring(start, end);
-            let replacement = '';
-            
-            if (tag === 'copy') {
-                navigator.clipboard.writeText(selectedText);
-                if(Telegram.showAlert) Telegram.showAlert('Text copied!');
-                selectionMenu.classList.remove('show-menu');
-                return;
-            } else if (tag === 'cut') {
-                navigator.clipboard.writeText(selectedText);
-                draft.value = draft.value.substring(0, start) + draft.value.substring(end);
-                if(Telegram.showAlert) Telegram.showAlert('Text cut!');
-                selectionMenu.classList.remove('show-menu');
-                draft.dispatchEvent(new Event('input'));
-                return;
-            } else {
-                replacement = `<${tag}>${selectedText}</${tag}>`;
-            }
+            const replacement = `<${tag}>${selectedText}</${tag}>`;
             
             draft.value = draft.value.substring(0, start) + replacement + draft.value.substring(end);
             
             // Re-select and trigger input update
             draft.setSelectionRange(start, start + replacement.length);
             draft.dispatchEvent(new Event('input'));
+            draft.focus();
             
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
-            selectionMenu.classList.remove('show-menu');
         }
 
         async function loadEmojis() {
