@@ -389,7 +389,20 @@
         
         typePlaceholder();
 
-        // 🔥 History Management (Updated for Click-to-Load) 🔥
+        // 🔥 Cursor Position Tracker (FIXED) 🔥
+        let savedRange = null;
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                // Save range only if the selection is inside our draft area
+                if (draft.contains(range.commonAncestorContainer)) {
+                    savedRange = range.cloneRange();
+                }
+            }
+        });
+
+        // 🔥 History Management 🔥
         function saveToHistory(htmlText) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             history.unshift({ text: htmlText, date: new Date().toLocaleString() });
@@ -412,7 +425,6 @@
 
             list.innerHTML = '';
             history.forEach((item, index) => {
-                // Create a temporary div to extract plain text for preview
                 let tempDiv = document.createElement('div');
                 tempDiv.innerHTML = item.text;
                 let previewText = tempDiv.innerText.substring(0, 100) + (tempDiv.innerText.length > 100 ? '...' : '');
@@ -433,9 +445,20 @@
         function loadHistoryItem(index) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             if(history[index]) {
-                draft.innerHTML = history[index].text; // Load exact HTML with formatting
+                draft.innerHTML = history[index].text; 
                 showMain();
-                draft.dispatchEvent(new Event('input')); // Update char count
+                
+                // Reset cursor to the end of the loaded text
+                draft.focus();
+                const range = document.createRange();
+                range.selectNodeContents(draft);
+                range.collapse(false);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                savedRange = range.cloneRange();
+
+                draft.dispatchEvent(new Event('input')); 
                 if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
             }
         }
@@ -507,11 +530,18 @@
             }, 100);
         });
 
-        // 🔥 WYSIWYG Formatting Logic (Tags Hidden) 🔥
+        // 🔥 WYSIWYG Formatting Logic 🔥
         function applyFormat(tag) {
             draft.focus();
             
-            // Standard tags use execCommand for perfect WYSIWYG behavior
+            const selection = window.getSelection();
+            
+            // Restore saved cursor position if available
+            if (savedRange) {
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            }
+            
             const commandMap = {
                 'b': 'bold',
                 'i': 'italic',
@@ -522,8 +552,6 @@
             if (commandMap[tag]) {
                 document.execCommand(commandMap[tag], false, null);
             } else {
-                // Custom tags (code, tg-spoiler, blockquote)
-                const selection = window.getSelection();
                 if (!selection.rangeCount) return;
                 const range = selection.getRangeAt(0);
                 
@@ -536,12 +564,16 @@
                 try {
                     range.surroundContents(wrapper);
                 } catch (e) {
-                    // Fallback if selection crosses multiple nodes
                     const content = range.extractContents();
                     wrapper.appendChild(content);
                     range.insertNode(wrapper);
                 }
                 selection.removeAllRanges();
+            }
+            
+            // Update saved range after formatting
+            if (selection.rangeCount > 0) {
+                savedRange = selection.getRangeAt(0).cloneRange();
             }
             
             draft.dispatchEvent(new Event('input'));
@@ -696,6 +728,7 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
+        // 🔥 Insert Emoji at Exact Cursor Position 🔥
         function insertEmoji(emoji) {
             const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
             emojiMap[shortCode] = `[${emoji.id}]`;
@@ -707,21 +740,34 @@
             const selection = window.getSelection();
             let range;
             
-            if (selection.rangeCount > 0 && draft.contains(selection.anchorNode)) {
+            // Use the saved cursor position if available
+            if (savedRange) {
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+                range = savedRange;
+            } else if (selection.rangeCount > 0 && draft.contains(selection.anchorNode)) {
                 range = selection.getRangeAt(0);
             } else {
+                // Fallback to the end of the text box
                 range = document.createRange();
                 range.selectNodeContents(draft);
                 range.collapse(false);
             }
             
+            // Replace selected text (if any) and insert emoji
+            range.deleteContents();
             const textNode = document.createTextNode(textToInsert);
             range.insertNode(textNode);
             
+            // Move cursor right after the inserted emoji
             range.setStartAfter(textNode);
             range.collapse(true);
+            
             selection.removeAllRanges();
             selection.addRange(range);
+            
+            // Update the saved range so the next emoji goes after this one
+            savedRange = range.cloneRange();
             
             draft.dispatchEvent(new Event('input'));
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
@@ -733,10 +779,8 @@
                 return; 
             }
             
-            // Save raw HTML to history so it can be restored perfectly
             saveToHistory(draft.innerHTML);
 
-            // Convert HTML to Telegram-friendly format
             let text = draft.innerHTML
                 .replace(/<div><br><\/div>/gi, '\n')
                 .replace(/<div>/gi, '\n')
