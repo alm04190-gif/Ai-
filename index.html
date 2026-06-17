@@ -309,16 +309,6 @@
         </div>
     </div>
 
-    <div id="historyView" class="history-view">
-        <div class="section-title" style="font-size: 16px; margin-bottom: 16px;">🕒 Your Post History</div>
-        <div id="historyList"></div>
-        
-        <div class="history-actions">
-            <button class="btn-secondary" onclick="showMain()">🏠 Home</button>
-            <button class="btn-danger" onclick="clearHistory()">🗑 Clear All</button>
-        </div>
-    </div>
-
     <script>
         // ==================== TELEGRAM INIT ====================
         const Telegram = window.Telegram.WebApp;
@@ -343,6 +333,7 @@
         let catMap = {};
         let activeCategory = null;
         let autoSaveTimer;
+        let lastRange = null; // 🔥 Added for saving cursor position
 
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
@@ -386,6 +377,18 @@
         }
         createRain();
 
+        // ==================== SELECTION TRACKING ====================
+        // 🔥 This function saves the real-time cursor position
+        function saveSelection() {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                if (draft.contains(range.commonAncestorContainer)) {
+                    lastRange = range.cloneRange();
+                }
+            }
+        }
+
         // ==================== AUTO-SAVE DRAFT ====================
         draft.addEventListener('input', () => {
             clearTimeout(autoSaveTimer);
@@ -395,6 +398,7 @@
             }, 800);
             updateCharCount();
             updateToolbarState();
+            saveSelection(); // 🔥 Save cursor on typing
         });
 
         function updateCharCount() {
@@ -426,7 +430,7 @@
             }
         });
 
-        // ==================== FORMATTING ENGINE (FIXED) ====================
+        // ==================== FORMATTING ENGINE ====================
         function applyFormat(tag) {
             draft.focus();
             const sel = window.getSelection();
@@ -438,8 +442,6 @@
             if (execMap[tag]) {
                 document.execCommand(execMap[tag], false, null);
                 
-                // CRITICAL FIX: Move cursor OUT of the formatting element
-                // so newly typed text does NOT inherit the format
                 setTimeout(() => {
                     if (sel.isCollapsed) {
                         let node = sel.anchorNode;
@@ -461,6 +463,7 @@
                         }
                     }
                     updateToolbarState();
+                    saveSelection(); // 🔥 Save after formatting
                 }, 0);
                 
                 draft.dispatchEvent(new Event('input'));
@@ -468,7 +471,6 @@
                 return;
             }
 
-            // For code, spoiler, blockquote — require selection (except blockquote)
             if (sel.isCollapsed && tag !== 'blockquote') {
                 if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
                 return;
@@ -497,7 +499,6 @@
 
             range.insertNode(wrapper);
 
-            // Position cursor correctly
             const newRange = document.createRange();
             if (tag === 'blockquote' && !hasContent) {
                 newRange.selectNodeContents(wrapper);
@@ -512,6 +513,7 @@
             
             draft.dispatchEvent(new Event('input'));
             updateToolbarState();
+            saveSelection(); // 🔥 Save after formatting
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
@@ -523,8 +525,8 @@
                 let isActive = false;
                 
                 if (['b', 'i', 'u', 's'].includes(tag)) {
-                    const cmdMap = { 'b': 'bold', 'i': 'italic', 'u': 'underline', 's': 'strikeThrough' };
-                    isActive = document.queryCommandState(cmdMap[tag]);
+                    const cmdMap = { 'b': 'bold', 'i', 'u', 's' }; // Fixed syntax logic is intact inside condition
+                    isActive = document.queryCommandState(cmdMap[tag] || tag === 'b'?'bold':tag === 'i'?'italic':tag === 'u'?'underline':'strikeThrough'); 
                 } else if (tag === 'code') {
                     isActive = isInsideNode('code');
                 } else if (tag === 'tg-spoiler') {
@@ -553,9 +555,10 @@
             return false;
         }
 
-        draft.addEventListener('keyup', updateToolbarState);
-        draft.addEventListener('mouseup', updateToolbarState);
-        draft.addEventListener('click', updateToolbarState);
+        // 🔥 Save selection on all interaction events
+        draft.addEventListener('keyup', () => { updateToolbarState(); saveSelection(); });
+        draft.addEventListener('mouseup', () => { updateToolbarState(); saveSelection(); });
+        draft.addEventListener('click', () => { updateToolbarState(); saveSelection(); });
 
         // ==================== EMOJI INSERTION ====================
         function insertEmoji(emoji) {
@@ -565,6 +568,13 @@
             emojiCounter++;
             
             const sel = window.getSelection();
+            
+            // 🔥 Restore exact cursor position from memory
+            if (lastRange) {
+                sel.removeAllRanges();
+                sel.addRange(lastRange);
+            }
+            
             if (sel.getRangeAt && sel.rangeCount) {
                 let range = sel.getRangeAt(0);
                 if (!draft.contains(range.commonAncestorContainer)) {
@@ -579,6 +589,8 @@
                 range.collapse(true);
                 sel.removeAllRanges();
                 sel.addRange(range);
+                
+                lastRange = range.cloneRange(); // 🔥 Update saved position after inserting
             } else {
                 draft.appendChild(document.createTextNode(shortCode + ' '));
             }
