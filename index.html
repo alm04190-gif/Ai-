@@ -351,7 +351,7 @@
         }
         createRain();
 
-        // 🔥 History & Emoji Mapping Storage 🔥
+        // 🔥 History Storage 🔥
         function saveToHistory(htmlContent) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             history.unshift({ html: htmlContent, date: new Date().toLocaleString(), map: emojiMap });
@@ -386,7 +386,6 @@
             });
         }
 
-        // 🔥 Load from History 🔥
         function loadFromHistory(index) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             if(history[index]) {
@@ -467,7 +466,7 @@
             }, 100);
         });
 
-        // 🔥 Rich Text Formatting Logic (Fixed Extra Text Issue) 🔥
+        // 🔥 100% FIXED FORMATTING LOGIC 🔥
         function applyFormat(tag) {
             draft.focus();
             const sel = window.getSelection();
@@ -476,23 +475,14 @@
                 return;
             }
             
-            const range = sel.getRangeAt(0);
-            if (!draft.contains(range.commonAncestorContainer)) return;
-            
-            const selectedText = range.toString();
+            const selectedText = sel.toString();
             if (!selectedText) return;
 
-            const wrapper = document.createElement(tag);
-            wrapper.textContent = selectedText;
+            // Using native insertHTML prevents extra text bugs and handles nested nodes safely
+            // &#8203; is a Zero-Width Space. It forces the cursor OUTSIDE the newly created tag!
+            const htmlToInsert = `<${tag}>${selectedText}</${tag}>&#8203;`;
             
-            range.deleteContents();
-            range.insertNode(wrapper);
-            
-            sel.removeAllRanges();
-            const newRange = document.createRange();
-            newRange.setStartAfter(wrapper);
-            newRange.collapse(true);
-            sel.addRange(newRange);
+            document.execCommand('insertHTML', false, htmlToInsert);
             
             draft.dispatchEvent(new Event('input'));
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
@@ -664,7 +654,7 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // 🔥 Send Data Logic (Fixed &nbsp; space issue) 🔥
+        // 🔥 Final Data Sender 🔥
         function sendData() {
             if (!draft.innerText.trim()) { Telegram.showAlert('Please write something first!'); return; }
             
@@ -672,10 +662,15 @@
             
             saveToHistory(htmlContent);
 
-            htmlContent = htmlContent.replace(/<br\s*[\/]?>/gi, "\n");
-            htmlContent = htmlContent.replace(/<div\s*[\/]?>/gi, "\n");
+            // Clean up standard contenteditable line breaks
+            htmlContent = htmlContent.replace(/<div><br><\/div>/gi, "\n");
+            htmlContent = htmlContent.replace(/<div>/gi, "\n");
             htmlContent = htmlContent.replace(/<\/div>/gi, "");
+            htmlContent = htmlContent.replace(/<br\s*[\/]?>/gi, "\n");
             htmlContent = htmlContent.replace(/&nbsp;/gi, " ");
+            
+            // 🔥 Remove the invisible Zero-Width Space we used for cursor escaping
+            htmlContent = htmlContent.replace(/\u200B/g, "");
 
             for (let code in emojiMap) {
                 htmlContent = htmlContent.split(code).join(emojiMap[code]); 
