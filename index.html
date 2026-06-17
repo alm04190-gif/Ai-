@@ -118,7 +118,7 @@
             display: flex; align-items: center; gap: 6px;
         }
         
-        /* 🔥 Rich Text Draft Area (No HTML Tags visible to user) 🔥 */
+        /* 🔥 Rich Text Draft Area 🔥 */
         .draft-area { 
             width: 100%; min-height: 150px; background: var(--surface); 
             border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; 
@@ -135,7 +135,7 @@
         }
         .draft-area:focus { border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
         
-        /* 🔥 Fixed Formatting Toolbar (Below Text Box) 🔥 */
+        /* 🔥 Fixed Formatting Toolbar 🔥 */
         .format-toolbar {
             display: flex; overflow-x: auto; gap: 8px; margin-top: 12px; margin-bottom: 5px;
             scrollbar-width: none; -webkit-overflow-scrolling: touch;
@@ -154,8 +154,9 @@
             transform: scale(0.95);
         }
 
-        tg-spoiler { background: var(--border); color: transparent; border-radius: 4px; padding: 0 4px; transition: 0.3s; cursor: pointer; }
-        tg-spoiler:active { background: transparent; color: inherit; }
+        /* 🔥 Updated Spoiler Class 🔥 */
+        .tg-spoiler { background: var(--border); color: transparent; border-radius: 4px; padding: 0 4px; transition: 0.3s; cursor: pointer; }
+        .tg-spoiler:active { background: transparent; color: inherit; }
 
         /* 🔥 Category Row 🔥 */
         .category-hint { font-size: 12px; color: #888; margin-bottom: 12px; font-style: italic; }
@@ -319,7 +320,6 @@
     </div>
 
     <script>
-        // 🔥 Theme Management 🔥
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -336,7 +336,6 @@
             menu.classList.toggle('show');
         }
 
-        // 🔥 Rain Effect Generator 🔥
         function createRain() {
             const container = document.getElementById('rainContainer');
             const dropCount = 25; 
@@ -351,7 +350,6 @@
         }
         createRain();
 
-        // 🔥 History Storage 🔥
         function saveToHistory(htmlContent) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             history.unshift({ html: htmlContent, date: new Date().toLocaleString(), map: emojiMap });
@@ -414,7 +412,6 @@
             }
         }
 
-        // 🔥 Emoji & Editor System 🔥
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
         Telegram.ready();
@@ -466,9 +463,21 @@
             }, 100);
         });
 
-        // 🔥 100% FIXED FORMATTING LOGIC 🔥
+        draft.addEventListener('paste', function(e) {
+            e.preventDefault();
+            let text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            document.execCommand('insertText', false, text);
+        });
+
+        // 🔥 FORMATTING LOGIC (Fixed for Spoiler bypassing ExecCommand stripping) 🔥
         function applyFormat(tag) {
             draft.focus();
+            
+            if (tag === 'b') { document.execCommand('bold', false, null); return; }
+            if (tag === 'i') { document.execCommand('italic', false, null); return; }
+            if (tag === 'u') { document.execCommand('underline', false, null); return; }
+            if (tag === 's') { document.execCommand('strikeThrough', false, null); return; }
+
             const sel = window.getSelection();
             if (!sel.rangeCount || sel.isCollapsed) {
                 if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
@@ -478,10 +487,12 @@
             const selectedText = sel.toString();
             if (!selectedText) return;
 
-            // Using native insertHTML prevents extra text bugs and handles nested nodes safely
-            // &#8203; is a Zero-Width Space. It forces the cursor OUTSIDE the newly created tag!
-            const htmlToInsert = `<${tag}>${selectedText}</${tag}>&#8203;`;
-            
+            let htmlToInsert = '';
+            if (tag === 'code') htmlToInsert = `<code>${selectedText}</code>&nbsp;`;
+            // 🔥 Using standard span class so browsers don't delete it
+            else if (tag === 'tg-spoiler') htmlToInsert = `<span class="tg-spoiler">${selectedText}</span>&nbsp;`;
+            else if (tag === 'blockquote') htmlToInsert = `<blockquote>${selectedText}</blockquote>&nbsp;`;
+
             document.execCommand('insertHTML', false, htmlToInsert);
             
             draft.dispatchEvent(new Event('input'));
@@ -654,29 +665,54 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // 🔥 Final Data Sender 🔥
+        // 🔥 STRICT HTML SANITIZER FOR TELEGRAM 🔥
+        function sanitizeTelegramHTML(rootNode) {
+            let out = "";
+            for (let node of rootNode.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    let text = node.textContent;
+                    out += text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    let tag = node.tagName.toLowerCase();
+                    let inner = sanitizeTelegramHTML(node);
+                    
+                    if (tag === 'br') { out += '\n'; }
+                    else if (tag === 'div' || tag === 'p') { out += '\n' + inner; }
+                    else if (['b', 'strong'].includes(tag)) { out += `<b>${inner}</b>`; }
+                    else if (['i', 'em'].includes(tag)) { out += `<i>${inner}</i>`; }
+                    else if (['u', 'ins'].includes(tag)) { out += `<u>${inner}</u>`; }
+                    else if (['s', 'strike', 'del'].includes(tag)) { out += `<s>${inner}</s>`; }
+                    else if (tag === 'code') { out += `<code>${inner}</code>`; }
+                    else if (tag === 'pre') { out += `<pre>${inner}</pre>`; }
+                    else if (tag === 'blockquote') { out += `<blockquote>${inner}</blockquote>`; }
+                    // 🔥 Magic Trick: Converter changes 'span.tg-spoiler' into actual '<tg-spoiler>' for the Bot
+                    else if (tag === 'tg-spoiler' || (tag === 'span' && node.classList && node.classList.contains('tg-spoiler'))) { 
+                        out += `<tg-spoiler>${inner}</tg-spoiler>`; 
+                    }
+                    else if (tag === 'a') { out += `<a href="${node.getAttribute('href')}">${inner}</a>`; }
+                    else { out += inner; } 
+                }
+            }
+            return out;
+        }
+
+        // 🔥 FINAL DATA SENDER 🔥
         function sendData() {
             if (!draft.innerText.trim()) { Telegram.showAlert('Please write something first!'); return; }
             
-            let htmlContent = draft.innerHTML;
-            
-            saveToHistory(htmlContent);
+            saveToHistory(draft.innerHTML);
 
-            // Clean up standard contenteditable line breaks
-            htmlContent = htmlContent.replace(/<div><br><\/div>/gi, "\n");
-            htmlContent = htmlContent.replace(/<div>/gi, "\n");
-            htmlContent = htmlContent.replace(/<\/div>/gi, "");
-            htmlContent = htmlContent.replace(/<br\s*[\/]?>/gi, "\n");
-            htmlContent = htmlContent.replace(/&nbsp;/gi, " ");
+            let cleanText = sanitizeTelegramHTML(draft);
             
-            // 🔥 Remove the invisible Zero-Width Space we used for cursor escaping
-            htmlContent = htmlContent.replace(/\u200B/g, "");
-
+            cleanText = cleanText.replace(/\n{3,}/g, '\n\n'); 
+            cleanText = cleanText.replace(/\u00A0/g, " "); 
+            cleanText = cleanText.replace(/&nbsp;/gi, " ");
+            
             for (let code in emojiMap) {
-                htmlContent = htmlContent.split(code).join(emojiMap[code]); 
+                cleanText = cleanText.split(code).join(emojiMap[code]); 
             }
             
-            Telegram.sendData(JSON.stringify({ text: htmlContent }));
+            Telegram.sendData(JSON.stringify({ text: cleanText.trim() }));
         }
 
         loadEmojis();
