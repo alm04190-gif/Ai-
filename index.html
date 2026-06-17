@@ -18,7 +18,7 @@
             --glow: rgba(0, 122, 255, 0.2); 
             --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
             --shadow-strong: 0 12px 32px rgba(0, 122, 255, 0.15);
-            --rain-color: rgba(0, 0, 0, 0.35); /* Light mode rain */
+            --rain-color: rgba(0, 0, 0, 0.35); 
         }
 
         /* 🔥 Dark Mode Variables 🔥 */
@@ -33,7 +33,7 @@
             --glow: rgba(10, 132, 255, 0.2); 
             --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
             --shadow-strong: 0 12px 32px rgba(10, 132, 255, 0.15);
-            --rain-color: rgba(148, 0, 211, 0.7); /* Deep Purple rain */
+            --rain-color: rgba(148, 0, 211, 0.7); 
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
@@ -90,7 +90,6 @@
         }
         .settings-btn:active { transform: rotate(45deg); }
 
-        /* Settings Dropdown */
         .settings-menu {
             position: absolute; top: 65px; right: 0; background: var(--surface);
             border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-strong);
@@ -127,7 +126,6 @@
             font-family: inherit; box-shadow: var(--shadow-soft); 
             overflow-y: auto; word-wrap: break-word; outline: none;
         }
-        /* Pure CSS Placeholder for contenteditable */
         .draft-area[placeholder]:empty:before {
             content: attr(placeholder);
             color: #999;
@@ -156,7 +154,6 @@
             transform: scale(0.95);
         }
 
-        /* Telegram Spoiler Blur effect inside editor */
         tg-spoiler { background: var(--border); color: transparent; border-radius: 4px; padding: 0 4px; transition: 0.3s; cursor: pointer; }
         tg-spoiler:active { background: transparent; color: inherit; }
 
@@ -357,7 +354,6 @@
         // 🔥 History & Emoji Mapping Storage 🔥
         function saveToHistory(htmlContent) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            // Map ইমোজির ডাটাও সেভ করা হলো যাতে পরে এডিট করা যায়
             history.unshift({ html: htmlContent, date: new Date().toLocaleString(), map: emojiMap });
             if(history.length > 20) history.pop(); 
             localStorage.setItem('postHistory', JSON.stringify(history));
@@ -390,7 +386,7 @@
             });
         }
 
-        // 🔥 ক্লিক করলে হিস্ট্রি থেকে আবার ড্রাফটে লোড হবে 🔥
+        // 🔥 Load from History 🔥
         function loadFromHistory(index) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             if(history[index]) {
@@ -471,7 +467,7 @@
             }, 100);
         });
 
-        // 🔥 Rich Text Formatting Logic 🔥
+        // 🔥 Rich Text Formatting Logic (Fixed Extra Text Issue) 🔥
         function applyFormat(tag) {
             draft.focus();
             const sel = window.getSelection();
@@ -483,9 +479,13 @@
             const range = sel.getRangeAt(0);
             if (!draft.contains(range.commonAncestorContainer)) return;
             
-            const selectedText = range.extractContents();
+            const selectedText = range.toString();
+            if (!selectedText) return;
+
             const wrapper = document.createElement(tag);
-            wrapper.appendChild(selectedText);
+            wrapper.textContent = selectedText;
+            
+            range.deleteContents();
             range.insertNode(wrapper);
             
             sel.removeAllRanges();
@@ -664,18 +664,18 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
+        // 🔥 Send Data Logic (Fixed &nbsp; space issue) 🔥
         function sendData() {
             if (!draft.innerText.trim()) { Telegram.showAlert('Please write something first!'); return; }
             
             let htmlContent = draft.innerHTML;
             
-            // Save to history before cleaning for sending
             saveToHistory(htmlContent);
 
-            // Clean up HTML tags for Telegram
             htmlContent = htmlContent.replace(/<br\s*[\/]?>/gi, "\n");
             htmlContent = htmlContent.replace(/<div\s*[\/]?>/gi, "\n");
             htmlContent = htmlContent.replace(/<\/div>/gi, "");
+            htmlContent = htmlContent.replace(/&nbsp;/gi, " ");
 
             for (let code in emojiMap) {
                 htmlContent = htmlContent.split(code).join(emojiMap[code]); 
