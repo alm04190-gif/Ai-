@@ -118,26 +118,30 @@
             display: flex; align-items: center; gap: 6px;
         }
         
-        /* 🔥 Rich Text Draft Area 🔥 */
+        /* 🔥 ContentEditable Draft Area (WYSIWYG) 🔥 */
         .draft-area { 
             width: 100%; min-height: 150px; background: var(--surface); 
             border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; 
             color: var(--text); font-size: 16px; line-height: 1.6; 
             font-family: inherit; box-shadow: var(--shadow-soft); 
-            overflow-y: auto; word-wrap: break-word; outline: none;
-        }
-        .draft-area[placeholder]:empty:before {
-            content: attr(placeholder);
-            color: #999;
-            font-style: italic;
-            pointer-events: none;
-            display: block;
+            overflow-y: auto; outline: none; word-wrap: break-word;
         }
         .draft-area:focus { border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
+        .draft-area:empty::before { content: attr(data-placeholder); color: #999; font-style: italic; pointer-events: none; }
         
-        /* 🔥 Fixed Formatting Toolbar 🔥 */
+        /* WYSIWYG Formatting Styles */
+        .draft-area b { font-weight: bold; }
+        .draft-area i { font-style: italic; }
+        .draft-area u { text-decoration: underline; }
+        .draft-area s { text-decoration: line-through; }
+        .draft-area code { background: var(--border); padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 14px;}
+        .draft-area tg-spoiler { background: var(--text-secondary); color: transparent; border-radius: 4px; text-shadow: none; cursor: pointer; }
+        .draft-area tg-spoiler:active { color: inherit; background: transparent; }
+        .draft-area blockquote { border-left: 3px solid var(--accent); margin: 4px 0; padding-left: 8px; color: var(--text-secondary); display: block;}
+
+        /* 🔥 Fixed Formatting Toolbar (Moved Below) 🔥 */
         .format-toolbar {
-            display: flex; overflow-x: auto; gap: 8px; margin-top: 12px; margin-bottom: 5px;
+            display: flex; overflow-x: auto; gap: 8px; margin-top: 12px; margin-bottom: 0px;
             scrollbar-width: none; -webkit-overflow-scrolling: touch;
             background: var(--surface); padding: 8px; border-radius: 12px;
             border: 1.5px solid var(--border); box-shadow: var(--shadow-soft);
@@ -153,10 +157,6 @@
             background: var(--glow); border-color: var(--accent);
             transform: scale(0.95);
         }
-
-        /* 🔥 Updated Spoiler Class 🔥 */
-        .tg-spoiler { background: var(--border); color: transparent; border-radius: 4px; padding: 0 4px; transition: 0.3s; cursor: pointer; }
-        .tg-spoiler:active { background: transparent; color: inherit; }
 
         /* 🔥 Category Row 🔥 */
         .category-hint { font-size: 12px; color: #888; margin-bottom: 12px; font-style: italic; }
@@ -239,11 +239,11 @@
         .history-card {
             background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
             padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-soft); cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, border-color 0.2s;
         }
-        .history-card:active { transform: scale(0.98); box-shadow: none; }
+        .history-card:hover { border-color: var(--accent); transform: translateY(-2px); }
         .history-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
-        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; pointer-events: none; }
+        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; }
         .history-actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
         .btn-danger { background: #ff3b30; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
@@ -269,16 +269,18 @@
                 <span id="charCount">0 chars</span>
             </div>
             
-            <div class="draft-area" id="draft" contenteditable="true" placeholder="Type your post here... Select text and tap buttons below to format."></div>
+            <!-- ContentEditable Div for WYSIWYG Formatting -->
+            <div class="draft-area" id="draft" contenteditable="true" data-placeholder=""></div>
 
+            <!-- Toolbar Moved Below Textbox -->
             <div class="format-toolbar" id="formatToolbar">
-                <button class="format-btn" data-format="b" onclick="applyFormat('b')"><b>B</b></button>
-                <button class="format-btn" data-format="i" onclick="applyFormat('i')"><i>I</i></button>
-                <button class="format-btn" data-format="u" onclick="applyFormat('u')"><u>U</u></button>
-                <button class="format-btn" data-format="s" onclick="applyFormat('s')"><s>S</s></button>
-                <button class="format-btn" data-format="code" onclick="applyFormat('code')">Mono</button>
-                <button class="format-btn" data-format="tg-spoiler" onclick="applyFormat('tg-spoiler')">Spoiler</button>
-                <button class="format-btn" data-format="blockquote" onclick="applyFormat('blockquote')">Quote</button>
+                <button class="format-btn" onclick="applyFormat('b')"><b>B</b></button>
+                <button class="format-btn" onclick="applyFormat('i')"><i>I</i></button>
+                <button class="format-btn" onclick="applyFormat('u')"><u>U</u></button>
+                <button class="format-btn" onclick="applyFormat('s')"><s>S</s></button>
+                <button class="format-btn" onclick="applyFormat('code')">Mono</button>
+                <button class="format-btn" onclick="applyFormat('tg-spoiler')">Spoiler</button>
+                <button class="format-btn" onclick="applyFormat('blockquote')">Quote</button>
             </div>
         </div>
 
@@ -309,35 +311,18 @@
         </div>
     </div>
 
+    <div id="historyView" class="history-view">
+        <div class="section-title" style="font-size: 16px; margin-bottom: 16px;">🕒 Your Post History</div>
+        <div id="historyList"></div>
+        
+        <div class="history-actions">
+            <button class="btn-secondary" onclick="showMain()">🏠 Home</button>
+            <button class="btn-danger" onclick="clearHistory()">🗑 Clear All</button>
+        </div>
+    </div>
+
     <script>
-        // ==================== TELEGRAM INIT ====================
-        const Telegram = window.Telegram.WebApp;
-        Telegram.expand();
-        Telegram.ready();
-        Telegram.enableClosingConfirmation();
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const apiBase = urlParams.get('api') || "";
-
-        // ==================== DOM REFS ====================
-        const draft = document.getElementById('draft');
-        const keyboard = document.getElementById('emojiKeyboard');
-        const charCount = document.getElementById('charCount');
-        const emojiArea = document.getElementById('emojiArea');
-        const categoryRow = document.getElementById('categoryRow');
-
-        // ==================== STATE ====================
-        let emojiMap = {};
-        let emojiCounter = 1;
-        let allEmojis = [];
-        let catMap = {};
-        let activeCategory = null;
-        let autoSaveTimer;
-        let lastRange = null; // 🔥 Added for saving cursor position
-
-        const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-
-        // ==================== THEME ====================
+        // 🔥 Theme Management 🔥
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -345,8 +330,7 @@
             localStorage.setItem('theme', newTheme);
             toggleSettings();
         }
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if(localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
 
@@ -354,18 +338,10 @@
             const menu = document.getElementById('settingsMenu');
             menu.classList.toggle('show');
         }
-        document.addEventListener('click', (e) => {
-            const menu = document.getElementById('settingsMenu');
-            const btn = document.querySelector('.settings-btn');
-            if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
-                menu.classList.remove('show');
-            }
-        });
 
-        // ==================== RAIN EFFECT ====================
         function createRain() {
             const container = document.getElementById('rainContainer');
-            const dropCount = 25;
+            const dropCount = 25; 
             for (let i = 0; i < dropCount; i++) {
                 let drop = document.createElement('div');
                 drop.className = 'drop';
@@ -377,251 +353,201 @@
         }
         createRain();
 
-        // ==================== SELECTION TRACKING ====================
-        // 🔥 This function saves the real-time cursor position
-        function saveSelection() {
-            const sel = window.getSelection();
-            if (sel.rangeCount > 0) {
-                const range = sel.getRangeAt(0);
-                if (draft.contains(range.commonAncestorContainer)) {
-                    lastRange = range.cloneRange();
-                }
-            }
-        }
+        // 🔥 Auto-Typing Placeholder Logic 🔥
+        const draft = document.getElementById('draft');
+        const placeholderText = "Type your post here... Tap emojis below to insert them.";
+        let typeIndex = 0;
+        let typingInterval;
+        let isTyping = true;
 
-        // ==================== AUTO-SAVE DRAFT ====================
-        draft.addEventListener('input', () => {
-            clearTimeout(autoSaveTimer);
-            autoSaveTimer = setTimeout(() => {
-                localStorage.setItem('premiumPostDraft', draft.innerHTML);
-                localStorage.setItem('premiumPostDraftTime', Date.now());
-            }, 800);
-            updateCharCount();
-            updateToolbarState();
-            saveSelection(); // 🔥 Save cursor on typing
-        });
-
-        function updateCharCount() {
-            charCount.textContent = draft.innerText.length + ' chars';
-        }
-
-        // Restore draft
-        const savedDraft = localStorage.getItem('premiumPostDraft');
-        const savedDraftTime = localStorage.getItem('premiumPostDraftTime');
-        if (savedDraft && savedDraftTime && (Date.now() - parseInt(savedDraftTime)) < 86400000) {
-            draft.innerHTML = savedDraft;
-            updateCharCount();
-        }
-
-        // ==================== PASTE PLAIN TEXT ====================
-        draft.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const text = e.clipboardData.getData('text/plain');
-            document.execCommand('insertText', false, text);
-        });
-
-        // ==================== KEYBOARD SHORTCUTS ====================
-        draft.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && !e.altKey) {
-                const key = e.key.toLowerCase();
-                if (key === 'b') { e.preventDefault(); applyFormat('b'); }
-                else if (key === 'i') { e.preventDefault(); applyFormat('i'); }
-                else if (key === 'u') { e.preventDefault(); applyFormat('u'); }
-            }
-        });
-
-        // ==================== FORMATTING ENGINE ====================
-        function applyFormat(tag) {
-            draft.focus();
-            const sel = window.getSelection();
-            if (!sel.rangeCount) return;
-
-            // Inline formatting via execCommand
-            const execMap = { 'b': 'bold', 'i': 'italic', 'u': 'underline', 's': 'strikeThrough' };
-            
-            if (execMap[tag]) {
-                document.execCommand(execMap[tag], false, null);
-                
-                setTimeout(() => {
-                    if (sel.isCollapsed) {
-                        let node = sel.anchorNode;
-                        if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-                        
-                        const checkTags = {
-                            'b': ['B', 'STRONG'],
-                            'i': ['I', 'EM'],
-                            'u': ['U', 'INS'],
-                            's': ['S', 'STRIKE', 'DEL']
-                        };
-                        
-                        if (node && node !== draft && checkTags[tag].includes(node.tagName)) {
-                            const range = document.createRange();
-                            range.setStartAfter(node);
-                            range.collapse(true);
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    }
-                    updateToolbarState();
-                    saveSelection(); // 🔥 Save after formatting
-                }, 0);
-                
-                draft.dispatchEvent(new Event('input'));
-                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
-                return;
-            }
-
-            if (sel.isCollapsed && tag !== 'blockquote') {
-                if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
-                return;
-            }
-
-            const range = sel.getRangeAt(0);
-            const selectedContent = range.extractContents();
-            const hasContent = selectedContent.textContent.length > 0;
-
-            let wrapper;
-            if (tag === 'code') {
-                wrapper = document.createElement('code');
-                wrapper.appendChild(selectedContent);
-            } else if (tag === 'tg-spoiler') {
-                wrapper = document.createElement('span');
-                wrapper.className = 'tg-spoiler';
-                wrapper.appendChild(selectedContent);
-            } else if (tag === 'blockquote') {
-                wrapper = document.createElement('blockquote');
-                if (!hasContent) {
-                    wrapper.innerHTML = '<br>';
-                } else {
-                    wrapper.appendChild(selectedContent);
-                }
-            }
-
-            range.insertNode(wrapper);
-
-            const newRange = document.createRange();
-            if (tag === 'blockquote' && !hasContent) {
-                newRange.selectNodeContents(wrapper);
-                newRange.collapse(true);
+        function typePlaceholder() {
+            if (typeIndex <= placeholderText.length) {
+                draft.setAttribute('data-placeholder', placeholderText.substring(0, typeIndex) + '|');
+                typeIndex++;
+                typingInterval = setTimeout(typePlaceholder, 50);
             } else {
-                newRange.setStartAfter(wrapper);
-                newRange.collapse(true);
+                setTimeout(() => {
+                    typeIndex = 0;
+                    if(isTyping) typePlaceholder();
+                }, 2000);
             }
-            
-            sel.removeAllRanges();
-            sel.addRange(newRange);
-            
-            draft.dispatchEvent(new Event('input'));
-            updateToolbarState();
-            saveSelection(); // 🔥 Save after formatting
-            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        }
+        
+        draft.addEventListener('focus', () => {
+            isTyping = false;
+            clearTimeout(typingInterval);
+            draft.setAttribute('data-placeholder', '');
+        });
+
+        draft.addEventListener('blur', () => {
+            if (draft.innerText.trim() === '') {
+                isTyping = true;
+                typeIndex = 0;
+                typePlaceholder();
+            }
+        });
+        
+        typePlaceholder();
+
+        // 🔥 History Management (Updated for Click-to-Load) 🔥
+        function saveToHistory(htmlText) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            history.unshift({ text: htmlText, date: new Date().toLocaleString() });
+            if(history.length > 20) history.pop(); 
+            localStorage.setItem('postHistory', JSON.stringify(history));
         }
 
-        // ==================== TOOLBAR ACTIVE STATE ====================
-        function updateToolbarState() {
-            const buttons = document.querySelectorAll('.format-btn[data-format]');
-            buttons.forEach(btn => {
-                const tag = btn.dataset.format;
-                let isActive = false;
+        function showHistory() {
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('historyView').style.display = 'block';
+            document.getElementById('settingsMenu').classList.remove('show');
+            
+            const list = document.getElementById('historyList');
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            
+            if(history.length === 0) {
+                list.innerHTML = '<div class="empty">No history found.</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            history.forEach((item, index) => {
+                // Create a temporary div to extract plain text for preview
+                let tempDiv = document.createElement('div');
+                tempDiv.innerHTML = item.text;
+                let previewText = tempDiv.innerText.substring(0, 100) + (tempDiv.innerText.length > 100 ? '...' : '');
                 
-                if (['b', 'i', 'u', 's'].includes(tag)) {
-                    const cmdMap = { 'b': 'bold', 'i', 'u', 's' }; // Fixed syntax logic is intact inside condition
-                    isActive = document.queryCommandState(cmdMap[tag] || tag === 'b'?'bold':tag === 'i'?'italic':tag === 'u'?'underline':'strikeThrough'); 
-                } else if (tag === 'code') {
-                    isActive = isInsideNode('code');
-                } else if (tag === 'tg-spoiler') {
-                    isActive = isInsideNode('span', 'tg-spoiler');
-                } else if (tag === 'blockquote') {
-                    isActive = isInsideNode('blockquote');
-                }
-                
-                btn.classList.toggle('active', isActive);
+                list.innerHTML += `
+                    <div class="history-card" onclick="loadHistoryItem(${index})">
+                        <div class="history-header">
+                            <span>#${history.length - index}</span>
+                            <span>${item.date}</span>
+                        </div>
+                        <div class="history-text">${previewText || '<i>[Formatted Content]</i>'}</div>
+                        <div style="font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: bold;">Tap to load ✏️</div>
+                    </div>
+                `;
             });
         }
 
-        function isInsideNode(tagName, className = null) {
-            const sel = window.getSelection();
-            if (!sel.rangeCount) return false;
-            
-            let node = sel.anchorNode;
-            if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
-            
-            while (node && node !== draft) {
-                if (node.tagName.toLowerCase() === tagName) {
-                    if (!className || node.classList?.contains(className)) return true;
-                }
-                node = node.parentElement;
+        function loadHistoryItem(index) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            if(history[index]) {
+                draft.innerHTML = history[index].text; // Load exact HTML with formatting
+                showMain();
+                draft.dispatchEvent(new Event('input')); // Update char count
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
             }
-            return false;
         }
 
-        // 🔥 Save selection on all interaction events
-        draft.addEventListener('keyup', () => { updateToolbarState(); saveSelection(); });
-        draft.addEventListener('mouseup', () => { updateToolbarState(); saveSelection(); });
-        draft.addEventListener('click', () => { updateToolbarState(); saveSelection(); });
-
-        // ==================== EMOJI INSERTION ====================
-        function insertEmoji(emoji) {
-            draft.focus();
-            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
-            emojiMap[shortCode] = `[${emoji.id}]`;
-            emojiCounter++;
-            
-            const sel = window.getSelection();
-            
-            // 🔥 Restore exact cursor position from memory
-            if (lastRange) {
-                sel.removeAllRanges();
-                sel.addRange(lastRange);
-            }
-            
-            if (sel.getRangeAt && sel.rangeCount) {
-                let range = sel.getRangeAt(0);
-                if (!draft.contains(range.commonAncestorContainer)) {
-                    range.selectNodeContents(draft);
-                    range.collapse(false);
-                }
-                range.deleteContents();
-                let textNode = document.createTextNode(shortCode + ' ');
-                range.insertNode(textNode);
-                
-                range.setStartAfter(textNode);
-                range.collapse(true);
-                sel.removeAllRanges();
-                sel.addRange(range);
-                
-                lastRange = range.cloneRange(); // 🔥 Update saved position after inserting
-            } else {
-                draft.appendChild(document.createTextNode(shortCode + ' '));
-            }
-            
-            draft.dispatchEvent(new Event('input'));
-            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        function showMain() {
+            document.getElementById('historyView').style.display = 'none';
+            document.getElementById('mainView').style.display = 'block';
         }
 
-        // ==================== LAZY LOAD OBSERVER ====================
+        function clearHistory() {
+            if(confirm("Are you sure you want to clear all history?")) {
+                localStorage.removeItem('postHistory');
+                showHistory();
+            }
+        }
+
+        // 🔥 Emoji System 🔥
+        const Telegram = window.Telegram.WebApp;
+        Telegram.expand();
+        Telegram.ready();
+        Telegram.enableClosingConfirmation();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiBase = urlParams.get('api') || "";
+
+        const keyboard = document.getElementById('emojiKeyboard');
+        const charCount = document.getElementById('charCount');
+        const emojiArea = document.getElementById('emojiArea');
+        const categoryRow = document.getElementById('categoryRow');
+        
+        let emojiMap = {};
+        let emojiCounter = 1;
+        let allEmojis = [];
+        let catMap = {}; 
+        let activeCategory = null;
+
+        const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                const el = entry.target;
                 if (entry.isIntersecting) {
-                    const el = entry.target;
                     if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         const src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
-                        lazyLoadObserver.unobserve(el);
+                        lazyLoadObserver.unobserve(el); 
                         
                         fetch(src, { headers: { 'ngrok-skip-browser-warning': '69420' } })
                             .then(response => {
                                 if (!response.ok) throw new Error('Network response failed');
                                 return response.blob();
                             })
-                            .then(blob => { el.src = URL.createObjectURL(blob); })
-                            .catch(() => { el.style.opacity = '0.3'; });
+                            .then(blob => {
+                                el.src = URL.createObjectURL(blob);
+                            })
+                            .catch(err => {
+                                el.style.opacity = '0.3';
+                            });
                     }
                 }
             });
         }, { root: emojiArea, rootMargin: '100px 0px', threshold: 0 });
 
-        // ==================== EMOJI LOADING ====================
+        let charCountTimeout;
+        draft.addEventListener('input', () => { 
+            clearTimeout(charCountTimeout);
+            charCountTimeout = setTimeout(() => {
+                charCount.textContent = draft.innerText.replace(/\n/g, '').length + ' chars';
+            }, 100);
+        });
+
+        // 🔥 WYSIWYG Formatting Logic (Tags Hidden) 🔥
+        function applyFormat(tag) {
+            draft.focus();
+            
+            // Standard tags use execCommand for perfect WYSIWYG behavior
+            const commandMap = {
+                'b': 'bold',
+                'i': 'italic',
+                'u': 'underline',
+                's': 'strikeThrough'
+            };
+            
+            if (commandMap[tag]) {
+                document.execCommand(commandMap[tag], false, null);
+            } else {
+                // Custom tags (code, tg-spoiler, blockquote)
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+                const range = selection.getRangeAt(0);
+                
+                if (range.collapsed) {
+                    if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
+                    return;
+                }
+                
+                const wrapper = document.createElement(tag);
+                try {
+                    range.surroundContents(wrapper);
+                } catch (e) {
+                    // Fallback if selection crosses multiple nodes
+                    const content = range.extractContents();
+                    wrapper.appendChild(content);
+                    range.insertNode(wrapper);
+                }
+                selection.removeAllRanges();
+            }
+            
+            draft.dispatchEvent(new Event('input'));
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        }
+
         async function loadEmojis() {
             if (!apiBase) {
                 keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
@@ -634,11 +560,13 @@
 
         async function fetchPage(page, limit, isFirstLoad = false) {
             try {
-                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
-                    headers: { 'ngrok-skip-browser-warning': '69420' }
+                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { 
+                    headers: { 'ngrok-skip-browser-warning': '69420' } 
                 });
+                
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
+                
                 if (data.length === 0) return 0;
 
                 allEmojis.push(...data);
@@ -657,11 +585,13 @@
                     if (firstBtn) filterEmojis(firstPack, firstBtn);
                 } else if (!isFirstLoad && activeCategory) {
                     const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
-                    if (newlyAdded.length > 0) appendEmojisToGrid(newlyAdded);
+                    if (newlyAdded.length > 0) {
+                        appendEmojisToGrid(newlyAdded);
+                    }
                 }
                 return data.length;
             } catch (err) {
-                if (isFirstLoad) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
+                if(isFirstLoad) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
                 return 0;
             }
         }
@@ -671,7 +601,7 @@
             const limit = 1000;
             while (true) {
                 const count = await fetchPage(page, limit, false);
-                if (count < limit) break;
+                if (count < limit) break; 
                 page++;
             }
         }
@@ -704,10 +634,12 @@
             const mediaEl = document.createElement('img');
             mediaEl.className = 'media-container';
             mediaEl.src = TRANSPARENT_PIXEL;
-            mediaEl.alt = emoji.symbol || 'emoji';
             
             let fullUrl = emoji.image_url;
-            if (fullUrl && fullUrl.startsWith('/')) fullUrl = apiBase + fullUrl;
+            if (fullUrl && fullUrl.startsWith('/')) {
+                fullUrl = apiBase + fullUrl;
+            }
+            
             mediaEl.dataset.realSrc = fullUrl;
             
             const label = document.createElement('div');
@@ -730,10 +662,11 @@
             const mediaEl = document.createElement('img');
             mediaEl.className = 'media-container';
             mediaEl.src = TRANSPARENT_PIXEL;
-            mediaEl.alt = packId;
             
             let fullUrl = imageUrl;
-            if (fullUrl && fullUrl.startsWith('/')) fullUrl = apiBase + fullUrl;
+            if (fullUrl && fullUrl.startsWith('/')) {
+                fullUrl = apiBase + fullUrl;
+            }
             
             if (fullUrl) {
                 fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
@@ -743,6 +676,7 @@
             }
             
             div.appendChild(mediaEl);
+            
             const label = document.createElement('div');
             label.className = 'normal-emoji';
             label.textContent = packId.substring(0, 8);
@@ -751,129 +685,72 @@
         }
 
         function filterEmojis(categoryId, clickedBtn) {
-            if (activeCategory === categoryId) return;
+            if (activeCategory === categoryId) return; 
             activeCategory = categoryId;
+            
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
+            
             renderEmojis();
+            
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // ==================== HISTORY ====================
-        function saveToHistory(htmlContent) {
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            history.unshift({ html: htmlContent, date: new Date().toLocaleString(), map: emojiMap });
-            if (history.length > 20) history.pop();
-            localStorage.setItem('postHistory', JSON.stringify(history));
-        }
-
-        function showHistory() {
-            document.getElementById('mainView').style.display = 'none';
-            document.getElementById('historyView').style.display = 'block';
-            toggleSettings();
+        function insertEmoji(emoji) {
+            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
+            emojiMap[shortCode] = `[${emoji.id}]`;
+            emojiCounter++;
             
-            const list = document.getElementById('historyList');
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            const textToInsert = shortCode + ' ';
             
-            if (history.length === 0) {
-                list.innerHTML = '<div class="empty">No history found.</div>';
-                return;
+            draft.focus();
+            const selection = window.getSelection();
+            let range;
+            
+            if (selection.rangeCount > 0 && draft.contains(selection.anchorNode)) {
+                range = selection.getRangeAt(0);
+            } else {
+                range = document.createRange();
+                range.selectNodeContents(draft);
+                range.collapse(false);
             }
-
-            list.innerHTML = '';
-            history.forEach((item, index) => {
-                list.innerHTML += `
-                    <div class="history-card" onclick="loadFromHistory(${index})">
-                        <div class="history-header">
-                            <span style="color:var(--accent);">#${history.length - index} (Tap to Edit) ✏️</span>
-                            <span>${item.date}</span>
-                        </div>
-                        <div class="history-text">${item.html}</div>
-                    </div>
-                `;
-            });
+            
+            const textNode = document.createTextNode(textToInsert);
+            range.insertNode(textNode);
+            
+            range.setStartAfter(textNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            draft.dispatchEvent(new Event('input'));
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        function loadFromHistory(index) {
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            if (history[index]) {
-                draft.innerHTML = history[index].html;
-                if (history[index].map) {
-                    Object.assign(emojiMap, history[index].map);
-                    emojiCounter += Object.keys(history[index].map).length + 10;
-                }
-                showMain();
-                draft.focus();
-                draft.dispatchEvent(new Event('input'));
-                window.scrollTo(0, 0);
-                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
-            }
-        }
-
-        function showMain() {
-            document.getElementById('historyView').style.display = 'none';
-            document.getElementById('mainView').style.display = 'block';
-        }
-
-        function clearHistory() {
-            if (confirm("Are you sure you want to clear all history?")) {
-                localStorage.removeItem('postHistory');
-                showHistory();
-            }
-        }
-
-        // ==================== TELEGRAM HTML SANITIZER ====================
-        function sanitizeTelegramHTML(rootNode) {
-            let out = "";
-            for (let node of rootNode.childNodes) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    let text = node.textContent;
-                    out += text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                } else if (node.nodeType === Node.ELEMENT_NODE) {
-                    let tag = node.tagName.toLowerCase();
-                    let inner = sanitizeTelegramHTML(node);
-                    
-                    if (tag === 'br') { out += '\n'; }
-                    else if (tag === 'div' || tag === 'p') { out += '\n' + inner; }
-                    else if (['b', 'strong'].includes(tag)) { out += `<b>${inner}</b>`; }
-                    else if (['i', 'em'].includes(tag)) { out += `<i>${inner}</i>`; }
-                    else if (['u', 'ins'].includes(tag)) { out += `<u>${inner}</u>`; }
-                    else if (['s', 'strike', 'del'].includes(tag)) { out += `<s>${inner}</s>`; }
-                    else if (tag === 'code') { out += `<code>${inner}</code>`; }
-                    else if (tag === 'pre') { out += `<pre>${inner}</pre>`; }
-                    else if (tag === 'blockquote') { out += `<blockquote>${inner.trim()}</blockquote>`; }
-                    else if (tag === 'tg-spoiler' || (tag === 'span' && node.classList && node.classList.contains('tg-spoiler'))) {
-                        out += `<tg-spoiler>${inner}</tg-spoiler>`;
-                    }
-                    else if (tag === 'a') { out += `<a href="${node.getAttribute('href')}">${inner}</a>`; }
-                    else { out += inner; }
-                }
-            }
-            return out;
-        }
-
-        // ==================== SEND DATA ====================
         function sendData() {
-            if (!draft.innerText.trim()) {
-                if(Telegram.showAlert) Telegram.showAlert('Please write something first!');
-                return;
+            if (!draft.innerText.trim() && !draft.innerHTML.includes('<img')) { 
+                if(Telegram.showAlert) Telegram.showAlert('Please write something first!'); 
+                return; 
             }
             
+            // Save raw HTML to history so it can be restored perfectly
             saveToHistory(draft.innerHTML);
 
-            let cleanText = sanitizeTelegramHTML(draft);
-            cleanText = cleanText.replace(/\n{3,}/g, '\n\n');
-            cleanText = cleanText.replace(/\u00A0/g, " ");
-            cleanText = cleanText.replace(/&nbsp;/gi, " ");
-            
+            // Convert HTML to Telegram-friendly format
+            let text = draft.innerHTML
+                .replace(/<div><br><\/div>/gi, '\n')
+                .replace(/<div>/gi, '\n')
+                .replace(/<\/div>/gi, '')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/&nbsp;/gi, ' ');
+
             for (let code in emojiMap) {
-                cleanText = cleanText.split(code).join(emojiMap[code]);
+                text = text.split(code).join(emojiMap[code]); 
             }
             
-            Telegram.sendData(JSON.stringify({ text: cleanText.trim() }));
+            Telegram.sendData(JSON.stringify({ text: text }));
         }
 
-        // ==================== INIT ====================
         loadEmojis();
     </script>
 </body>
