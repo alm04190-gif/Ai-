@@ -113,26 +113,33 @@
 
         .section { margin-bottom: 24px; position: relative; z-index: 10; }
         
-        /* Fixed Title (No Blinking Cursor) */
         .section-title { 
             font-size: 13px; font-weight: 800; color: var(--text-secondary); 
             margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; 
             display: flex; align-items: center; gap: 6px;
         }
         
-        /* 🔥 Draft Area 🔥 */
+        /* 🔥 Rich Text Draft Area (No HTML Tags visible to user) 🔥 */
         .draft-area { 
             width: 100%; min-height: 150px; background: var(--surface); 
             border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; 
-            color: var(--text); font-size: 16px; line-height: 1.6; resize: vertical; 
+            color: var(--text); font-size: 16px; line-height: 1.6; 
             font-family: inherit; box-shadow: var(--shadow-soft); 
+            overflow-y: auto; word-wrap: break-word; outline: none;
         }
-        .draft-area:focus { outline: none; border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
-        .draft-area::placeholder { color: #999; font-style: italic; }
+        /* Pure CSS Placeholder for contenteditable */
+        .draft-area[placeholder]:empty:before {
+            content: attr(placeholder);
+            color: #999;
+            font-style: italic;
+            pointer-events: none;
+            display: block;
+        }
+        .draft-area:focus { border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
         
-        /* 🔥 Fixed Formatting Toolbar 🔥 */
+        /* 🔥 Fixed Formatting Toolbar (Below Text Box) 🔥 */
         .format-toolbar {
-            display: flex; overflow-x: auto; gap: 8px; margin-bottom: 10px;
+            display: flex; overflow-x: auto; gap: 8px; margin-top: 12px; margin-bottom: 5px;
             scrollbar-width: none; -webkit-overflow-scrolling: touch;
             background: var(--surface); padding: 8px; border-radius: 12px;
             border: 1.5px solid var(--border); box-shadow: var(--shadow-soft);
@@ -148,6 +155,10 @@
             background: var(--glow); border-color: var(--accent);
             transform: scale(0.95);
         }
+
+        /* Telegram Spoiler Blur effect inside editor */
+        tg-spoiler { background: var(--border); color: transparent; border-radius: 4px; padding: 0 4px; transition: 0.3s; cursor: pointer; }
+        tg-spoiler:active { background: transparent; color: inherit; }
 
         /* 🔥 Category Row 🔥 */
         .category-hint { font-size: 12px; color: #888; margin-bottom: 12px; font-style: italic; }
@@ -229,10 +240,12 @@
         /* 🔥 History UI 🔥 */
         .history-card {
             background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-            padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-soft);
+            padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-soft); cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+        .history-card:active { transform: scale(0.98); box-shadow: none; }
         .history-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
-        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; }
+        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; pointer-events: none; }
         .history-actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
         .btn-danger { background: #ff3b30; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
@@ -258,6 +271,8 @@
                 <span id="charCount">0 chars</span>
             </div>
             
+            <div class="draft-area" id="draft" contenteditable="true" placeholder="Type your post here... Select text and tap buttons below to format."></div>
+
             <div class="format-toolbar" id="formatToolbar">
                 <button class="format-btn" onclick="applyFormat('b')"><b>B</b></button>
                 <button class="format-btn" onclick="applyFormat('i')"><i>I</i></button>
@@ -267,8 +282,6 @@
                 <button class="format-btn" onclick="applyFormat('tg-spoiler')">Spoiler</button>
                 <button class="format-btn" onclick="applyFormat('blockquote')">Quote</button>
             </div>
-
-            <textarea class="draft-area" id="draft"></textarea>
         </div>
 
         <div class="section">
@@ -317,26 +330,23 @@
             localStorage.setItem('theme', newTheme);
             toggleSettings();
         }
-        // Load saved theme
         if(localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
 
-        // 🔥 Settings Menu Toggle 🔥
         function toggleSettings() {
             const menu = document.getElementById('settingsMenu');
             menu.classList.toggle('show');
         }
 
-        // 🔥 Slower Rain Effect Generator 🔥
+        // 🔥 Rain Effect Generator 🔥
         function createRain() {
             const container = document.getElementById('rainContainer');
-            const dropCount = 25; // Less drops for cleaner look
+            const dropCount = 25; 
             for (let i = 0; i < dropCount; i++) {
                 let drop = document.createElement('div');
                 drop.className = 'drop';
                 drop.style.left = Math.random() * 100 + 'vw';
-                // Slower animation (2s to 4s)
                 drop.style.animationDuration = (Math.random() * 2 + 2) + 's';
                 drop.style.animationDelay = Math.random() * 2 + 's';
                 container.appendChild(drop);
@@ -344,47 +354,12 @@
         }
         createRain();
 
-        // 🔥 Auto-Typing Placeholder Logic 🔥
-        const draft = document.getElementById('draft');
-        const placeholderText = "Type your post here... Tap emojis below to insert them.";
-        let typeIndex = 0;
-        let typingInterval;
-        let isTyping = true;
-
-        function typePlaceholder() {
-            if (typeIndex <= placeholderText.length) {
-                draft.setAttribute('placeholder', placeholderText.substring(0, typeIndex) + '|');
-                typeIndex++;
-                typingInterval = setTimeout(typePlaceholder, 50);
-            } else {
-                setTimeout(() => {
-                    typeIndex = 0;
-                    if(isTyping) typePlaceholder();
-                }, 2000);
-            }
-        }
-        
-        draft.addEventListener('focus', () => {
-            isTyping = false;
-            clearTimeout(typingInterval);
-            draft.setAttribute('placeholder', '');
-        });
-
-        draft.addEventListener('blur', () => {
-            if (draft.value.trim() === '') {
-                isTyping = true;
-                typeIndex = 0;
-                typePlaceholder();
-            }
-        });
-        
-        typePlaceholder();
-
-        // 🔥 History Management 🔥
-        function saveToHistory(text) {
+        // 🔥 History & Emoji Mapping Storage 🔥
+        function saveToHistory(htmlContent) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            history.unshift({ text: text, date: new Date().toLocaleString() });
-            if(history.length > 20) history.pop(); // Keep last 20 posts
+            // Map ইমোজির ডাটাও সেভ করা হলো যাতে পরে এডিট করা যায়
+            history.unshift({ html: htmlContent, date: new Date().toLocaleString(), map: emojiMap });
+            if(history.length > 20) history.pop(); 
             localStorage.setItem('postHistory', JSON.stringify(history));
         }
 
@@ -404,15 +379,32 @@
             list.innerHTML = '';
             history.forEach((item, index) => {
                 list.innerHTML += `
-                    <div class="history-card">
+                    <div class="history-card" onclick="loadFromHistory(${index})">
                         <div class="history-header">
-                            <span>#${history.length - index}</span>
+                            <span style="color:var(--accent);">#${history.length - index} (Tap to Edit) ✏️</span>
                             <span>${item.date}</span>
                         </div>
-                        <div class="history-text">${item.text}</div>
+                        <div class="history-text">${item.html}</div>
                     </div>
                 `;
             });
+        }
+
+        // 🔥 ক্লিক করলে হিস্ট্রি থেকে আবার ড্রাফটে লোড হবে 🔥
+        function loadFromHistory(index) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            if(history[index]) {
+                draft.innerHTML = history[index].html;
+                if(history[index].map) {
+                    Object.assign(emojiMap, history[index].map);
+                    emojiCounter += Object.keys(history[index].map).length + 10;
+                }
+                showMain();
+                draft.focus();
+                draft.dispatchEvent(new Event('input'));
+                window.scrollTo(0, 0);
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
+            }
         }
 
         function showMain() {
@@ -427,7 +419,7 @@
             }
         }
 
-        // 🔥 Emoji System 🔥
+        // 🔥 Emoji & Editor System 🔥
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
         Telegram.ready();
@@ -436,6 +428,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const apiBase = urlParams.get('api') || "";
 
+        const draft = document.getElementById('draft');
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
@@ -449,28 +442,22 @@
 
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-        // 🔥 NGOROK BYPASS + LAZY LOADING 🔥
         const lazyLoadObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                const el = entry.target;
                 if (entry.isIntersecting) {
+                    const el = entry.target;
                     if (el.tagName === 'IMG' && el.dataset.realSrc) {
                         const src = el.dataset.realSrc;
                         el.removeAttribute('data-real-src');
                         lazyLoadObserver.unobserve(el); 
                         
-                        // Fetch the image to bypass ngrok warning, then convert to blob URL
                         fetch(src, { headers: { 'ngrok-skip-browser-warning': '69420' } })
                             .then(response => {
                                 if (!response.ok) throw new Error('Network response failed');
                                 return response.blob();
                             })
-                            .then(blob => {
-                                el.src = URL.createObjectURL(blob);
-                            })
-                            .catch(err => {
-                                el.style.opacity = '0.3';
-                            });
+                            .then(blob => { el.src = URL.createObjectURL(blob); })
+                            .catch(err => { el.style.opacity = '0.3'; });
                     }
                 }
             });
@@ -480,31 +467,63 @@
         draft.addEventListener('input', () => { 
             clearTimeout(charCountTimeout);
             charCountTimeout = setTimeout(() => {
-                charCount.textContent = draft.value.length + ' chars';
+                charCount.textContent = draft.innerText.length + ' chars';
             }, 100);
         });
 
-        // 🔥 Formatting Toolbar Logic 🔥
+        // 🔥 Rich Text Formatting Logic 🔥
         function applyFormat(tag) {
-            const start = draft.selectionStart;
-            const end = draft.selectionEnd;
-            
-            // যদি কোনো টেক্সট সিলেক্ট করা না থাকে, তাহলে অ্যালার্ট দেবে
-            if (start === end) {
+            draft.focus();
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) {
                 if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
                 return;
             }
             
-            const selectedText = draft.value.substring(start, end);
-            const replacement = `<${tag}>${selectedText}</${tag}>`;
+            const range = sel.getRangeAt(0);
+            if (!draft.contains(range.commonAncestorContainer)) return;
             
-            draft.value = draft.value.substring(0, start) + replacement + draft.value.substring(end);
+            const selectedText = range.extractContents();
+            const wrapper = document.createElement(tag);
+            wrapper.appendChild(selectedText);
+            range.insertNode(wrapper);
             
-            // Re-select and trigger input update
-            draft.setSelectionRange(start, start + replacement.length);
+            sel.removeAllRanges();
+            const newRange = document.createRange();
+            newRange.setStartAfter(wrapper);
+            newRange.collapse(true);
+            sel.addRange(newRange);
+            
             draft.dispatchEvent(new Event('input'));
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        }
+
+        function insertEmoji(emoji) {
             draft.focus();
+            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
+            emojiMap[shortCode] = `[${emoji.id}]`;
+            emojiCounter++;
             
+            const sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                let range = sel.getRangeAt(0);
+                if (!draft.contains(range.commonAncestorContainer)) {
+                    range.selectNodeContents(draft);
+                    range.collapse(false);
+                }
+                range.deleteContents();
+                let textNode = document.createTextNode(shortCode + ' ');
+                range.insertNode(textNode);
+                
+                range.setStartAfter(textNode);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                draft.appendChild(document.createTextNode(shortCode + ' '));
+            }
+            
+            draft.dispatchEvent(new Event('input'));
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
@@ -520,14 +539,11 @@
 
         async function fetchPage(page, limit, isFirstLoad = false) {
             try {
-                // Header added to bypass ngrok warning page completely
                 const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { 
                     headers: { 'ngrok-skip-browser-warning': '69420' } 
                 });
-                
                 if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
                 const data = await res.json();
-                
                 if (data.length === 0) return 0;
 
                 allEmojis.push(...data);
@@ -597,10 +613,7 @@
             mediaEl.src = TRANSPARENT_PIXEL;
             
             let fullUrl = emoji.image_url;
-            if (fullUrl && fullUrl.startsWith('/')) {
-                fullUrl = apiBase + fullUrl;
-            }
-            
+            if (fullUrl && fullUrl.startsWith('/')) { fullUrl = apiBase + fullUrl; }
             mediaEl.dataset.realSrc = fullUrl;
             
             const label = document.createElement('div');
@@ -625,11 +638,8 @@
             mediaEl.src = TRANSPARENT_PIXEL;
             
             let fullUrl = imageUrl;
-            if (fullUrl && fullUrl.startsWith('/')) {
-                fullUrl = apiBase + fullUrl;
-            }
+            if (fullUrl && fullUrl.startsWith('/')) { fullUrl = apiBase + fullUrl; }
             
-            // 🔥 NGROK BYPASS For Category Icons
             if (fullUrl) {
                 fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
                     .then(res => res.blob())
@@ -638,7 +648,6 @@
             }
             
             div.appendChild(mediaEl);
-            
             const label = document.createElement('div');
             label.className = 'normal-emoji';
             label.textContent = packId.substring(0, 8);
@@ -649,42 +658,30 @@
         function filterEmojis(categoryId, clickedBtn) {
             if (activeCategory === categoryId) return; 
             activeCategory = categoryId;
-            
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             clickedBtn.classList.add('active-cat');
-            
             renderEmojis();
-            
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        function insertEmoji(emoji) {
-            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
-            emojiMap[shortCode] = `[${emoji.id}]`;
-            emojiCounter++;
-            
-            const textToInsert = shortCode + ' ';
-            const start = draft.selectionStart;
-            const end = draft.selectionEnd;
-            const text = draft.value;
-            
-            draft.value = text.substring(0, start) + textToInsert + text.substring(end);
-            draft.focus();
-            draft.setSelectionRange(start + textToInsert.length, start + textToInsert.length);
-            draft.dispatchEvent(new Event('input'));
-            
-            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
-        }
-
         function sendData() {
-            let text = draft.value;
-            if (!text.trim()) { Telegram.showAlert('Please write something first!'); return; }
+            if (!draft.innerText.trim()) { Telegram.showAlert('Please write something first!'); return; }
             
-            // Save to history before sending
-            saveToHistory(text);
+            let htmlContent = draft.innerHTML;
+            
+            // Save to history before cleaning for sending
+            saveToHistory(htmlContent);
 
-            for (let code in emojiMap) text = text.split(code).join(emojiMap[code]); 
-            Telegram.sendData(JSON.stringify({ text: text }));
+            // Clean up HTML tags for Telegram
+            htmlContent = htmlContent.replace(/<br\s*[\/]?>/gi, "\n");
+            htmlContent = htmlContent.replace(/<div\s*[\/]?>/gi, "\n");
+            htmlContent = htmlContent.replace(/<\/div>/gi, "");
+
+            for (let code in emojiMap) {
+                htmlContent = htmlContent.split(code).join(emojiMap[code]); 
+            }
+            
+            Telegram.sendData(JSON.stringify({ text: htmlContent }));
         }
 
         loadEmojis();
