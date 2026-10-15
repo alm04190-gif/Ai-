@@ -1,57 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Post Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Premium Post Studio</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* 🔥 Ultra-Premium UI Variables 🔥 */
-        :root { 
-            --bg: #f4f7f6; 
-            --surface: #ffffff; 
-            --border: #e0e5ec; 
-            --accent: #007aff; 
-            --accent-hover: #005bb5; 
-            --text: #1a1a1a; 
-            --text-secondary: #6e7681; 
-            --glow: rgba(0, 122, 255, 0.2); 
-            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
-            --shadow-strong: 0 12px 32px rgba(0, 122, 255, 0.15);
-            --rain-color: rgba(0, 0, 0, 0.35); 
+        :root {
+            --bg: #eef2f7;
+            --surface: rgba(255, 255, 255, 0.86);
+            --surface-solid: #ffffff;
+            --card-bg: #f6f8fb;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #007aff;
+            --accent-2: #00c6ff;
+            --text: #141619;
+            --text-secondary: #636c76;
+            --glow: rgba(0, 122, 255, 0.16);
+            --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.06);
+            --shadow-strong: 0 10px 28px rgba(0, 122, 255, 0.22);
+            --rain-color: rgba(0, 122, 255, 0.25);
         }
 
-        /* 🔥 Dark Mode Variables 🔥 */
         [data-theme="dark"] {
-            --bg: #0a0a0a; 
-            --surface: #1c1c1e; 
-            --border: #2c2c2e; 
-            --accent: #0a84ff; 
-            --accent-hover: #0066cc; 
-            --text: #f5f5f7; 
-            --text-secondary: #98989d; 
-            --glow: rgba(10, 132, 255, 0.2); 
-            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.4);
-            --shadow-strong: 0 12px 32px rgba(10, 132, 255, 0.15);
-            --rain-color: rgba(148, 0, 211, 0.7); 
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-        
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif; 
-            padding: 20px 16px 120px 16px; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            position: relative;
+            --bg: #07080c;
+            --surface: rgba(22, 24, 32, 0.82);
+            --surface-solid: #161820;
+            --card-bg: rgba(32, 35, 46, 0.85);
+            --border: rgba(255, 255, 255, 0.09);
+            --accent: #0a84ff;
+            --accent-2: #5e5ce6;
+            --text: #f5f7fa;
+            --text-secondary: #8e95a5;
+            --glow: rgba(10, 132, 255, 0.22);
+            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.45);
+            --shadow-strong: 0 10px 30px rgba(10, 132, 255, 0.28);
+            --rain-color: rgba(138, 43, 226, 0.45);
         }
 
-        /* 🔥 Visible & Slow Rain Effect 🔥 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Fixed Viewport Lock - Puro Website Scroll Hobe Na */
+        html, body {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            user-select: none;
+        }
+
         .rain-container {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
             overflow: hidden;
@@ -59,507 +70,721 @@
         .drop {
             position: absolute;
             background: linear-gradient(to bottom, transparent, var(--rain-color));
-            width: 2.5px;
-            height: 30px;
+            width: 2px;
+            height: 28px;
             border-radius: 3px;
             animation: fall linear infinite;
         }
         @keyframes fall {
-            0% { transform: translateY(-100vh); opacity: 0; }
-            10% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translateY(100vh); opacity: 0; }
+            0% { transform: translateY(-10vh); opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translateY(105vh); opacity: 0; }
         }
 
-        /* 🔥 Premium Header with Settings 🔥 */
+        /* App Shell Layout */
+        .app-shell {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 10px 12px 12px 12px;
+            gap: 8px;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* Compact Glossy Header */
         .header-container {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--surface); padding: 16px 20px; border-radius: 18px;
-            box-shadow: var(--shadow-soft); margin-bottom: 24px;
-            border: 1px solid var(--border); position: relative; z-index: 20;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 10px 14px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border);
+            position: relative;
+            z-index: 50;
         }
         .header-title {
-            font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
-            background: linear-gradient(45deg, var(--accent), #00c6ff);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 8px;
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            background: linear-gradient(90deg, var(--accent), #00e1ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .char-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            background: var(--card-bg);
+            padding: 4px 9px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
         }
         .settings-btn {
-            background: none; border: none; font-size: 22px; cursor: pointer;
-            color: var(--text-secondary); transition: transform 0.2s;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
         }
-        .settings-btn:active { transform: rotate(45deg); }
+        .settings-btn:active { transform: scale(0.9); }
 
         .settings-menu {
-            position: absolute; top: 65px; right: 0; background: var(--surface);
-            border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-strong);
-            padding: 8px; display: none; flex-direction: column; gap: 5px; min-width: 150px;
-            transform-origin: top right; animation: scaleIn 0.2s ease-out;
+            position: absolute;
+            top: 52px;
+            right: 0;
+            background: var(--surface-solid);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-strong);
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+            z-index: 100;
         }
         .settings-menu.show { display: flex; }
         .settings-item {
-            padding: 10px 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
-            color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 10px;
-            background: transparent; border: none; text-align: left; width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            width: 100%;
         }
-        .settings-item:hover { background: var(--bg); }
-        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .settings-item:active { background: var(--glow); }
 
-        /* 🔥 Main Sections 🔥 */
-        .main-view { display: block; animation: fadeIn 0.4s ease-out; }
-        .history-view { display: none; position: relative; z-index: 10; animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Main View & History View */
+        .main-view {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 8px;
+        }
+        .history-view {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 10px;
+        }
 
-        .section { margin-bottom: 24px; position: relative; z-index: 10; }
-        
-        .section-title { 
-            font-size: 13px; font-weight: 800; color: var(--text-secondary); 
-            margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; 
-            display: flex; align-items: center; gap: 6px;
+        /* Draft Box Section */
+        .draft-card {
+            flex-shrink: 0;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 10px 12px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
-        
-        /* 🔥 ContentEditable Draft Area (WYSIWYG) 🔥 */
-        .draft-area { 
-            width: 100%; min-height: 150px; background: var(--surface); 
-            border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; 
-            color: var(--text); font-size: 16px; line-height: 1.6; 
-            font-family: inherit; box-shadow: var(--shadow-soft); 
-            overflow-y: auto; outline: none; word-wrap: break-word;
+        .draft-card:focus-within {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-strong);
         }
-        .draft-area:focus { border-color: var(--accent); box-shadow: var(--shadow-strong); transform: translateY(-2px); }
-        .draft-area:empty::before { content: attr(data-placeholder); color: #999; font-style: italic; pointer-events: none; }
-        
-        /* WYSIWYG Formatting Styles */
-        .draft-area b { font-weight: bold; }
+
+        .draft-area {
+            width: 100%;
+            min-height: 76px;
+            max-height: 125px;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.55;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            outline: none;
+            word-wrap: break-word;
+            user-select: text;
+        }
+        .draft-area:empty::before {
+            content: attr(data-placeholder);
+            color: var(--text-secondary);
+            opacity: 0.7;
+            font-style: italic;
+            pointer-events: none;
+        }
+
+        /* Inline Premium Emoji inside Draft */
+        .inline-premium-emoji {
+            width: 22px;
+            height: 22px;
+            vertical-align: -5px;
+            margin: 0 2px;
+            object-fit: contain;
+            display: inline-block;
+            pointer-events: none;
+        }
+
+        /* WYSIWYG Styles */
+        .draft-area b { font-weight: 800; }
         .draft-area i { font-style: italic; }
         .draft-area u { text-decoration: underline; }
         .draft-area s { text-decoration: line-through; }
-        .draft-area code { background: var(--border); padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 14px;}
-        .draft-area tg-spoiler { background: var(--text-secondary); color: transparent; border-radius: 4px; text-shadow: none; cursor: pointer; }
-        .draft-area tg-spoiler:active { color: inherit; background: transparent; }
-        .draft-area blockquote { border-left: 3px solid var(--accent); margin: 4px 0; padding-left: 8px; color: var(--text-secondary); display: block;}
+        .draft-area code { background: var(--card-bg); padding: 2px 5px; border-radius: 5px; font-family: monospace; font-size: 13px; border: 1px solid var(--border); }
+        .draft-area tg-spoiler { background: var(--text-secondary); color: transparent; border-radius: 4px; padding: 0 3px; }
+        .draft-area blockquote { border-left: 3px solid var(--accent); margin: 4px 0; padding-left: 8px; color: var(--text-secondary); display: block; }
 
-        /* 🔥 Fixed Formatting Toolbar (Moved Below) 🔥 */
+        /* Formatting Toolbar */
         .format-toolbar {
-            display: flex; overflow-x: auto; gap: 8px; margin-top: 12px; margin-bottom: 0px;
-            scrollbar-width: none; -webkit-overflow-scrolling: touch;
-            background: var(--surface); padding: 8px; border-radius: 12px;
-            border: 1.5px solid var(--border); box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            touch-action: pan-x;
+            gap: 6px;
+            scrollbar-width: none;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
         }
         .format-toolbar::-webkit-scrollbar { display: none; }
         .format-btn {
-            background: var(--bg); border: 1px solid var(--border);
-            color: var(--text); padding: 6px 12px; border-radius: 8px;
-            font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap;
-            transition: 0.2s;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .format-btn:active {
-            background: var(--glow); border-color: var(--accent);
-            transform: scale(0.95);
+            background: var(--glow);
+            border-color: var(--accent);
+            transform: scale(0.94);
+        }
+        .format-btn.kbd-toggle {
+            background: var(--glow);
+            border-color: var(--accent);
+            color: var(--accent);
         }
 
-        /* 🔥 Category Row 🔥 */
-        .category-hint { font-size: 12px; color: #888; margin-bottom: 12px; font-style: italic; }
-        .category-row { 
-            display: flex; overflow-x: auto; gap: 14px; padding: 10px 5px 20px 5px; 
-            margin-bottom: 5px; scrollbar-width: none; -webkit-overflow-scrolling: touch; 
+        /* Smart Search Bar + Categories Combined Card */
+        .picker-card {
+            flex: 1;
+            min-height: 0;
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid var(--border);
+            border-radius: 18px;
+            padding: 10px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        /* Glossy Search Input */
+        .search-bar-wrap {
+            flex-shrink: 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            font-size: 14px;
+            pointer-events: none;
+            color: var(--text-secondary);
+        }
+        .search-input {
+            width: 100%;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 9px 70px 9px 34px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--glow);
+        }
+        .search-input::placeholder {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            background: var(--border);
+            border: none;
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+        }
+        .search-clear.visible { display: block; }
+
+        /* Horizontal Category Strip */
+        .category-row {
+            flex-shrink: 0;
+            display: flex;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            touch-action: pan-x;
+            gap: 8px;
+            padding: 2px 2px 4px 2px;
+            scrollbar-width: none;
         }
         .category-row::-webkit-scrollbar { display: none; }
-        
-        .category-item { 
-            flex: 0 0 auto; background: var(--surface); border: 1.5px solid var(--border); 
-            border-radius: 14px; padding: 10px 12px; cursor: pointer; text-align: center; 
-            box-shadow: var(--shadow-soft); display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; min-width: 65px; 
+
+        .category-item {
+            flex: 0 0 auto;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            padding: 6px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: max-content;
+            transition: transform 0.15s, border-color 0.15s, background 0.15s;
         }
-        .category-item.active-cat { 
-            border-color: var(--accent); box-shadow: var(--shadow-strong); 
-            background: var(--glow); transform: translateY(-4px) scale(1.05); 
+        .category-item.active-cat {
+            border-color: var(--accent);
+            background: var(--glow);
+            box-shadow: 0 4px 12px var(--glow);
         }
-        .category-item img { width: 34px; height: 34px; object-fit: contain; pointer-events: none; display: block; }
-        .category-item .normal-emoji { font-size: 12px; font-weight: 600; line-height: 1; margin-top: 6px; color: var(--text-secondary); }
-        .category-item.active-cat .normal-emoji { color: var(--accent); }
-        
-        /* 🔥 Emoji Grid 🔥 */
-        .emoji-wrapper { 
-            position: relative; background: var(--surface); border: 1.5px solid var(--border); 
-            border-radius: 16px; padding: 12px; overflow: hidden; box-shadow: var(--shadow-soft); 
+        .category-item img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            pointer-events: none;
         }
-        .emoji-scroll-area { 
-            height: 160px; overflow-y: auto; overflow-x: hidden; 
-            -webkit-overflow-scrolling: touch; position: relative; 
+        .category-item .normal-emoji {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+        .category-item.active-cat .normal-emoji {
+            color: var(--accent);
+        }
+
+        /* Emoji Scroll Area */
+        .emoji-scroll-area {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 2px;
         }
         .emoji-scroll-area::-webkit-scrollbar { width: 4px; }
         .emoji-scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        
-        .emoji-fade { position: absolute; bottom: 35px; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, var(--surface)); pointer-events: none; }
-        
-        .emoji-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); 
-            gap: 10px; padding-bottom: 10px;
-        }
-        
-        .emoji-item { 
-            background: var(--bg); border: 1px solid var(--border); border-radius: 12px; 
-            padding: 8px 4px; cursor: pointer; text-align: center; display: flex; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            height: 58px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-        }
-        .emoji-item:active { transform: scale(0.85); border-color: var(--accent); background: var(--glow); box-shadow: none; }
-        .emoji-item img { width: 28px; height: 28px; object-fit: contain; display: block; margin: 0 auto; pointer-events: none; }
-        .emoji-item .label { font-size: 10px; color: var(--text-secondary); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; font-weight: 600; }
-        
-        .scroll-hint { 
-            display: flex; justify-content: center; align-items: center; width: 100%; 
-            background: transparent; color: var(--text-secondary); font-size: 12px; 
-            font-weight: 600; padding-top: 12px; border-top: 1px solid var(--border); 
-            margin-top: 8px; pointer-events: none; 
-        }
-        
-        .loading, .empty, .error { text-align: center; padding: 40px 10px; color: var(--text-secondary); font-size: 14px; grid-column: 1 / -1; font-weight: 600; }
-        
-        /* 🔥 Floating Action Button 🔥 */
-        .send-btn-wrapper { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            width: 90%; max-width: 400px; z-index: 100; 
-        }
-        .send-btn { 
-            width: 100%; background: linear-gradient(135deg, var(--accent), #00c6ff); 
-            color: #fff; border: none; border-radius: 100px; padding: 16px; 
-            font-size: 17px; font-weight: 800; letter-spacing: 0.5px; cursor: pointer; 
-            box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4); 
-            display: flex; justify-content: center; align-items: center; gap: 8px;
-        }
-        .send-btn:active { transform: scale(0.94); box-shadow: 0 5px 15px rgba(0, 122, 255, 0.3); }
-        .send-btn svg { width: 20px; height: 20px; fill: currentColor; }
-        
-        .stats { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); font-weight: 600;}
 
-        /* 🔥 History UI 🔥 */
-        .history-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-            padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-soft); cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+            gap: 8px;
+            padding-bottom: 12px;
         }
-        .history-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .history-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
-        .history-text { font-size: 15px; color: var(--text); line-height: 1.5; word-wrap: break-word; }
-        .history-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-secondary { background: var(--surface); border: 1.5px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
-        .btn-danger { background: #ff3b30; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; flex: 1; cursor: pointer; text-align: center; }
+
+        .emoji-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 6px 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 58px;
+            transition: transform 0.12s, border-color 0.12s;
+        }
+        .emoji-item:active {
+            transform: scale(0.86);
+            border-color: var(--accent);
+            background: var(--glow);
+        }
+        .emoji-item img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            pointer-events: none;
+        }
+        .emoji-item .label {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 92%;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .loading, .empty, .error {
+            text-align: center;
+            padding: 30px 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            grid-column: 1 / -1;
+            font-weight: 600;
+        }
+
+        /* Docked Send Button */
+        .send-btn-wrapper {
+            flex-shrink: 0;
+            width: 100%;
+        }
+        .send-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), #00c6ff);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: 13px;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.35);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .send-btn:active { transform: scale(0.97); }
+        .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* History UI */
+        .history-list-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            padding-right: 4px;
+        }
+        .history-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+        }
+        .history-card:active { border-color: var(--accent); background: var(--glow); }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .history-text {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .history-actions {
+            flex-shrink: 0;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-secondary {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            flex: 1;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            flex: 1;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="rain-container" id="rainContainer"></div>
 
-    <div class="header-container">
-        <div class="header-title">✨ Premium Post</div>
-        <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
-        
-        <div class="settings-menu" id="settingsMenu">
-            <button class="settings-item" onclick="toggleTheme()">🌗 Toggle Theme</button>
-            <button class="settings-item" onclick="showHistory()">🕒 History</button>
-        </div>
-    </div>
-
-    <div id="mainView" class="main-view">
-        <div class="section">
-            <div class="stats">
-                <span class="section-title">📝 Draft</span>
-                <span id="charCount">0 chars</span>
+    <div class="app-shell">
+        <div class="header-container">
+            <div class="header-title">✨ Premium Post Studio</div>
+            <div class="header-right">
+                <span class="char-badge" id="charCount">0 chars</span>
+                <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
             </div>
-            
-            <!-- ContentEditable Div for WYSIWYG Formatting -->
-            <div class="draft-area" id="draft" contenteditable="true" data-placeholder=""></div>
 
-            <!-- Toolbar Moved Below Textbox -->
-            <div class="format-toolbar" id="formatToolbar">
-                <button class="format-btn" onclick="applyFormat('b')"><b>B</b></button>
-                <button class="format-btn" onclick="applyFormat('i')"><i>I</i></button>
-                <button class="format-btn" onclick="applyFormat('u')"><u>U</u></button>
-                <button class="format-btn" onclick="applyFormat('s')"><s>S</s></button>
-                <button class="format-btn" onclick="applyFormat('code')">Mono</button>
-                <button class="format-btn" onclick="applyFormat('tg-spoiler')">Spoiler</button>
-                <button class="format-btn" onclick="applyFormat('blockquote')">Quote</button>
+            <div class="settings-menu" id="settingsMenu">
+                <button class="settings-item" onclick="toggleTheme()">🌗 Toggle Theme</button>
+                <button class="settings-item" onclick="showHistory()">🕒 Post History</button>
+                <button class="settings-item" onclick="clearDraft()">🧹 Clear Draft</button>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">📁 Emoji Categories</div>
-            <div class="category-hint">👇 Click a pack to view its premium emojis</div>
-            <div class="category-row" id="categoryRow"></div>
-        </div>
+        <!-- MAIN VIEW -->
+        <div id="mainView" class="main-view">
+            <!-- Draft Box + Toolbar -->
+            <div class="draft-card">
+                <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Type your post here... Tap any emoji below to insert directly!"></div>
 
-        <div class="section">
-            <div class="section-title">⌨️ Premium Keyboard</div>
-            <div class="emoji-wrapper">
+                <div class="format-toolbar" id="formatToolbar">
+                    <button class="format-btn kbd-toggle" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()" id="kbdBtn">⌨️ Hide/Show</button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('s')"><s>S</s></button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('code')">Mono</button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('tg-spoiler')">Spoiler</button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('blockquote')">Quote</button>
+                </div>
+            </div>
+
+            <!-- Search + Categories + Emoji Grid -->
+            <div class="picker-card">
+                <div class="search-bar-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="emojiSearchInput" class="search-input" placeholder="Search emoji (e.g. youtube, yt, fb, star, binance)..." autocomplete="off">
+                    <button type="button" id="searchClearBtn" class="search-clear" onclick="clearSearch()">✕ Clear</button>
+                </div>
+
+                <div class="category-row" id="categoryRow"></div>
+
                 <div class="emoji-scroll-area" id="emojiArea">
                     <div id="emojiKeyboard" class="emoji-grid"></div>
                 </div>
-                <div class="emoji-fade" id="fadeEffect"></div>
-                <div class="scroll-hint">
-                    👇 Scroll down for more emojis 👇
-                </div>
+            </div>
+
+            <!-- Send Button -->
+            <div class="send-btn-wrapper">
+                <button class="send-btn" id="sendBtn" onclick="sendData()">
+                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    Send to Bot
+                </button>
             </div>
         </div>
 
-        <div class="send-btn-wrapper">
-            <button class="send-btn" id="sendBtn" onclick="sendData()">
-                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                Send to Bot
-            </button>
-        </div>
-    </div>
-
-    <div id="historyView" class="history-view">
-        <div class="section-title" style="font-size: 16px; margin-bottom: 16px;">🕒 Your Post History</div>
-        <div id="historyList"></div>
-        
-        <div class="history-actions">
-            <button class="btn-secondary" onclick="showMain()">🏠 Home</button>
-            <button class="btn-danger" onclick="clearHistory()">🗑 Clear All</button>
+        <!-- HISTORY VIEW -->
+        <div id="historyView" class="history-view">
+            <div style="font-size: 14px; font-weight: 800; color: var(--text-secondary);">🕒 SAVED POST HISTORY</div>
+            <div id="historyList" class="history-list-scroll"></div>
+            <div class="history-actions">
+                <button class="btn-secondary" onclick="showMain()">🏠 Back to Editor</button>
+                <button class="btn-danger" onclick="clearHistory()">🗑 Clear History</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 🔥 Theme Management 🔥
+        const Telegram = window.Telegram.WebApp;
+        Telegram.expand();
+        Telegram.ready();
+        Telegram.enableClosingConfirmation();
+
+        // Theme Setup (Default Dark)
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            toggleSettings();
-        }
-        if(localStorage.getItem('theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
+            document.getElementById('settingsMenu').classList.remove('show');
         }
 
         function toggleSettings() {
-            const menu = document.getElementById('settingsMenu');
-            menu.classList.toggle('show');
+            document.getElementById('settingsMenu').classList.toggle('show');
         }
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('settingsMenu');
+            if (!e.target.closest('.header-container')) {
+                menu.classList.remove('show');
+            }
+        });
 
         function createRain() {
             const container = document.getElementById('rainContainer');
-            const dropCount = 25; 
-            for (let i = 0; i < dropCount; i++) {
+            for (let i = 0; i < 18; i++) {
                 let drop = document.createElement('div');
                 drop.className = 'drop';
                 drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                drop.style.animationDuration = (Math.random() * 2 + 2.2) + 's';
                 drop.style.animationDelay = Math.random() * 2 + 's';
                 container.appendChild(drop);
             }
         }
         createRain();
 
-        // 🔥 Auto-Typing Placeholder Logic 🔥
-        const draft = document.getElementById('draft');
-        const placeholderText = "Type your post here... Tap emojis below to insert them.";
-        let typeIndex = 0;
-        let typingInterval;
-        let isTyping = true;
-
-        function typePlaceholder() {
-            if (typeIndex <= placeholderText.length) {
-                draft.setAttribute('data-placeholder', placeholderText.substring(0, typeIndex) + '|');
-                typeIndex++;
-                typingInterval = setTimeout(typePlaceholder, 50);
-            } else {
-                setTimeout(() => {
-                    typeIndex = 0;
-                    if(isTyping) typePlaceholder();
-                }, 2000);
-            }
-        }
-        
-        draft.addEventListener('focus', () => {
-            isTyping = false;
-            clearTimeout(typingInterval);
-            draft.setAttribute('data-placeholder', '');
-        });
-
-        draft.addEventListener('blur', () => {
-            if (draft.innerText.trim() === '') {
-                isTyping = true;
-                typeIndex = 0;
-                typePlaceholder();
-            }
-        });
-        
-        typePlaceholder();
-
-        // 🔥 Cursor Position Tracker (FIXED) 🔥
-        let savedRange = null;
-        document.addEventListener('selectionchange', () => {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                // Save range only if the selection is inside our draft area
-                if (draft.contains(range.commonAncestorContainer)) {
-                    savedRange = range.cloneRange();
-                }
-            }
-        });
-
-        // 🔥 History Management 🔥
-        function saveToHistory(htmlText) {
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            history.unshift({ text: htmlText, date: new Date().toLocaleString() });
-            if(history.length > 20) history.pop(); 
-            localStorage.setItem('postHistory', JSON.stringify(history));
-        }
-
-        function showHistory() {
-            document.getElementById('mainView').style.display = 'none';
-            document.getElementById('historyView').style.display = 'block';
-            document.getElementById('settingsMenu').classList.remove('show');
-            
-            const list = document.getElementById('historyList');
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            
-            if(history.length === 0) {
-                list.innerHTML = '<div class="empty">No history found.</div>';
-                return;
-            }
-
-            list.innerHTML = '';
-            history.forEach((item, index) => {
-                let tempDiv = document.createElement('div');
-                tempDiv.innerHTML = item.text;
-                let previewText = tempDiv.innerText.substring(0, 100) + (tempDiv.innerText.length > 100 ? '...' : '');
-                
-                list.innerHTML += `
-                    <div class="history-card" onclick="loadHistoryItem(${index})">
-                        <div class="history-header">
-                            <span>#${history.length - index}</span>
-                            <span>${item.date}</span>
-                        </div>
-                        <div class="history-text">${previewText || '<i>[Formatted Content]</i>'}</div>
-                        <div style="font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: bold;">Tap to load ✏️</div>
-                    </div>
-                `;
-            });
-        }
-
-        function loadHistoryItem(index) {
-            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
-            if(history[index]) {
-                draft.innerHTML = history[index].text; 
-                showMain();
-                
-                // Reset cursor to the end of the loaded text
-                draft.focus();
-                const range = document.createRange();
-                range.selectNodeContents(draft);
-                range.collapse(false);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-                savedRange = range.cloneRange();
-
-                draft.dispatchEvent(new Event('input')); 
-                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
-            }
-        }
-
-        function showMain() {
-            document.getElementById('historyView').style.display = 'none';
-            document.getElementById('mainView').style.display = 'block';
-        }
-
-        function clearHistory() {
-            if(confirm("Are you sure you want to clear all history?")) {
-                localStorage.removeItem('postHistory');
-                showHistory();
-            }
-        }
-
-        // 🔥 Emoji System 🔥
-        const Telegram = window.Telegram.WebApp;
-        Telegram.expand();
-        Telegram.ready();
-        Telegram.enableClosingConfirmation();
-
         const urlParams = new URLSearchParams(window.location.search);
-        const apiBase = urlParams.get('api') || "";
+        const apiBase = (urlParams.get('api') || "").replace(/\/$/, "");
 
+        const draft = document.getElementById('draft');
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
         const emojiArea = document.getElementById('emojiArea');
         const categoryRow = document.getElementById('categoryRow');
-        
-        let emojiMap = {};
-        let emojiCounter = 1;
-        let allEmojis = [];
-        let catMap = {}; 
-        let activeCategory = null;
+        const searchInput = document.getElementById('emojiSearchInput');
+        const searchClearBtn = document.getElementById('searchClearBtn');
 
+        let savedRange = null;
+        let allEmojis = [];
+        let emojiById = {};
+        let catMap = {};
+        let activeCategory = null;
+        let currentRenderList = [];
+        let renderedCount = 0;
+        const CHUNK_SIZE = 60;
+
+        // In-Memory Blob URL Cache for 0ms Instant Rendering
+        const imageBlobCache = {};
         const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
-        const lazyLoadObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                const el = entry.target;
-                if (entry.isIntersecting) {
-                    if (el.tagName === 'IMG' && el.dataset.realSrc) {
-                        const src = el.dataset.realSrc;
-                        el.removeAttribute('data-real-src');
-                        lazyLoadObserver.unobserve(el); 
-                        
-                        fetch(src, { headers: { 'ngrok-skip-browser-warning': '69420' } })
-                            .then(response => {
-                                if (!response.ok) throw new Error('Network response failed');
-                                return response.blob();
-                            })
-                            .then(blob => {
-                                el.src = URL.createObjectURL(blob);
-                            })
-                            .catch(err => {
-                                el.style.opacity = '0.3';
-                            });
-                    }
+        // Smart Search Alias Dictionary
+        const SEARCH_ALIASES = {
+            "yt": ["youtube", "video", "play"],
+            "youtube": ["yt", "youtube", "play"],
+            "fb": ["facebook", "meta"],
+            "facebook": ["fb", "facebook", "meta"],
+            "tg": ["telegram", "plane", "chat"],
+            "telegram": ["tg", "telegram"],
+            "ig": ["instagram", "insta"],
+            "insta": ["instagram", "ig"],
+            "wa": ["whatsapp", "call", "chat"],
+            "bnb": ["binance", "crypto", "coin", "yellow"],
+            "binance": ["bnb", "binance", "crypto"],
+            "btc": ["bitcoin", "crypto", "coin"],
+            "dc": ["discord", "game"],
+            "tt": ["tiktok", "music", "video"],
+            "tiktok": ["tt", "tiktok"],
+            "nf": ["netflix", "movie", "red"],
+            "star": ["star", "gold", "premium", "sparkle"],
+            "verify": ["verified", "tick", "check", "blue"],
+            "tick": ["verified", "tick", "check"],
+            "fire": ["fire", "hot", "lit", "flame"],
+            "love": ["heart", "love", "red", "like"],
+            "laugh": ["laugh", "funny", "haha", "lol", "joy"],
+            "angry": ["angry", "rage", "mad"]
+        };
+
+        // Track Cursor Position Inside Draft
+        function saveCurrentSelection() {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const r = sel.getRangeAt(0);
+                if (draft.contains(r.commonAncestorContainer)) {
+                    savedRange = r.cloneRange();
                 }
-            });
-        }, { root: emojiArea, rootMargin: '100px 0px', threshold: 0 });
+            }
+        }
+        document.addEventListener('selectionchange', saveCurrentSelection);
+        draft.addEventListener('keyup', saveCurrentSelection);
+        draft.addEventListener('mouseup', saveCurrentSelection);
+        draft.addEventListener('touchend', saveCurrentSelection);
 
-        let charCountTimeout;
-        draft.addEventListener('input', () => { 
-            clearTimeout(charCountTimeout);
-            charCountTimeout = setTimeout(() => {
-                charCount.textContent = draft.innerText.replace(/\n/g, '').length + ' chars';
-            }, 100);
-        });
+        function toggleKeyboard() {
+            if (document.activeElement === draft) {
+                draft.blur();
+            } else {
+                draft.focus();
+                if (savedRange) {
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(savedRange);
+                }
+            }
+        }
 
-        // 🔥 WYSIWYG Formatting Logic 🔥
+        function clearDraft() {
+            draft.innerHTML = '';
+            savedRange = null;
+            updateCharCount();
+            document.getElementById('settingsMenu').classList.remove('show');
+        }
+
+        function updateCharCount() {
+            const imgs = draft.querySelectorAll('img.inline-premium-emoji').length;
+            const textLen = draft.innerText.replace(/\n/g, '').length;
+            charCount.textContent = (textLen + imgs) + ' chars';
+        }
+
+        draft.addEventListener('input', updateCharCount);
+
+        // WYSIWYG Formatting
         function applyFormat(tag) {
-            draft.focus();
-            
             const selection = window.getSelection();
-            
-            // Restore saved cursor position if available
             if (savedRange) {
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
             }
-            
-            const commandMap = {
-                'b': 'bold',
-                'i': 'italic',
-                'u': 'underline',
-                's': 'strikeThrough'
-            };
-            
+            if (!selection.rangeCount) return;
+
+            const commandMap = { 'b': 'bold', 'i': 'italic', 'u': 'underline', 's': 'strikeThrough' };
             if (commandMap[tag]) {
                 document.execCommand(commandMap[tag], false, null);
             } else {
-                if (!selection.rangeCount) return;
                 const range = selection.getRangeAt(0);
-                
                 if (range.collapsed) {
-                    if(Telegram.showAlert) Telegram.showAlert('Please select some text first!');
+                    if (Telegram.showAlert) Telegram.showAlert('Please select some text first!');
                     return;
                 }
-                
                 const wrapper = document.createElement(tag);
                 try {
                     range.surroundContents(wrapper);
@@ -569,91 +794,141 @@
                     range.insertNode(wrapper);
                 }
                 selection.removeAllRanges();
+                const newRange = document.createRange();
+                newRange.selectNodeContents(wrapper);
+                newRange.collapse(false);
+                selection.addRange(newRange);
             }
-            
-            // Update saved range after formatting
-            if (selection.rangeCount > 0) {
-                savedRange = selection.getRangeAt(0).cloneRange();
-            }
-            
-            draft.dispatchEvent(new Event('input'));
+            saveCurrentSelection();
+            updateCharCount();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        async function loadEmojis() {
-            if (!apiBase) {
-                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Open via Bot.</div>';
+        // Image Loader with Memory Blob Cache
+        function loadEmojiBlob(emojiId, rawUrl, imgEl) {
+            if (!rawUrl) return;
+            const fullUrl = rawUrl.startsWith('/') ? (apiBase + rawUrl) : rawUrl;
+            if (imageBlobCache[emojiId]) {
+                imgEl.src = imageBlobCache[emojiId];
                 return;
             }
-            keyboard.innerHTML = '<div class="loading">Loading emojis...</div>';
-            await fetchPage(1, 1000, true);
+            fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
+                .then(r => {
+                    if (!r.ok) throw new Error('err');
+                    return r.blob();
+                })
+                .then(blob => {
+                    const bUrl = URL.createObjectURL(blob);
+                    imageBlobCache[emojiId] = bUrl;
+                    imgEl.src = bUrl;
+                })
+                .catch(() => {
+                    imgEl.style.opacity = '0.3';
+                });
+        }
+
+        const lazyLoadObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    if (el.tagName === 'IMG' && el.dataset.realSrc) {
+                        const src = el.dataset.realSrc;
+                        const eid = el.dataset.eid;
+                        el.removeAttribute('data-real-src');
+                        lazyLoadObserver.unobserve(el);
+                        loadEmojiBlob(eid, src, el);
+                    }
+                }
+            });
+        }, { root: emojiArea, rootMargin: '140px 0px', threshold: 0 });
+
+        // Infinite Scroll inside Emoji Area for Chunked Rendering
+        emojiArea.addEventListener('scroll', () => {
+            if (emojiArea.scrollTop + emojiArea.clientHeight >= emojiArea.scrollHeight - 80) {
+                renderNextChunk();
+            }
+        });
+
+        async function loadEmojis() {
+            if (!apiBase) {
+                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Please open via Bot.</div>';
+                return;
+            }
+            keyboard.innerHTML = '<div class="loading">✨ Loading premium emojis...</div>';
+            await fetchPage(1, 1200, true);
             fetchRemainingInBackground();
         }
 
         async function fetchPage(page, limit, isFirstLoad = false) {
             try {
-                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, { 
-                    headers: { 'ngrok-skip-browser-warning': '69420' } 
+                const res = await fetch(`${apiBase}/api/emojis?page=${page}&limit=${limit}`, {
+                    headers: { 'ngrok-skip-browser-warning': '69420' }
                 });
-                
-                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                
-                if (data.length === 0) return 0;
+                if (!data || data.length === 0) return 0;
 
-                allEmojis.push(...data);
-                
                 data.forEach(emoji => {
+                    if (!emojiById[emoji.id]) {
+                        emojiById[emoji.id] = emoji;
+                        allEmojis.push(emoji);
+                    }
                     const packId = emoji.pack_id || 'Other';
                     if (!catMap[packId]) {
                         catMap[packId] = true;
-                        createCategoryButton(packId, emoji.image_url);
+                        createCategoryButton(packId, emoji.image_url, emoji.id);
                     }
                 });
-                
+
                 if (isFirstLoad && Object.keys(catMap).length > 0) {
                     const firstPack = Object.keys(catMap)[0];
                     const firstBtn = document.querySelector('.category-item');
                     if (firstBtn) filterEmojis(firstPack, firstBtn);
-                } else if (!isFirstLoad && activeCategory) {
+                } else if (!isFirstLoad && !searchInput.value.trim()) {
                     const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
                     if (newlyAdded.length > 0) {
-                        appendEmojisToGrid(newlyAdded);
+                        currentRenderList.push(...newlyAdded);
+                        renderNextChunk();
                     }
                 }
                 return data.length;
             } catch (err) {
-                if(isFirstLoad) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
+                if (isFirstLoad) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
                 return 0;
             }
         }
 
         async function fetchRemainingInBackground() {
             let page = 2;
-            const limit = 1000;
+            const limit = 1200;
             while (true) {
                 const count = await fetchPage(page, limit, false);
-                if (count < limit) break; 
+                if (count < limit) break;
                 page++;
             }
         }
 
-        function renderEmojis() {
+        function setGridList(list) {
             keyboard.innerHTML = '';
-            let filteredEmojis = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
-            if (filteredEmojis.length === 0) {
-                keyboard.innerHTML = '<div class="empty">Loading...</div>';
+            currentRenderList = list;
+            renderedCount = 0;
+            emojiArea.scrollTop = 0;
+
+            if (list.length === 0) {
+                keyboard.innerHTML = '<div class="empty">😕 No matching emojis found.</div>';
                 return;
             }
-            appendEmojisToGrid(filteredEmojis);
-            emojiArea.scrollTop = 0;
+            renderNextChunk();
         }
 
-        function appendEmojisToGrid(emojis) {
+        function renderNextChunk() {
+            if (renderedCount >= currentRenderList.length) return;
+            const nextSlice = currentRenderList.slice(renderedCount, renderedCount + CHUNK_SIZE);
+            renderedCount += nextSlice.length;
+
             const fragment = document.createDocumentFragment();
-            emojis.forEach(emoji => {
-                const div = createEmojiElement(emoji);
-                fragment.appendChild(div);
+            nextSlice.forEach(emoji => {
+                fragment.appendChild(createEmojiElement(emoji));
             });
             keyboard.appendChild(fragment);
         }
@@ -661,138 +936,300 @@
         function createEmojiElement(emoji) {
             const div = document.createElement('div');
             div.className = 'emoji-item';
-            div.dataset.emojiId = emoji.id;
-            
+
             const mediaEl = document.createElement('img');
-            mediaEl.className = 'media-container';
-            mediaEl.src = TRANSPARENT_PIXEL;
-            
-            let fullUrl = emoji.image_url;
-            if (fullUrl && fullUrl.startsWith('/')) {
-                fullUrl = apiBase + fullUrl;
+            mediaEl.dataset.eid = emoji.id;
+            if (imageBlobCache[emoji.id]) {
+                mediaEl.src = imageBlobCache[emoji.id];
+            } else {
+                mediaEl.src = TRANSPARENT_PIXEL;
+                mediaEl.dataset.realSrc = emoji.image_url;
+                lazyLoadObserver.observe(mediaEl);
             }
-            
-            mediaEl.dataset.realSrc = fullUrl;
-            
+
             const label = document.createElement('div');
             label.className = 'label';
-            label.textContent = emoji.symbol || '⭐';
-            
+            const firstTag = (emoji.tags || '').split(/\s+/)[0];
+            label.textContent = firstTag || emoji.symbol || '⭐';
+
             div.appendChild(mediaEl);
             div.appendChild(label);
+
+            // Prevent mobile keyboard from popping up when tapping emoji
+            div.onmousedown = (e) => e.preventDefault();
             div.onclick = () => insertEmoji(emoji);
-            
-            lazyLoadObserver.observe(mediaEl);
+
             return div;
         }
 
-        function createCategoryButton(packId, imageUrl) {
+        function createCategoryButton(packId, imageUrl, eid) {
             const div = document.createElement('div');
             div.className = 'category-item';
+            div.onmousedown = (e) => e.preventDefault();
             div.onclick = () => filterEmojis(packId, div);
-            
+
             const mediaEl = document.createElement('img');
-            mediaEl.className = 'media-container';
             mediaEl.src = TRANSPARENT_PIXEL;
-            
-            let fullUrl = imageUrl;
-            if (fullUrl && fullUrl.startsWith('/')) {
-                fullUrl = apiBase + fullUrl;
-            }
-            
-            if (fullUrl) {
-                fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
-                    .then(res => res.blob())
-                    .then(blob => { mediaEl.src = URL.createObjectURL(blob); })
-                    .catch(() => { mediaEl.style.opacity = '0.3'; });
-            }
-            
-            div.appendChild(mediaEl);
-            
+            loadEmojiBlob(eid, imageUrl, mediaEl);
+
             const label = document.createElement('div');
             label.className = 'normal-emoji';
-            label.textContent = packId.substring(0, 8);
+            label.textContent = packId.replace(/^Pack_/, '').substring(0, 9);
+
+            div.appendChild(mediaEl);
             div.appendChild(label);
             categoryRow.appendChild(div);
         }
 
         function filterEmojis(categoryId, clickedBtn) {
-            if (activeCategory === categoryId) return; 
+            if (searchInput.value.trim()) {
+                searchInput.value = '';
+                searchClearBtn.classList.remove('visible');
+            }
             activeCategory = categoryId;
-            
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
-            clickedBtn.classList.add('active-cat');
-            
-            renderEmojis();
-            
+            if (clickedBtn) clickedBtn.classList.add('active-cat');
+
+            const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+            setGridList(filtered);
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // 🔥 Insert Emoji at Exact Cursor Position 🔥
+        // Smart Fuzzy & Alias Search Engine
+        function isFuzzyMatch(target, query) {
+            if (target.includes(query)) return true;
+            if (query.length < 3) return false;
+            // Allow 1-2 character typo tolerance
+            let tIdx = 0, qIdx = 0, mismatches = 0;
+            while (tIdx < target.length && qIdx < query.length) {
+                if (target[tIdx] === query[qIdx]) {
+                    tIdx++; qIdx++;
+                } else {
+                    mismatches++;
+                    if (mismatches > 2) return false;
+                    qIdx++;
+                }
+            }
+            return qIdx >= query.length - 1;
+        }
+
+        let searchTimer;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            const rawQ = searchInput.value.trim().toLowerCase().replace(/^#/, '');
+            searchClearBtn.classList.toggle('visible', rawQ.length > 0);
+
+            if (!rawQ) {
+                const activeBtn = document.querySelector('.category-item.active-cat') || document.querySelector('.category-item');
+                if (activeCategory) {
+                    const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+                    setGridList(filtered);
+                }
+                return;
+            }
+
+            searchTimer = setTimeout(() => {
+                const expandedTerms = [rawQ, ...(SEARCH_ALIASES[rawQ] || [])];
+                const scored = [];
+
+                for (let i = 0; i < allEmojis.length; i++) {
+                    const em = allEmojis[i];
+                    const tags = (em.tags || '').toLowerCase();
+                    const pack = (em.pack_id || '').toLowerCase();
+                    const sym = em.symbol || '';
+
+                    let score = 0;
+                    for (const term of expandedTerms) {
+                        if (sym === term) { score = 100; break; }
+                        const tagWords = tags.split(/\s+/);
+                        if (tagWords.includes(term)) { score = Math.max(score, 95); }
+                        else if (tagWords.some(w => w.startsWith(term))) { score = Math.max(score, 85); }
+                        else if (tags.includes(term)) { score = Math.max(score, 75); }
+                        else if (pack.includes(term)) { score = Math.max(score, 60); }
+                        else if (tagWords.some(w => isFuzzyMatch(w, term))) { score = Math.max(score, 50); }
+                    }
+                    if (score > 0) scored.push({ em, score });
+                }
+
+                scored.sort((a, b) => b.score - a.score);
+                setGridList(scored.map(s => s.em));
+            }, 80);
+        });
+
+        function clearSearch() {
+            searchInput.value = '';
+            searchClearBtn.classList.remove('visible');
+            const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+            setGridList(filtered);
+        }
+
+        // Insert Actual Premium Emoji Image Directly into Draft Box (No Brackets, No Forced Keyboard Popup)
         function insertEmoji(emoji) {
-            const shortCode = `[${emoji.symbol || '⭐'}${emojiCounter}]`;
-            emojiMap[shortCode] = `[${emoji.id}]`;
-            emojiCounter++;
-            
-            const textToInsert = shortCode + ' ';
-            
-            draft.focus();
-            const selection = window.getSelection();
-            let range;
-            
-            // Use the saved cursor position if available
-            if (savedRange) {
-                selection.removeAllRanges();
-                selection.addRange(savedRange);
-                range = savedRange;
-            } else if (selection.rangeCount > 0 && draft.contains(selection.anchorNode)) {
-                range = selection.getRangeAt(0);
+            const imgNode = document.createElement('img');
+            imgNode.className = 'inline-premium-emoji';
+            imgNode.dataset.emojiId = emoji.id;
+            imgNode.dataset.imgPath = emoji.image_url || `/api/image/${emoji.id}.webp`;
+            imgNode.alt = emoji.symbol || '⭐';
+
+            if (imageBlobCache[emoji.id]) {
+                imgNode.src = imageBlobCache[emoji.id];
             } else {
-                // Fallback to the end of the text box
+                imgNode.src = TRANSPARENT_PIXEL;
+                loadEmojiBlob(emoji.id, imgNode.dataset.imgPath, imgNode);
+            }
+
+            const spaceNode = document.createTextNode('\u00A0');
+
+            let range = savedRange;
+            if (!range || !draft.contains(range.commonAncestorContainer)) {
                 range = document.createRange();
                 range.selectNodeContents(draft);
                 range.collapse(false);
             }
-            
-            // Replace selected text (if any) and insert emoji
+
             range.deleteContents();
-            const textNode = document.createTextNode(textToInsert);
-            range.insertNode(textNode);
-            
-            // Move cursor right after the inserted emoji
-            range.setStartAfter(textNode);
+            range.insertNode(spaceNode);
+            range.insertNode(imgNode);
+
+            // Advance cursor after the inserted emoji & space
+            range.setStartAfter(spaceNode);
             range.collapse(true);
-            
-            selection.removeAllRanges();
-            selection.addRange(range);
-            
-            // Update the saved range so the next emoji goes after this one
             savedRange = range.cloneRange();
-            
-            draft.dispatchEvent(new Event('input'));
+
+            // If keyboard is already open, keep selection synced
+            if (document.activeElement === draft) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(savedRange);
+            }
+
+            updateCharCount();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        function sendData() {
-            if (!draft.innerText.trim() && !draft.innerHTML.includes('<img')) { 
-                if(Telegram.showAlert) Telegram.showAlert('Please write something first!'); 
-                return; 
-            }
-            
-            saveToHistory(draft.innerHTML);
+        // Convert Draft DOM (with inline premium emoji images) to Bot-ready HTML + [emoji_id]
+        function serializeDraftForBot(containerEl) {
+            const clone = containerEl.cloneNode(true);
 
-            let text = draft.innerHTML
-                .replace(/<div><br><\/div>/gi, '\n')
+            // Replace every inline premium emoji <img> with [emoji_id]
+            clone.querySelectorAll('img.inline-premium-emoji').forEach(img => {
+                const eid = img.dataset.emojiId;
+                const replacement = document.createTextNode(eid ? `[${eid}]` : (img.alt || '⭐'));
+                img.replaceWith(replacement);
+            });
+
+            return clone.innerHTML
+                .replace(/<div><br\s*\/?><\/div>/gi, '\n')
                 .replace(/<div>/gi, '\n')
                 .replace(/<\/div>/gi, '')
                 .replace(/<br\s*\/?>/gi, '\n')
-                .replace(/&nbsp;/gi, ' ');
+                .replace(/&nbsp;|\u00A0/g, ' ');
+        }
 
-            for (let code in emojiMap) {
-                text = text.split(code).join(emojiMap[code]); 
+        // History Management (100% Preserves Premium Emoji IDs)
+        function saveToHistory(botFormattedText) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            history.unshift({
+                botText: botFormattedText,
+                date: new Date().toLocaleString()
+            });
+            if (history.length > 25) history.pop();
+            localStorage.setItem('postHistory', JSON.stringify(history));
+        }
+
+        // Convert [emoji_id] in saved history back to visual <img> tags for Draft/Preview
+        function hydrateBotTextToVisualHTML(botText) {
+            if (!botText) return '';
+            const htmlWithBreaks = botText.replace(/\n/g, '<br>');
+            return htmlWithBreaks.replace(/\[(\d{17,21})\]/g, (match, eid) => {
+                const imgPath = `/api/image/${eid}.webp`;
+                return `<img class="inline-premium-emoji" data-emoji-id="${eid}" data-img-path="${imgPath}" src="${TRANSPARENT_PIXEL}" alt="⭐">`;
+            });
+        }
+
+        function hydrateImagesInContainer(container) {
+            container.querySelectorAll('img.inline-premium-emoji').forEach(img => {
+                const eid = img.dataset.emojiId;
+                const path = img.dataset.imgPath || `/api/image/${eid}.webp`;
+                if (eid) loadEmojiBlob(eid, path, img);
+            });
+        }
+
+        function showHistory() {
+            document.getElementById('mainView').style.display = 'none';
+            document.getElementById('historyView').style.display = 'flex';
+            document.getElementById('settingsMenu').classList.remove('show');
+
+            const list = document.getElementById('historyList');
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+
+            if (history.length === 0) {
+                list.innerHTML = '<div class="empty">No saved history yet.</div>';
+                return;
             }
-            
-            Telegram.sendData(JSON.stringify({ text: text }));
+
+            list.innerHTML = '';
+            history.forEach((item, index) => {
+                const rawBotText = item.botText || item.text || '';
+                const card = document.createElement('div');
+                card.className = 'history-card';
+                card.onclick = () => loadHistoryItem(index);
+
+                const visualHTML = hydrateBotTextToVisualHTML(rawBotText);
+                card.innerHTML = `
+                    <div class="history-header">
+                        <span>POST #${history.length - index}</span>
+                        <span>${item.date || ''}</span>
+                    </div>
+                    <div class="history-text">${visualHTML}</div>
+                    <div style="font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 700;">Tap to load into editor ✏️</div>
+                `;
+                list.appendChild(card);
+                hydrateImagesInContainer(card);
+            });
+        }
+
+        function loadHistoryItem(index) {
+            let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
+            const item = history[index];
+            if (item) {
+                const rawBotText = item.botText || item.text || '';
+                draft.innerHTML = hydrateBotTextToVisualHTML(rawBotText);
+                hydrateImagesInContainer(draft);
+                showMain();
+
+                const range = document.createRange();
+                range.selectNodeContents(draft);
+                range.collapse(false);
+                savedRange = range.cloneRange();
+
+                updateCharCount();
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        function showMain() {
+            document.getElementById('historyView').style.display = 'none';
+            document.getElementById('mainView').style.display = 'flex';
+        }
+
+        function clearHistory() {
+            if (confirm("Clear all post history?")) {
+                localStorage.removeItem('postHistory');
+                showHistory();
+            }
+        }
+
+        function sendData() {
+            const hasEmoji = draft.querySelector('img.inline-premium-emoji') !== null;
+            if (!draft.innerText.trim() && !hasEmoji) {
+                if (Telegram.showAlert) Telegram.showAlert('Please write something or add an emoji first!');
+                return;
+            }
+
+            const finalBotText = serializeDraftForBot(draft);
+            saveToHistory(finalBotText);
+            Telegram.sendData(JSON.stringify({ text: finalBotText }));
         }
 
         loadEmojis();
