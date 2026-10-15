@@ -3,46 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Premium Post Studio Pro</title>
+    <title>Post Studio Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-main: #f0f4f9;
-            --bg- ambient: radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.14), transparent 45%),
-                           radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.12), transparent 45%);
+            --bg-main: #eef3f9;
+            --bg-ambient: radial-gradient(circle at 12% 8%, rgba(56, 189, 248, 0.18), transparent 42%),
+                          radial-gradient(circle at 88% 90%, rgba(124, 58, 237, 0.15), transparent 45%);
             --surface: #ffffff;
-            --surface-2: #f8fafc;
-            --surface-3: #eef2f6;
+            --surface-2: #f3f6fb;
+            --surface-3: #e5eaf3;
             --border: rgba(15, 23, 42, 0.09);
-            --border-highlight: rgba(37, 99, 235, 0.35);
+            --border-highlight: rgba(37, 99, 235, 0.45);
             --accent: #2563eb;
             --accent-2: #7c3aed;
             --accent-cyan: #06b6d4;
             --text: #0f172a;
             --text-muted: #64748b;
-            --glow: rgba(37, 99, 235, 0.12);
-            --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
-            --shadow-btn: 0 10px 25px -4px rgba(37, 99, 235, 0.45);
+            --glow: rgba(37, 99, 235, 0.14);
+            --shadow-card: 0 10px 28px -6px rgba(15, 23, 42, 0.08);
+            --shadow-btn: 0 10px 26px -4px rgba(37, 99, 235, 0.45);
+            --shimmer-1: #e2e8f0;
+            --shimmer-2: #f8fafc;
         }
 
         [data-theme="dark"] {
-            --bg-main: #06080f;
-            --bg-ambient: radial-gradient(circle at 10% 5%, rgba(56, 189, 248, 0.12), transparent 40%),
-                          radial-gradient(circle at 90% 15%, rgba(139, 92, 246, 0.12), transparent 40%),
-                          radial-gradient(circle at 50% 95%, rgba(37, 99, 235, 0.10), transparent 45%);
-            --surface: #0f131f;
-            --surface-2: #161b2c;
-            --surface-3: #1e253a;
-            --border: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(56, 189, 248, 0.45);
+            --bg-main: #060811;
+            --bg-ambient: radial-gradient(circle at 10% 5%, rgba(56, 189, 248, 0.14), transparent 40%),
+                          radial-gradient(circle at 90% 15%, rgba(139, 92, 246, 0.15), transparent 42%),
+                          radial-gradient(circle at 50% 95%, rgba(6, 182, 212, 0.12), transparent 45%);
+            --surface: #0e1322;
+            --surface-2: #161d31;
+            --surface-3: #1f2942;
+            --border: rgba(255, 255, 255, 0.09);
+            --border-highlight: rgba(56, 189, 248, 0.55);
             --accent: #38bdf8;
             --accent-2: #8b5cf6;
             --accent-cyan: #06b6d4;
             --text: #f8fafc;
             --text-muted: #94a3b8;
-            --glow: rgba(56, 189, 248, 0.15);
-            --shadow-card: 0 10px 30px -6px rgba(0, 0, 0, 0.65);
-            --shadow-btn: 0 10px 28px -4px rgba(56, 189, 248, 0.35);
+            --glow: rgba(56, 189, 248, 0.16);
+            --shadow-card: 0 12px 32px -6px rgba(0, 0, 0, 0.72);
+            --shadow-btn: 0 10px 28px -4px rgba(56, 189, 248, 0.4);
+            --shimmer-1: #161d31;
+            --shimmer-2: #232e4d;
         }
 
         * {
@@ -52,12 +56,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Viewport Lock - Prevents Whole Page Bouncing/Scrolling */
         html, body {
-            position: fixed;
-            inset: 0;
             width: 100%;
-            height: 100%;
             height: 100dvh;
             overflow: hidden;
             overscroll-behavior: none;
@@ -73,13 +73,60 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: 100%;
+            height: 100dvh;
             max-width: 540px;
             margin: 0 auto;
-            padding: 10px 12px 12px 12px;
+            padding: 8px 10px 10px 10px;
             gap: 8px;
             position: relative;
-            z-index: 5;
+        }
+
+        /* ================= LIVE ANIMATIONS FOR PREMIUM UI ICONS ================= */
+        @keyframes floatPulse {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-2.5px) scale(1.08); }
+        }
+        @keyframes spinSlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes wiggleGlow {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-8deg) scale(1.08); }
+            75% { transform: rotate(8deg) scale(1.08); }
+        }
+        @keyframes rocketFly {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(2.5px, -2.5px) scale(1.1); }
+        }
+        @keyframes borderGlowPulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(56, 189, 248, 0.35), 0 0 22px rgba(139, 92, 246, 0.2), inset 0 0 8px rgba(56, 189, 248, 0.12);
+                border-color: #38bdf8;
+            }
+            50% {
+                box-shadow: 0 0 16px rgba(139, 92, 246, 0.55), 0 0 28px rgba(6, 182, 212, 0.35), inset 0 0 12px rgba(139, 92, 246, 0.18);
+                border-color: #a855f7;
+            }
+        }
+        @keyframes shimmerAnim {
+            0% { background-position: -120px 0; }
+            100% { background-position: 120px 0; }
+        }
+
+        .anim-float { animation: floatPulse 2.4s ease-in-out infinite; }
+        .anim-wiggle { animation: wiggleGlow 2.6s ease-in-out infinite; }
+        .anim-spin { animation: spinSlow 9s linear infinite; }
+        .anim-rocket { animation: rocketFly 1.8s ease-in-out infinite; }
+
+        .ui-prem-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+            display: inline-block;
+            vertical-align: middle;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 5px rgba(56, 189, 248, 0.35));
         }
 
         /* ================= HEADER ================= */
@@ -91,7 +138,7 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 9px 12px;
+            padding: 8px 11px;
             box-shadow: var(--shadow-card);
             position: relative;
             z-index: 40;
@@ -103,23 +150,28 @@
             gap: 8px;
         }
 
-        .brand- logo {
-            width: 28px;
-            height: 28px;
-            border-radius: 9px;
-            background: linear-gradient(135deg, #38bdf8, #6366f1, #a855f7);
+        .brand-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.25));
+            border: 1px solid var(--border-highlight);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
-            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 3px 12px rgba(56, 189, 248, 0.25);
+        }
+        .brand-logo img, .brand-logo svg {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
         }
 
         .brand-title {
             font-size: 15px;
             font-weight: 800;
             letter-spacing: -0.3px;
-            background: linear-gradient(90deg, var(--text), var(--accent));
+            background: linear-gradient(90deg, var(--text), var(--accent), #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -127,7 +179,7 @@
         .top-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .stat-pill {
@@ -151,13 +203,12 @@
             background: var(--surface-2);
             border: 1px solid var(--border);
             color: var(--text);
-            width: 31px;
-            height: 31px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
             cursor: pointer;
             transition: transform 0.12s, border-color 0.15s;
         }
@@ -169,32 +220,32 @@
         /* Dropdown Menu */
         .settings-menu {
             position: absolute;
-            top: 50px;
+            top: 48px;
             right: 0;
             background: var(--surface);
-            border: 1px solid var(--border-highlight);
+            border: 1.5px solid var(--border-highlight);
             border-radius: 14px;
             box-shadow: var(--shadow-card);
             padding: 6px;
             display: none;
             flex-direction: column;
             gap: 4px;
-            min-width: 165px;
+            min-width: 175px;
             z-index: 100;
         }
         .settings-menu.show { display: flex; }
         .settings-item {
-            padding: 9px 12px;
-            border-radius: 9px;
+            padding: 9px 11px;
+            border-radius: 10px;
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text);
             background: transparent;
             border: none;
             text-align: left;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
             cursor: pointer;
         }
         .settings-item:active { background: var(--glow); color: var(--accent); }
@@ -203,16 +254,18 @@
         .main-view {
             display: flex;
             flex-direction: column;
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
             gap: 8px;
+            overflow: hidden;
         }
         .history-view {
             display: none;
             flex-direction: column;
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
             gap: 10px;
+            overflow: hidden;
         }
 
         /* ================= DRAFT STUDIO CARD ================= */
@@ -220,12 +273,12 @@
             flex-shrink: 0;
             background: var(--surface);
             border: 1.5px solid var(--border);
-            border-radius: 18px;
-            padding: 10px 12px 8px 12px;
+            border-radius: 16px;
+            padding: 9px 11px 7px 11px;
             box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .editor-card:focus-within {
@@ -235,26 +288,23 @@
 
         .draft-area {
             width: 100%;
-            min-height: 68px;
-            max-height: 112px;
+            min-height: 60px;
+            max-height: 98px;
             color: var(--text);
             font-size: 15px;
-            line-height: 1.55;
+            line-height: 1.5;
             overflow-y: auto;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
             outline: none;
             word-wrap: break-word;
             user-select: text;
-            padding-right: 2px;
         }
-        .draft-area::-webkit-scrollbar { width: 3px; }
-        .draft-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         .draft-area:empty::before {
             content: attr(data-placeholder);
             color: var(--text-muted);
             opacity: 0.65;
-            font-size: 14px;
+            font-size: 13.5px;
             pointer-events: none;
         }
 
@@ -315,13 +365,15 @@
             border: 1px solid var(--border);
             color: var(--text);
             padding: 5px 10px;
-            border-radius: 8px;
+            border-radius: 9px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
             flex-shrink: 0;
-            transition: transform 0.1s, background 0.15s, border-color 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         .format-btn:active {
             transform: scale(0.92);
@@ -330,55 +382,55 @@
             color: var(--accent);
         }
         .format-btn.kbd-pill {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15));
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(139, 92, 246, 0.18));
             border-color: var(--border-highlight);
             color: var(--accent);
         }
 
-        /* ================= EMOJI STUDIO VAULT ================= */
+        /* ================= EMOJI VAULT CARD ================= */
         .vault-card {
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
             background: var(--surface);
             border: 1.5px solid var(--border);
-            border-radius: 20px;
-            padding: 10px;
+            border-radius: 18px;
+            padding: 9px;
             box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
             overflow: hidden;
         }
 
-        /* Search Box */
+        /* Glowing Neon Search Bar */
         .search-row {
             flex-shrink: 0;
             position: relative;
             display: flex;
             align-items: center;
+            border-radius: 13px;
+            border: 1.5px solid #38bdf8;
+            background: var(--surface-2);
+            animation: borderGlowPulse 3.2s ease-in-out infinite;
         }
-        .search-icon {
+        .search-icon-box {
             position: absolute;
-            left: 11px;
-            font-size: 13px;
-            color: var(--accent);
+            left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             pointer-events: none;
         }
         .search-input {
             width: 100%;
-            background: var(--surface-2);
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 88px 8px 32px;
+            background: transparent;
+            border: none;
+            border-radius: 13px;
+            padding: 9px 84px 9px 36px;
             color: var(--text);
             font-size: 13.5px;
             font-weight: 600;
             outline: none;
-            transition: border-color 0.18s, box-shadow 0.18s;
-        }
-        .search-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--glow);
         }
         .search-input::placeholder {
             color: var(--text-muted);
@@ -394,7 +446,7 @@
         }
         .match-count {
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--accent);
             background: var(--glow);
             padding: 3px 6px;
@@ -416,7 +468,7 @@
         }
         .search-clear.visible { display: inline-block; }
 
-        /* Quick Filter Tag Chips */
+        /* Quick Filter Tag Chips with Real Premium Emojis */
         .quick-chips {
             flex-shrink: 0;
             display: flex;
@@ -425,7 +477,7 @@
             touch-action: pan-x;
             gap: 6px;
             scrollbar-width: none;
-            padding-bottom: 2px;
+            padding: 2px 1px;
         }
         .quick-chips::-webkit-scrollbar { display: none; }
 
@@ -433,22 +485,29 @@
             flex: 0 0 auto;
             background: var(--surface-2);
             border: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 11px;
+            color: var(--text);
+            font-size: 11.5px;
             font-weight: 700;
-            padding: 4px 10px;
+            padding: 4px 10px 4px 7px;
             border-radius: 99px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             transition: all 0.15s;
+        }
+        .chip-btn img, .chip-btn svg {
+            width: 17px;
+            height: 17px;
+            object-fit: contain;
+            border-radius: 4px;
+            pointer-events: none;
         }
         .chip-btn.active-chip {
             background: linear-gradient(135deg, #2563eb, #7c3aed);
             color: #ffffff;
             border-color: transparent;
-            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+            box-shadow: 0 3px 12px rgba(99, 102, 241, 0.45);
         }
         .chip-btn:active { transform: scale(0.93); }
 
@@ -459,7 +518,7 @@
             overflow-x: auto;
             overscroll-behavior-x: contain;
             touch-action: pan-x;
-            gap: 7px;
+            gap: 6px;
             padding: 2px 1px;
             scrollbar-width: none;
         }
@@ -475,19 +534,31 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: border-color 0.15s, background 0.15s, transform 0.12s;
         }
         .category-item.active-cat {
             border-color: var(--accent);
             background: var(--glow);
         }
         .category-item:active { transform: scale(0.94); }
+        .category-item .cat-img-wrap {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .category-item img {
             width: 20px;
             height: 20px;
             object-fit: contain;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
         }
+        .category-item img.loaded { opacity: 1; }
         .category-item .normal-emoji {
             font-size: 11px;
             font-weight: 700;
@@ -497,52 +568,83 @@
             color: var(--text);
         }
 
-        /* Emoji Grid Area */
+        /* ================= SCROLLABLE EMOJI GRID ================= */
         .emoji-scroll-area {
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
-            overflow-y: auto;
+            overflow-y: scroll !important;
             overflow-x: hidden;
             overscroll-behavior-y: contain;
             touch-action: pan-y;
             -webkit-overflow-scrolling: touch;
-            padding-right: 2px;
+            padding-right: 3px;
+            position: relative;
         }
         .emoji-scroll-area::-webkit-scrollbar { width: 4px; }
-        .emoji-scroll-area::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
+        .emoji-scroll-area::-webkit-scrollbar-thumb {
+            background: var(--border-highlight);
+            border-radius: 4px;
+        }
 
         .emoji-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
             gap: 7px;
-            padding-bottom: 10px;
+            padding-bottom: 18px;
         }
 
         .emoji-item {
             background: var(--surface-2);
             border: 1px solid var(--border);
             border-radius: 13px;
-            padding: 6px 3px 4px 3px;
+            padding: 5px 3px 4px 3px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 56px;
-            contain: content;
             transition: transform 0.1s, border-color 0.12s, background 0.12s;
+            position: relative;
         }
         .emoji-item:active {
-            transform: scale(0.84);
+            transform: scale(0.85);
             border-color: var(--accent);
             background: var(--glow);
         }
+
+        /* Shimmer Skeleton Placeholder (No Broken Image Ever!) */
+        .emoji-img-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(90deg, var(--shimmer-1) 25%, var(--shimmer-2) 50%, var(--shimmer-1) 75%);
+            background-size: 240px 100%;
+            animation: shimmerAnim 1.4s infinite linear;
+        }
+        .emoji-img-box.ready {
+            background: transparent;
+            animation: none;
+        }
+
         .emoji-item img {
             width: 29px;
             height: 29px;
             object-fit: contain;
             pointer-events: none;
+            opacity: 0;
+            transform: scale(0.85);
+            transition: opacity 0.18s ease, transform 0.18s ease;
         }
+        .emoji-item img.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
         .emoji-item .label {
             font-size: 9px;
             color: var(--text-muted);
@@ -555,7 +657,7 @@
             font-weight: 600;
         }
 
-        . state-msg {
+        .state-msg {
             text-align: center;
             padding: 28px 10px;
             color: var(--text-muted);
@@ -571,11 +673,11 @@
         }
         .send-btn {
             width: 100%;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #06b6d4 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 52%, #06b6d4 100%);
             color: #ffffff;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
-            padding: 13px;
+            padding: 12px;
             font-size: 15.5px;
             font-weight: 800;
             letter-spacing: 0.3px;
@@ -584,18 +686,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            transition: transform 0.12s, filter 0.15s;
+            gap: 9px;
         }
         .send-btn:active {
             transform: scale(0.97);
             filter: brightness(1.1);
         }
-        .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
         /* ================= HISTORY VIEW ================= */
         .history-list-scroll {
-            flex: 1;
+            flex: 1 1 auto;
             min-height: 0;
             overflow-y: auto;
             overscroll-behavior-y: contain;
@@ -639,6 +739,10 @@
             font-weight: 700;
             flex: 1;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn-danger {
             background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -649,6 +753,10 @@
             font-weight: 700;
             flex: 1;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -657,21 +765,53 @@
         <!-- HEADER -->
         <div class="top-bar">
             <div class="brand-wrap">
-                <div class="brand-logo">✨</div>
+                <div class="brand-logo anim-float" id="headerBrandIcon">
+                    <!-- Animated Premium Crown/Star SVG (Auto-upgrades to DB Premium Emoji too) -->
+                    <svg viewBox="0 0 36 36" fill="none">
+                        <defs>
+                            <linearGradient id="crownGrad" x1="0" y1="0" x2="36" y2="36">
+                                <stop offset="0%" stop-color="#facc15"/>
+                                <stop offset="50%" stop-color="#fb923c"/>
+                                <stop offset="100%" stop-color="#ec4899"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M4 26L7 11L14 18L18 7L22 18L29 11L32 26H4Z" fill="url(#crownGrad)" stroke="#fef08a" stroke-width="1.5" stroke-linejoin="round"/>
+                        <circle cx="18" cy="5" r="2.2" fill="#fef08a"/>
+                        <circle cx="6" cy="9" r="1.8" fill="#38bdf8"/>
+                        <circle cx="30" cy="9" r="1.8" fill="#a855f7"/>
+                    </svg>
+                </div>
                 <div class="brand-title">Post Studio Pro</div>
             </div>
 
             <div class="top-actions">
-                <div class="stat-pill"><b id="emojiCountBadge">0</b> ⭐</div>
+                <div class="stat-pill">
+                    <b id="emojiCountBadge">0</b>
+                    <img id="statStarIcon" class="ui-prem-icon anim-wiggle" style="width:14px;height:14px;" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23facc15' d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>" alt="">
+                </div>
                 <div class="stat-pill"><b id="charCount">0</b> ch</div>
-                <button class="icon-btn" onclick="showHistory()" title="History">🕒</button>
-                <button class="icon-btn" onclick="toggleSettings()" title="Menu">⚙️</button>
+                <button class="icon-btn" onclick="showHistory()" title="History">
+                    <svg class="ui-prem-icon anim-float" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#38bdf8" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#a855f7" stroke-width="2.2" stroke-linecap="round"/></svg>
+                </button>
+                <button class="icon-btn" onclick="toggleSettings()" title="Menu">
+                    <svg class="ui-prem-icon anim-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="#38bdf8" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="#8b5cf6" stroke-width="1.7"/></svg>
+                </button>
             </div>
 
+            <!-- Settings Menu with Animated Premium Icons -->
             <div class="settings-menu" id="settingsMenu">
-                <button class="settings-item" onclick="toggleTheme()">🌗 Switch Theme</button>
-                <button class="settings-item" onclick="showHistory()">🕒 Saved History</button>
-                <button class="settings-item" onclick="clearDraft()">🧹 Clear Editor</button>
+                <button class="settings-item" onclick="toggleTheme()">
+                    <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#facc15" stroke="#fb923c" stroke-width="1.5"/></svg>
+                    Switch Theme
+                </button>
+                <button class="settings-item" onclick="showHistory()">
+                    <svg class="ui-prem-icon anim-float" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/></svg>
+                    Saved History
+                </button>
+                <button class="settings-item" onclick="clearDraft()">
+                    <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>
+                    Clear Editor
+                </button>
             </div>
         </div>
 
@@ -682,7 +822,14 @@
                 <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Write your post here... Tap any premium emoji below to insert!"></div>
 
                 <div class="format-toolbar" id="formatToolbar">
-                    <button class="format-btn kbd-pill" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()">⌨️ Keyboard</button>
+                    <button class="format-btn kbd-pill" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()">
+                        <svg class="ui-prem-icon anim-float" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="5" width="20" height="14" rx="3" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="1.8"/>
+                            <circle cx="6.5" cy="9.5" r="1" fill="#38bdf8"/><circle cx="10" cy="9.5" r="1" fill="#38bdf8"/><circle cx="14" cy="9.5" r="1" fill="#38bdf8"/><circle cx="17.5" cy="9.5" r="1" fill="#38bdf8"/>
+                            <path d="M7 15h10" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Keyboard
+                    </button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
@@ -695,9 +842,14 @@
 
             <!-- Emoji Vault -->
             <div class="vault-card">
-                <!-- Search Input -->
+                <!-- Glowing Search Input with Animated Premium Search Icon -->
                 <div class="search-row">
-                    <span class="search-icon">🔍</span>
+                    <div class="search-icon-box">
+                        <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="7" fill="rgba(56,189,248,0.18)" stroke="#38bdf8" stroke-width="2.2"/>
+                            <path d="M20 20l-4.2-4.2" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                     <input type="text" id="emojiSearchInput" class="search-input" placeholder="Search YouTube, YT, FB, Binance, Star, Bank..." autocomplete="off" spellcheck="false">
                     <div class="search-meta">
                         <span id="matchCountBadge" class="match-count">0</span>
@@ -705,32 +857,63 @@
                     </div>
                 </div>
 
-                <!-- One-Tap Quick Filter Chips -->
+                <!-- Quick Filter Chips (Auto-populated with Real Premium Emojis + Live Animation) -->
                 <div class="quick-chips" id="quickChips">
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick=" runQuickChip('youtube', this)">▶️ YouTube</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('telegram', this)">✈️ Telegram</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('binance', this)">🟡 Binance</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('facebook', this)">📘 Facebook</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('tiktok', this)">🎵 TikTok</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('verified', this)">✅ Verified</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('star', this)">⭐ Star</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('fire', this)">🔥 Fire</button>
-                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('laugh', this)">😂 Funny</button>
+                    <button type="button" class="chip-btn" data-chip="youtube" onmousedown="event.preventDefault()" onclick="runQuickChip('youtube', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="youtube" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='17' y='3.5' rx='4' fill='%23ff0000'/><path d='M10 8.5l6 3.5-6 3.5V8.5z' fill='%23fff'/></svg>" alt="">
+                        YouTube
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="telegram" onmousedown="event.preventDefault()" onclick="runQuickChip('telegram', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="telegram" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%2324A1DE'/><path d='M17.5 7L5.5 11.6c-.8.3-.8.8-.1 1l3 .9 7-4.4c.3-.2.6-.1.4.1l-5.7 5.2-.2 3.1c.3 0 .5-.1.7-.3l1.6-1.5 3.3 2.4c.6.3 1 .1 1.2-.6L18.7 8c.2-.8-.3-1.2-1.2-1z' fill='%23fff'/></svg>" alt="">
+                        Telegram
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="binance" onmousedown="event.preventDefault()" onclick="runQuickChip('binance', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="binance" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%23F3BA2F'/><path d='M12 5l4 4-1.8 1.8L12 8.6l-2.2 2.2L8 9l4-4zm-5.2 5.2L8.6 12l-1.8 1.8L5 12l1.8-1.8zm10.4 0L19 12l-1.8 1.8L15.4 12l1.8-1.8zM12 10.2l1.8 1.8-1.8 1.8-1.8-1.8 1.8-1.8zm0 5.2l2.2-2.2L16 15l-4 4-4-4 1.8-1.8 2.2 2.2z' fill='%23111'/></svg>" alt="">
+                        Binance
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="facebook" onmousedown="event.preventDefault()" onclick="runQuickChip('facebook', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="facebook" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%231877F2'/><path d='M15.5 12.5h-2.3v8h-3.3v-8H8v-2.8h1.9V7.9c0-2.3 1.3-3.6 3.5-3.6 1 0 1.9.1 2.1.1v2.5h-1.5c-1.1 0-1.3.5-1.3 1.3v1.5h2.7l-.4 2.8z' fill='%23fff'/></svg>" alt="">
+                        Facebook
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="tiktok" onmousedown="event.preventDefault()" onclick="runQuickChip('tiktok', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="tiktok" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='11' fill='%23000'/><path d='M16.6 8.2c-1.3-.3-2.2-1.4-2.4-2.7h-2.6v10.1c0 1.2-1 2.2-2.2 2.2s-2.2-1-2.2-2.2 1-2.2 2.2-2.2c.2 0 .5 0 .7.1v-2.7c-.2 0-.5-.1-.7-.1-2.7 0-4.8 2.2-4.8 4.8s2.2 4.8 4.8 4.8 4.8-2.2 4.8-4.8v-5c.9.7 2.1 1.1 3.3 1.1V8.2h-.9z' fill='%2300f2fe'/></svg>" alt="">
+                        TikTok
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="verified" onmousedown="event.preventDefault()" onclick="runQuickChip('verified', this)">
+                        <img class="chip-prem-img anim-wiggle" data-chip-icon="verified" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%2338bdf8' d='M12 2l2.4 2.1 3.1-.4 1.2 2.9 2.9 1.2-.4 3.1L23.3 13l-2.1 2.4.4 3.1-2.9 1.2-1.2 2.9-3.1-.4L12 24.3l-2.4-2.1-3.1.4-1.2-2.9-2.9-1.2.4-3.1L.7 13l2.1-2.4-.4-3.1 2.9-1.2 1.2-2.9 3.1.4L12 2z'/><path d='M8.5 12.5l2.3 2.3 4.8-4.8' stroke='%23fff' stroke-width='2.2' fill='none' stroke-linecap='round'/></svg>" alt="">
+                        Verified
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="star" onmousedown="event.preventDefault()" onclick="runQuickChip('star', this)">
+                        <img class="chip-prem-img anim-wiggle" data-chip-icon="star" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23facc15' d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>" alt="">
+                        Star
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="fire" onmousedown="event.preventDefault()" onclick="runQuickChip('fire', this)">
+                        <img class="chip-prem-img anim-float" data-chip-icon="fire" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23f97316' d='M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z'/></svg>" alt="">
+                        Fire
+                    </button>
+                    <button type="button" class="chip-btn" data-chip="laugh" onmousedown="event.preventDefault()" onclick="runQuickChip('laugh', this)">
+                        <img class="chip-prem-img anim-wiggle" data-chip-icon="laugh" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23facc15'/><path d='M7 13c0 2.8 2.2 5 5 5s5-2.2 5-5H7z' fill='%23ef4444'/><path d='M7.5 9.5l2-1.5-2-1.5M16.5 9.5l-2-1.5 2-1.5' stroke='%23111' stroke-width='1.8' stroke-linecap='round' fill='none'/></svg>" alt="">
+                        Funny
+                    </button>
                 </div>
 
                 <!-- Pack Categories -->
                 <div class="category-row" id="categoryRow"></div>
 
-                <!-- Emoji Grid -->
+                <!-- Scrollable Emoji Grid -->
                 <div class="emoji-scroll-area" id="emojiArea">
                     <div id="emojiKeyboard" class="emoji-grid"></div>
+                    <div id="scrollSentinel" style="height: 16px; width: 100%;"></div>
                 </div>
             </div>
 
-            <!-- Send CTA -->
+            <!-- Send CTA with Animated Rocket/Plane Icon -->
             <div class="send-btn-wrapper">
                 <button class="send-btn" id="sendBtn" onclick="sendData()">
-                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    <svg class="ui-prem-icon anim-rocket" style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none">
+                        <path d="M22 2L11 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" fill="rgba(255,255,255,0.28)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+                    </svg>
                     Send to Bot
                 </button>
             </div>
@@ -787,6 +970,7 @@
         const searchInput = document.getElementById('emojiSearchInput');
         const searchClearBtn = document.getElementById('searchClearBtn');
         const matchCountBadge = document.getElementById('matchCountBadge');
+        const scrollSentinel = document.getElementById('scrollSentinel');
 
         let savedRange = null;
         let allEmojis = [];
@@ -795,14 +979,126 @@
         let activeCategory = null;
         let currentRenderList = [];
         let renderedCount = 0;
-        const CHUNK_SIZE = 36; // Small initial batch for 0ms lag
+        const CHUNK_SIZE = 84; // 14 rows so scrolling is always active & smooth
 
         const imageBlobCache = {};
         const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
+        // =========================================================
+        // ZERO-BROKEN-IMAGE FETCH QUEUE + PERSISTENT CACHE STORAGE
+        // =========================================================
+        const fetchQueue = [];
+        let activeWorkers = 0;
+        const MAX_CONCURRENT_FETCH = 8;
+        let persistentCache = null;
+
+        if ('caches' in window) {
+            caches.open('studio-emojis-cache-v2').then(c => { persistentCache = c; }).catch(() => {});
+        }
+
+        function enqueueEmojiImage(emojiId, rawUrl, imgEl, boxEl) {
+            if (!rawUrl) return;
+            const fullUrl = rawUrl.startsWith('/') ? (apiBase + rawUrl) : rawUrl;
+
+            if (imageBlobCache[emojiId]) {
+                applyLoadedImage(imgEl, boxEl, imageBlobCache[emojiId]);
+                return;
+            }
+
+            fetchQueue.push({ emojiId, fullUrl, imgEl, boxEl });
+            processFetchQueue();
+        }
+
+        function applyLoadedImage(imgEl, boxEl, srcUrl) {
+            imgEl.onload = () => {
+                imgEl.classList.add('loaded');
+                if (boxEl) boxEl.classList.add('ready');
+            };
+            imgEl.src = srcUrl;
+        }
+
+        async function processFetchQueue() {
+            while (activeWorkers < MAX_CONCURRENT_FETCH && fetchQueue.length > 0) {
+                const task = fetchQueue.shift();
+                if (!task) break;
+
+                if (imageBlobCache[task.emojiId]) {
+                    applyLoadedImage(task.imgEl, task.boxEl, imageBlobCache[task.emojiId]);
+                    continue;
+                }
+
+                activeWorkers++;
+                (async (t) => {
+                    try {
+                        let blob = null;
+                        if (persistentCache) {
+                            const cachedResp = await persistentCache.match(t.fullUrl);
+                            if (cachedResp && cachedResp.ok) {
+                                blob = await cachedResp.blob();
+                            }
+                        }
+                        if (!blob) {
+                            const netResp = await fetch(t.fullUrl, {
+                                headers: { 'ngrok-skip-browser-warning': '69420' }
+                            });
+                            if (netResp.ok) {
+                                const ct = netResp.headers.get('content-type') || '';
+                                if (!ct.includes('text/html')) {
+                                    if (persistentCache) {
+                                        try { persistentCache.put(t.fullUrl, netResp.clone()); } catch (e) {}
+                                    }
+                                    blob = await netResp.blob();
+                                }
+                            }
+                        }
+                        if (blob && blob.size > 0) {
+                            const bUrl = URL.createObjectURL(blob);
+                            imageBlobCache[t.emojiId] = bUrl;
+                            applyLoadedImage(t.imgEl, t.boxEl, bUrl);
+                        }
+                    } catch (e) {
+                        // Silently keep clean placeholder without broken image icon
+                    } finally {
+                        activeWorkers--;
+                        processFetchQueue();
+                    }
+                })(task);
+            }
+        }
+
+        // Lazy Viewport Observer for Emoji Images
+        const lazyImgObserver = new IntersectionObserver((entries) => {
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i];
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    lazyImgObserver.unobserve(img);
+                    const eid = img.dataset.eid;
+                    const rUrl = img.dataset.realSrc;
+                    if (eid && rUrl) {
+                        enqueueEmojiImage(eid, rUrl, img, img.parentElement);
+                    }
+                }
+            }
+        }, { root: emojiArea, rootMargin: '180px 0px', threshold: 0.01 });
+
+        // Sentinel Observer + Scroll Listener for Infinite Emoji Scrolling
+        const sentinelObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                renderNextChunk();
+            }
+        }, { root: emojiArea, rootMargin: '150px 0px' });
+        sentinelObserver.observe(scrollSentinel);
+
+        emojiArea.addEventListener('scroll', () => {
+            if (emojiArea.scrollTop + emojiArea.clientHeight >= emojiArea.scrollHeight - 160) {
+                renderNextChunk();
+            }
+        }, { passive: true });
+
         // Smart Alias Dictionary
         const SEARCH_ALIASES = {
-            "yt": ["youtube", "yt", "video", "play", "red"],
+            "yt": ["youtube", "yt", "video", "play"],
             "youtube": ["youtube", "yt", "video", "play"],
             "fb": ["facebook", "fb", "meta"],
             "facebook": ["facebook", "fb", "meta"],
@@ -810,7 +1106,7 @@
             "telegram": ["telegram", "tg", "plane"],
             "ig": ["instagram", "ig", "insta"],
             "insta": ["instagram", "ig"],
-            "wa": ["whatsapp", "wa", "chat", "green"],
+            "wa": ["whatsapp", "wa", "chat"],
             "bnb": ["binance", "bnb", "crypto", "coin"],
             "binance": ["binance", "bnb", "crypto"],
             "btc": ["bitcoin", "btc", "crypto", "coin"],
@@ -867,7 +1163,7 @@
         }
         draft.addEventListener('input', updateStats);
 
-        // Formatting
+        // WYSIWYG Formatting
         function applyFormat(tag) {
             const selection = window.getSelection();
             if (savedRange) {
@@ -904,37 +1200,6 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // Ultra-Fast Image Loader (Uses Native Browser Cache First, Fetch Fallback if Needed)
-        function setSmartImageSrc(imgEl, emojiId, rawUrl) {
-            if (!rawUrl) return;
-            const fullUrl = rawUrl.startsWith('/') ? (apiBase + rawUrl) : rawUrl;
-            if (imageBlobCache[emojiId]) {
-                imgEl.src = imageBlobCache[emojiId];
-                return;
-            }
-            imgEl.decoding = 'async';
-            imgEl.loading = 'lazy';
-            imgEl.src = fullUrl;
-            imgEl.onerror = () => {
-                imgEl.onerror = null;
-                fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
-                    .then(r => r.ok ? r.blob() : Promise.reject())
-                    .then(blob => {
-                        const bUrl = URL.createObjectURL(blob);
-                        imageBlobCache[emojiId] = bUrl;
-                        imgEl.src = bUrl;
-                    })
-                    .catch(() => { imgEl.style.opacity = '0.25'; });
-            };
-        }
-
-        emojiArea.addEventListener('scroll', () => {
-            if (emojiArea.scrollTop + emojiArea.clientHeight >= emojiArea.scrollHeight - 90) {
-                renderNextChunk();
-            }
-        }, { passive: true });
-
-        // Pre-index each emoji once on arrival so search is 0ms
         function indexEmojiItem(emoji) {
             const rawTags = (emoji.tags || '').toLowerCase().trim();
             const rawPack = (emoji.pack_id || 'Other').toLowerCase();
@@ -944,12 +1209,33 @@
             emoji._label = emoji._words[0] || emoji.symbol || '⭐';
         }
 
+        // Auto-Upgrade Chip Icons & Header Icon with Real Premium Emojis from User's Database
+        const upgradedChipKeys = {};
+        function upgradeUIWithDatabasePremiumEmojis() {
+            const chipTargets = ['youtube', 'telegram', 'binance', 'facebook', 'tiktok', 'verified', 'star', 'fire', 'laugh'];
+            for (const key of chipTargets) {
+                if (upgradedChipKeys[key]) continue;
+                const match = allEmojis.find(e => e._words.includes(key) || e._tags.includes(key));
+                if (match) {
+                    upgradedChipKeys[key] = true;
+                    const chipImg = document.querySelector(`img[data-chip-icon="${key}"]`);
+                    if (chipImg) {
+                        enqueueEmojiImage(match.id, match.image_url, chipImg, null);
+                    }
+                    if (key === 'star') {
+                        const statStar = document.getElementById('statStarIcon');
+                        if (statStar) enqueueEmojiImage(match.id, match.image_url, statStar, null);
+                    }
+                }
+            }
+        }
+
         async function loadEmojis() {
             if (!apiBase) {
                 keyboard.innerHTML = '<div class="state-msg">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
-            keyboard.innerHTML = '<div class="state-msg">⚡ Loading studio emojis...</div>';
+            keyboard.innerHTML = '<div class="state-msg">✨ Loading premium emojis...</div>';
             await fetchPage(1, 1500, true);
             fetchRemainingInBackground();
         }
@@ -976,6 +1262,8 @@
                         createCategoryButton(packId, emoji.image_url, emoji.id);
                     }
                 }
+
+                upgradeUIWithDatabasePremiumEmojis();
 
                 if (isFirstLoad && Object.keys(catMap).length > 0) {
                     const firstPack = Object.keys(catMap)[0];
@@ -1039,20 +1327,40 @@
                 fragment.appendChild(createEmojiElement(nextSlice[i]));
             }
             keyboard.appendChild(fragment);
+
+            // Auto-fill if container still hasn't overflowed
+            requestAnimationFrame(() => {
+                if (emojiArea.scrollHeight <= emojiArea.clientHeight + 80 && renderedCount < currentRenderList.length) {
+                    renderNextChunk();
+                }
+            });
         }
 
         function createEmojiElement(emoji) {
             const div = document.createElement('div');
             div.className = 'emoji-item';
 
+            const imgBox = document.createElement('div');
+            imgBox.className = 'emoji-img-box';
+
             const mediaEl = document.createElement('img');
-            setSmartImageSrc(mediaEl, emoji.id, emoji.image_url);
+            mediaEl.src = TRANSPARENT_PIXEL;
+            mediaEl.dataset.eid = emoji.id;
+            mediaEl.dataset.realSrc = emoji.image_url;
+
+            if (imageBlobCache[emoji.id]) {
+                applyLoadedImage(mediaEl, imgBox, imageBlobCache[emoji.id]);
+            } else {
+                lazyImgObserver.observe(mediaEl);
+            }
+
+            imgBox.appendChild(mediaEl);
 
             const label = document.createElement('div');
             label.className = 'label';
             label.textContent = emoji._label;
 
-            div.appendChild(mediaEl);
+            div.appendChild(imgBox);
             div.appendChild(label);
 
             div.onmousedown = (e) => e.preventDefault();
@@ -1066,14 +1374,20 @@
             div.onmousedown = (e) => e.preventDefault();
             div.onclick = () => filterEmojis(packId, div);
 
+            const wrap = document.createElement('div');
+            wrap.className = 'cat-img-wrap';
+
             const mediaEl = document.createElement('img');
-            setSmartImageSrc(mediaEl, eid, imageUrl);
+            mediaEl.src = TRANSPARENT_PIXEL;
+            enqueueEmojiImage(eid, imageUrl, mediaEl, wrap);
+
+            wrap.appendChild(mediaEl);
 
             const label = document.createElement('div');
             label.className = 'normal-emoji';
             label.textContent = packId.replace(/^Pack_/, '').substring(0, 8);
 
-            div.appendChild(mediaEl);
+            div.appendChild(wrap);
             div.appendChild(label);
             categoryRow.appendChild(div);
         }
@@ -1111,7 +1425,6 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // Ultra-Fast Pre-Indexed Search (<1ms for 8,800+ emojis)
         function isFuzzy(word, q) {
             if (q.length < 3 || Math.abs(word.length - q.length) > 2) return false;
             let wi = 0, qi = 0, err = 0;
@@ -1163,7 +1476,6 @@
 
             let combined = exactList.concat(prefixList, substringList);
 
-            // Only run typo-fuzzy fallback if fewer than 10 results found
             if (combined.length < 10 && rawQ.length >= 3) {
                 const seen = new Set(combined.map(x => x.id));
                 for (let i = 0; i < total; i++) {
@@ -1197,7 +1509,7 @@
 
             searchDebounce = setTimeout(() => {
                 executeFastSearch(rawQ);
-            }, 120);
+            }, 100);
         });
 
         function clearSearch() {
@@ -1208,14 +1520,15 @@
             setGridList(filtered, false);
         }
 
-        // Insert Visual Premium Emoji Into Draft Without Popping Up Keyboard
+        // Insert Visual Premium Emoji Into Draft Box
         function insertEmoji(emoji) {
             const imgNode = document.createElement('img');
             imgNode.className = 'inline-premium-emoji';
             imgNode.dataset.emojiId = emoji.id;
             imgNode.dataset.imgPath = emoji.image_url || `/api/image/${emoji.id}.webp`;
             imgNode.alt = emoji.symbol || '⭐';
-            setSmartImageSrc(imgNode, emoji.id, imgNode.dataset.imgPath);
+            imgNode.src = TRANSPARENT_PIXEL;
+            enqueueEmojiImage(emoji.id, imgNode.dataset.imgPath, imgNode, null);
 
             const spaceNode = document.createTextNode('\u00A0');
 
@@ -1244,7 +1557,6 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // Serialize Draft to Bot Format with [emoji_id]
         function serializeDraftForBot(containerEl) {
             const clone = containerEl.cloneNode(true);
             clone.querySelectorAll('img.inline-premium-emoji').forEach(img => {
@@ -1284,7 +1596,7 @@
             container.querySelectorAll('img.inline-premium-emoji').forEach(img => {
                 const eid = img.dataset.emojiId;
                 const path = img.dataset.imgPath || `/api/image/${eid}.webp`;
-                if (eid) setSmartImageSrc(img, eid, path);
+                if (eid) enqueueEmojiImage(eid, path, img, null);
             });
         }
 
