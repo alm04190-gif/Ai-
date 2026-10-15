@@ -3,39 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Premium Post Studio</title>
+    <title>Premium Post Studio Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg: #eef2f7;
-            --surface: rgba(255, 255, 255, 0.86);
-            --surface-solid: #ffffff;
-            --card-bg: #f6f8fb;
-            --border: rgba(0, 0, 0, 0.08);
-            --accent: #007aff;
-            --accent-2: #00c6ff;
-            --text: #141619;
-            --text-secondary: #636c76;
-            --glow: rgba(0, 122, 255, 0.16);
-            --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.06);
-            --shadow-strong: 0 10px 28px rgba(0, 122, 255, 0.22);
-            --rain-color: rgba(0, 122, 255, 0.25);
+            --bg-main: #f0f4f9;
+            --bg- ambient: radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.14), transparent 45%),
+                           radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.12), transparent 45%);
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --surface-3: #eef2f6;
+            --border: rgba(15, 23, 42, 0.09);
+            --border-highlight: rgba(37, 99, 235, 0.35);
+            --accent: #2563eb;
+            --accent-2: #7c3aed;
+            --accent-cyan: #06b6d4;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --glow: rgba(37, 99, 235, 0.12);
+            --shadow-card: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+            --shadow-btn: 0 10px 25px -4px rgba(37, 99, 235, 0.45);
         }
 
         [data-theme="dark"] {
-            --bg: #07080c;
-            --surface: rgba(22, 24, 32, 0.82);
-            --surface-solid: #161820;
-            --card-bg: rgba(32, 35, 46, 0.85);
-            --border: rgba(255, 255, 255, 0.09);
-            --accent: #0a84ff;
-            --accent-2: #5e5ce6;
-            --text: #f5f7fa;
-            --text-secondary: #8e95a5;
-            --glow: rgba(10, 132, 255, 0.22);
-            --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.45);
-            --shadow-strong: 0 10px 30px rgba(10, 132, 255, 0.28);
-            --rain-color: rgba(138, 43, 226, 0.45);
+            --bg-main: #06080f;
+            --bg-ambient: radial-gradient(circle at 10% 5%, rgba(56, 189, 248, 0.12), transparent 40%),
+                          radial-gradient(circle at 90% 15%, rgba(139, 92, 246, 0.12), transparent 40%),
+                          radial-gradient(circle at 50% 95%, rgba(37, 99, 235, 0.10), transparent 45%);
+            --surface: #0f131f;
+            --surface-2: #161b2c;
+            --surface-3: #1e253a;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(56, 189, 248, 0.45);
+            --accent: #38bdf8;
+            --accent-2: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glow: rgba(56, 189, 248, 0.15);
+            --shadow-card: 0 10px 30px -6px rgba(0, 0, 0, 0.65);
+            --shadow-btn: 0 10px 28px -4px rgba(56, 189, 248, 0.35);
         }
 
         * {
@@ -45,7 +52,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Fixed Viewport Lock - Puro Website Scroll Hobe Na */
+        /* Viewport Lock - Prevents Whole Page Bouncing/Scrolling */
         html, body {
             position: fixed;
             inset: 0;
@@ -54,138 +61,145 @@
             height: 100dvh;
             overflow: hidden;
             overscroll-behavior: none;
-            background: var(--bg);
+            background-color: var(--bg-main);
+            background-image: var(--bg-ambient);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
             user-select: none;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .rain-container {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        .drop {
-            position: absolute;
-            background: linear-gradient(to bottom, transparent, var(--rain-color));
-            width: 2px;
-            height: 28px;
-            border-radius: 3px;
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-10vh); opacity: 0; }
-            15% { opacity: 1; }
-            85% { opacity: 1; }
-            100% { transform: translateY(105vh); opacity: 0; }
-        }
-
-        /* App Shell Layout */
         .app-shell {
-            position: relative;
-            z-index: 10;
             display: flex;
             flex-direction: column;
             width: 100%;
             height: 100%;
-            padding: 10px 12px 12px 12px;
-            gap: 8px;
             max-width: 540px;
             margin: 0 auto;
+            padding: 10px 12px 12px 12px;
+            gap: 8px;
+            position: relative;
+            z-index: 5;
         }
 
-        /* Compact Glossy Header */
-        .header-container {
+        /* ================= HEADER ================= */
+        .top-bar {
             flex-shrink: 0;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             background: var(--surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 10px 14px;
-            border-radius: 16px;
-            box-shadow: var(--shadow-soft);
             border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 9px 12px;
+            box-shadow: var(--shadow-card);
             position: relative;
-            z-index: 50;
+            z-index: 40;
         }
-        .header-title {
-            font-size: 17px;
+
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand- logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #38bdf8, #6366f1, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.4);
+        }
+
+        .brand-title {
+            font-size: 15px;
             font-weight: 800;
             letter-spacing: -0.3px;
-            background: linear-gradient(90deg, var(--accent), #00e1ff);
+            background: linear-gradient(90deg, var(--text), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        .top-actions {
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .char-badge {
+
+        .stat-pill {
             font-size: 11px;
             font-weight: 700;
-            color: var(--text-secondary);
-            background: var(--card-bg);
-            padding: 4px 9px;
-            border-radius: 20px;
+            color: var(--text-muted);
+            background: var(--surface-2);
             border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
-        .settings-btn {
-            background: var(--card-bg);
+        .stat-pill b {
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        .icon-btn {
+            background: var(--surface-2);
             border: 1px solid var(--border);
-            width: 32px;
-            height: 32px;
+            color: var(--text);
+            width: 31px;
+            height: 31px;
             border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text);
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.12s, border-color 0.15s;
         }
-        .settings-btn:active { transform: scale(0.9); }
+        .icon-btn:active {
+            transform: scale(0.88);
+            border-color: var(--accent);
+        }
 
+        /* Dropdown Menu */
         .settings-menu {
             position: absolute;
-            top: 52px;
+            top: 50px;
             right: 0;
-            background: var(--surface-solid);
-            border: 1px solid var(--border);
+            background: var(--surface);
+            border: 1px solid var(--border-highlight);
             border-radius: 14px;
-            box-shadow: var(--shadow-strong);
+            box-shadow: var(--shadow-card);
             padding: 6px;
             display: none;
             flex-direction: column;
             gap: 4px;
-            min-width: 160px;
+            min-width: 165px;
             z-index: 100;
         }
         .settings-menu.show { display: flex; }
         .settings-item {
-            padding: 10px 12px;
-            border-radius: 10px;
+            padding: 9px 12px;
+            border-radius: 9px;
             font-size: 13px;
             font-weight: 600;
             color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             background: transparent;
             border: none;
             text-align: left;
-            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
         }
-        .settings-item:active { background: var(--glow); }
+        .settings-item:active { background: var(--glow); color: var(--accent); }
 
-        /* Main View & History View */
+        /* ================= VIEWS ================= */
         .main-view {
             display: flex;
             flex-direction: column;
@@ -201,30 +215,28 @@
             gap: 10px;
         }
 
-        /* Draft Box Section */
-        .draft-card {
+        /* ================= DRAFT STUDIO CARD ================= */
+        .editor-card {
             flex-shrink: 0;
             background: var(--surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid var(--border);
-            border-radius: 16px;
-            padding: 10px 12px;
-            box-shadow: var(--shadow-soft);
+            border-radius: 18px;
+            padding: 10px 12px 8px 12px;
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             gap: 8px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .draft-card:focus-within {
-            border-color: var(--accent);
-            box-shadow: var(--shadow-strong);
+        .editor-card:focus-within {
+            border-color: var(--border-highlight);
+            box-shadow: 0 0 0 3px var(--glow), var(--shadow-card);
         }
 
         .draft-area {
             width: 100%;
-            min-height: 76px;
-            max-height: 125px;
+            min-height: 68px;
+            max-height: 112px;
             color: var(--text);
             font-size: 15px;
             line-height: 1.55;
@@ -234,90 +246,112 @@
             outline: none;
             word-wrap: break-word;
             user-select: text;
+            padding-right: 2px;
         }
+        .draft-area::-webkit-scrollbar { width: 3px; }
+        .draft-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
         .draft-area:empty::before {
             content: attr(data-placeholder);
-            color: var(--text-secondary);
-            opacity: 0.7;
-            font-style: italic;
+            color: var(--text-muted);
+            opacity: 0.65;
+            font-size: 14px;
             pointer-events: none;
         }
 
-        /* Inline Premium Emoji inside Draft */
         .inline-premium-emoji {
             width: 22px;
             height: 22px;
             vertical-align: -5px;
-            margin: 0 2px;
+            margin: 0 1.5px;
             object-fit: contain;
             display: inline-block;
             pointer-events: none;
         }
 
-        /* WYSIWYG Styles */
         .draft-area b { font-weight: 800; }
         .draft-area i { font-style: italic; }
         .draft-area u { text-decoration: underline; }
         .draft-area s { text-decoration: line-through; }
-        .draft-area code { background: var(--card-bg); padding: 2px 5px; border-radius: 5px; font-family: monospace; font-size: 13px; border: 1px solid var(--border); }
-        .draft-area tg-spoiler { background: var(--text-secondary); color: transparent; border-radius: 4px; padding: 0 3px; }
-        .draft-area blockquote { border-left: 3px solid var(--accent); margin: 4px 0; padding-left: 8px; color: var(--text-secondary); display: block; }
+        .draft-area code {
+            background: var(--surface-3);
+            padding: 1px 5px;
+            border-radius: 5px;
+            font-family: 'SF Mono', Consolas, monospace;
+            font-size: 13px;
+            color: var(--accent);
+        }
+        .draft-area tg-spoiler {
+            background: var(--text-muted);
+            color: transparent;
+            border-radius: 4px;
+            padding: 0 3px;
+        }
+        .draft-area blockquote {
+            border-left: 3px solid var(--accent);
+            background: var(--surface-2);
+            margin: 4px 0;
+            padding: 4px 8px;
+            border-radius: 0 6px 6px 0;
+            color: var(--text-muted);
+            display: block;
+        }
 
-        /* Formatting Toolbar */
+        /* Formatting Dock */
         .format-toolbar {
             display: flex;
             align-items: center;
             overflow-x: auto;
             overscroll-behavior-x: contain;
             touch-action: pan-x;
-            gap: 6px;
+            gap: 5px;
             scrollbar-width: none;
             padding-top: 6px;
             border-top: 1px solid var(--border);
         }
         .format-toolbar::-webkit-scrollbar { display: none; }
+
         .format-btn {
-            background: var(--card-bg);
+            background: var(--surface-2);
             border: 1px solid var(--border);
             color: var(--text);
             padding: 5px 10px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             white-space: nowrap;
             flex-shrink: 0;
+            transition: transform 0.1s, background 0.15s, border-color 0.15s;
         }
         .format-btn:active {
-            background: var(--glow);
-            border-color: var(--accent);
-            transform: scale(0.94);
-        }
-        .format-btn.kbd-toggle {
+            transform: scale(0.92);
             background: var(--glow);
             border-color: var(--accent);
             color: var(--accent);
         }
+        .format-btn.kbd-pill {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(139, 92, 246, 0.15));
+            border-color: var(--border-highlight);
+            color: var(--accent);
+        }
 
-        /* Smart Search Bar + Categories Combined Card */
-        .picker-card {
+        /* ================= EMOJI STUDIO VAULT ================= */
+        .vault-card {
             flex: 1;
             min-height: 0;
             background: var(--surface);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1.5px solid var(--border);
-            border-radius: 18px;
+            border-radius: 20px;
             padding: 10px;
-            box-shadow: var(--shadow-soft);
+            box-shadow: var(--shadow-card);
             display: flex;
             flex-direction: column;
             gap: 8px;
             overflow: hidden;
         }
 
-        /* Glossy Search Input */
-        .search-bar-wrap {
+        /* Search Box */
+        .search-row {
             flex-shrink: 0;
             position: relative;
             display: flex;
@@ -325,92 +359,145 @@
         }
         .search-icon {
             position: absolute;
-            left: 12px;
-            font-size: 14px;
+            left: 11px;
+            font-size: 13px;
+            color: var(--accent);
             pointer-events: none;
-            color: var(--text-secondary);
         }
         .search-input {
             width: 100%;
-            background: var(--card-bg);
+            background: var(--surface-2);
             border: 1.5px solid var(--border);
             border-radius: 12px;
-            padding: 9px 70px 9px 34px;
+            padding: 8px 88px 8px 32px;
             color: var(--text);
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
             outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
         }
         .search-input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px var(--glow);
         }
         .search-input::placeholder {
-            color: var(--text-secondary);
+            color: var(--text-muted);
             font-weight: 500;
         }
-        .search-clear {
+
+        .search-meta {
             position: absolute;
-            right: 8px;
-            background: var(--border);
-            border: none;
-            color: var(--text);
-            font-size: 11px;
+            right: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .match-count {
+            font-size: 10px;
             font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 8px;
+            color: var(--accent);
+            background: var(--glow);
+            padding: 3px 6px;
+            border-radius: 6px;
+            display: none;
+        }
+        .match-count.visible { display: inline-block; }
+
+        .search-clear {
+            background: var(--surface-3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 7px;
+            border-radius: 7px;
             cursor: pointer;
             display: none;
         }
-        .search-clear.visible { display: block; }
+        .search-clear.visible { display: inline-block; }
 
-        /* Horizontal Category Strip */
+        /* Quick Filter Tag Chips */
+        .quick-chips {
+            flex-shrink: 0;
+            display: flex;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            touch-action: pan-x;
+            gap: 6px;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+        }
+        .quick-chips::-webkit-scrollbar { display: none; }
+
+        .chip-btn {
+            flex: 0 0 auto;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+        .chip-btn.active-chip {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.35);
+        }
+        .chip-btn:active { transform: scale(0.93); }
+
+        /* Pack Category Strip */
         .category-row {
             flex-shrink: 0;
             display: flex;
             overflow-x: auto;
             overscroll-behavior-x: contain;
             touch-action: pan-x;
-            gap: 8px;
-            padding: 2px 2px 4px 2px;
+            gap: 7px;
+            padding: 2px 1px;
             scrollbar-width: none;
         }
         .category-row::-webkit-scrollbar { display: none; }
 
         .category-item {
             flex: 0 0 auto;
-            background: var(--card-bg);
+            background: var(--surface-2);
             border: 1.5px solid var(--border);
-            border-radius: 12px;
-            padding: 6px 10px;
+            border-radius: 11px;
+            padding: 5px 9px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            min-width: max-content;
-            transition: transform 0.15s, border-color 0.15s, background 0.15s;
+            transition: border-color 0.15s, background 0.15s, transform 0.12s;
         }
         .category-item.active-cat {
             border-color: var(--accent);
             background: var(--glow);
-            box-shadow: 0 4px 12px var(--glow);
         }
+        .category-item:active { transform: scale(0.94); }
         .category-item img {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             object-fit: contain;
             pointer-events: none;
         }
         .category-item .normal-emoji {
             font-size: 11px;
             font-weight: 700;
-            color: var(--text-secondary);
+            color: var(--text-muted);
         }
         .category-item.active-cat .normal-emoji {
-            color: var(--accent);
+            color: var(--text);
         }
 
-        /* Emoji Scroll Area */
+        /* Emoji Grid Area */
         .emoji-scroll-area {
             flex: 1;
             min-height: 0;
@@ -422,42 +509,43 @@
             padding-right: 2px;
         }
         .emoji-scroll-area::-webkit-scrollbar { width: 4px; }
-        .emoji-scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .emoji-scroll-area::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 4px; }
 
         .emoji-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-            gap: 8px;
-            padding-bottom: 12px;
+            gap: 7px;
+            padding-bottom: 10px;
         }
 
         .emoji-item {
-            background: var(--card-bg);
+            background: var(--surface-2);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 6px 4px;
+            border-radius: 13px;
+            padding: 6px 3px 4px 3px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 58px;
-            transition: transform 0.12s, border-color 0.12s;
+            height: 56px;
+            contain: content;
+            transition: transform 0.1s, border-color 0.12s, background 0.12s;
         }
         .emoji-item:active {
-            transform: scale(0.86);
+            transform: scale(0.84);
             border-color: var(--accent);
             background: var(--glow);
         }
         .emoji-item img {
-            width: 30px;
-            height: 30px;
+            width: 29px;
+            height: 29px;
             object-fit: contain;
             pointer-events: none;
         }
         .emoji-item .label {
             font-size: 9px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-top: 3px;
             white-space: nowrap;
             overflow: hidden;
@@ -467,55 +555,59 @@
             font-weight: 600;
         }
 
-        .loading, .empty, .error {
+        . state-msg {
             text-align: center;
-            padding: 30px 10px;
-            color: var(--text-secondary);
+            padding: 28px 10px;
+            color: var(--text-muted);
             font-size: 13px;
             grid-column: 1 / -1;
             font-weight: 600;
         }
 
-        /* Docked Send Button */
+        /* ================= SEND BUTTON ================= */
         .send-btn-wrapper {
             flex-shrink: 0;
             width: 100%;
         }
         .send-btn {
             width: 100%;
-            background: linear-gradient(135deg, var(--accent), #00c6ff);
-            color: #fff;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #06b6d4 100%);
+            color: #ffffff;
             border: none;
-            border-radius: 14px;
+            border-radius: 15px;
             padding: 13px;
-            font-size: 16px;
+            font-size: 15.5px;
             font-weight: 800;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.35);
+            box-shadow: var(--shadow-btn);
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
+            transition: transform 0.12s, filter 0.15s;
         }
-        .send-btn:active { transform: scale(0.97); }
+        .send-btn:active {
+            transform: scale(0.97);
+            filter: brightness(1.1);
+        }
         .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
-        /* History UI */
+        /* ================= HISTORY VIEW ================= */
         .history-list-scroll {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
             overscroll-behavior-y: contain;
-            padding-right: 4px;
+            padding-right: 3px;
         }
         .history-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow-soft);
+            border-radius: 15px;
+            padding: 12px 14px;
+            margin-bottom: 9px;
+            box-shadow: var(--shadow-card);
             cursor: pointer;
         }
         .history-card:active { border-color: var(--accent); background: var(--glow); }
@@ -523,7 +615,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--text-muted);
             margin-bottom: 6px;
             font-weight: 700;
         }
@@ -536,23 +628,23 @@
         .history-actions {
             flex-shrink: 0;
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         .btn-secondary {
             background: var(--surface);
             border: 1.5px solid var(--border);
             color: var(--text);
-            padding: 12px;
+            padding: 11px;
             border-radius: 12px;
             font-weight: 700;
             flex: 1;
             cursor: pointer;
         }
         .btn-danger {
-            background: #ff3b30;
-            color: white;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
             border: none;
-            padding: 12px;
+            padding: 11px;
             border-radius: 12px;
             font-weight: 700;
             flex: 1;
@@ -561,31 +653,36 @@
     </style>
 </head>
 <body>
-    <div class="rain-container" id="rainContainer"></div>
-
     <div class="app-shell">
-        <div class="header-container">
-            <div class="header-title">✨ Premium Post Studio</div>
-            <div class="header-right">
-                <span class="char-badge" id="charCount">0 chars</span>
-                <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+        <!-- HEADER -->
+        <div class="top-bar">
+            <div class="brand-wrap">
+                <div class="brand-logo">✨</div>
+                <div class="brand-title">Post Studio Pro</div>
+            </div>
+
+            <div class="top-actions">
+                <div class="stat-pill"><b id="emojiCountBadge">0</b> ⭐</div>
+                <div class="stat-pill"><b id="charCount">0</b> ch</div>
+                <button class="icon-btn" onclick="showHistory()" title="History">🕒</button>
+                <button class="icon-btn" onclick="toggleSettings()" title="Menu">⚙️</button>
             </div>
 
             <div class="settings-menu" id="settingsMenu">
-                <button class="settings-item" onclick="toggleTheme()">🌗 Toggle Theme</button>
-                <button class="settings-item" onclick="showHistory()">🕒 Post History</button>
-                <button class="settings-item" onclick="clearDraft()">🧹 Clear Draft</button>
+                <button class="settings-item" onclick="toggleTheme()">🌗 Switch Theme</button>
+                <button class="settings-item" onclick="showHistory()">🕒 Saved History</button>
+                <button class="settings-item" onclick="clearDraft()">🧹 Clear Editor</button>
             </div>
         </div>
 
-        <!-- MAIN VIEW -->
+        <!-- MAIN EDITOR VIEW -->
         <div id="mainView" class="main-view">
-            <!-- Draft Box + Toolbar -->
-            <div class="draft-card">
-                <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Type your post here... Tap any emoji below to insert directly!"></div>
+            <!-- Draft Editor -->
+            <div class="editor-card">
+                <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Write your post here... Tap any premium emoji below to insert!"></div>
 
                 <div class="format-toolbar" id="formatToolbar">
-                    <button class="format-btn kbd-toggle" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()" id="kbdBtn">⌨️ Hide/Show</button>
+                    <button class="format-btn kbd-pill" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()">⌨️ Keyboard</button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
                     <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
@@ -596,22 +693,41 @@
                 </div>
             </div>
 
-            <!-- Search + Categories + Emoji Grid -->
-            <div class="picker-card">
-                <div class="search-bar-wrap">
+            <!-- Emoji Vault -->
+            <div class="vault-card">
+                <!-- Search Input -->
+                <div class="search-row">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="emojiSearchInput" class="search-input" placeholder="Search emoji (e.g. youtube, yt, fb, star, binance)..." autocomplete="off">
-                    <button type="button" id="searchClearBtn" class="search-clear" onclick="clearSearch()">✕ Clear</button>
+                    <input type="text" id="emojiSearchInput" class="search-input" placeholder="Search YouTube, YT, FB, Binance, Star, Bank..." autocomplete="off" spellcheck="false">
+                    <div class="search-meta">
+                        <span id="matchCountBadge" class="match-count">0</span>
+                        <button type="button" id="searchClearBtn" class="search-clear" onclick="clearSearch()">✕</button>
+                    </div>
                 </div>
 
+                <!-- One-Tap Quick Filter Chips -->
+                <div class="quick-chips" id="quickChips">
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick=" runQuickChip('youtube', this)">▶️ YouTube</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('telegram', this)">✈️ Telegram</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('binance', this)">🟡 Binance</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('facebook', this)">📘 Facebook</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('tiktok', this)">🎵 TikTok</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('verified', this)">✅ Verified</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('star', this)">⭐ Star</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('fire', this)">🔥 Fire</button>
+                    <button type="button" class="chip-btn" onmousedown="event.preventDefault()" onclick="runQuickChip('laugh', this)">😂 Funny</button>
+                </div>
+
+                <!-- Pack Categories -->
                 <div class="category-row" id="categoryRow"></div>
 
+                <!-- Emoji Grid -->
                 <div class="emoji-scroll-area" id="emojiArea">
                     <div id="emojiKeyboard" class="emoji-grid"></div>
                 </div>
             </div>
 
-            <!-- Send Button -->
+            <!-- Send CTA -->
             <div class="send-btn-wrapper">
                 <button class="send-btn" id="sendBtn" onclick="sendData()">
                     <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -622,11 +738,11 @@
 
         <!-- HISTORY VIEW -->
         <div id="historyView" class="history-view">
-            <div style="font-size: 14px; font-weight: 800; color: var(--text-secondary);">🕒 SAVED POST HISTORY</div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;">🕒 SAVED POST HISTORY</div>
             <div id="historyList" class="history-list-scroll"></div>
             <div class="history-actions">
-                <button class="btn-secondary" onclick="showMain()">🏠 Back to Editor</button>
-                <button class="btn-danger" onclick="clearHistory()">🗑 Clear History</button>
+                <button class="btn-secondary" onclick="showMain()">🏠 Back to Studio</button>
+                <button class="btn-danger" onclick="clearHistory()">🗑 Clear All</button>
             </div>
         </div>
     </div>
@@ -637,15 +753,15 @@
         Telegram.ready();
         Telegram.enableClosingConfirmation();
 
-        // Theme Setup (Default Dark)
+        // Theme Setup
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
             document.getElementById('settingsMenu').classList.remove('show');
         }
 
@@ -654,24 +770,10 @@
         }
 
         document.addEventListener('click', (e) => {
-            const menu = document.getElementById('settingsMenu');
-            if (!e.target.closest('.header-container')) {
-                menu.classList.remove('show');
+            if (!e.target.closest('.top-bar')) {
+                document.getElementById('settingsMenu').classList.remove('show');
             }
         });
-
-        function createRain() {
-            const container = document.getElementById('rainContainer');
-            for (let i = 0; i < 18; i++) {
-                let drop = document.createElement('div');
-                drop.className = 'drop';
-                drop.style.left = Math.random() * 100 + 'vw';
-                drop.style.animationDuration = (Math.random() * 2 + 2.2) + 's';
-                drop.style.animationDelay = Math.random() * 2 + 's';
-                container.appendChild(drop);
-            }
-        }
-        createRain();
 
         const urlParams = new URLSearchParams(window.location.search);
         const apiBase = (urlParams.get('api') || "").replace(/\/$/, "");
@@ -679,10 +781,12 @@
         const draft = document.getElementById('draft');
         const keyboard = document.getElementById('emojiKeyboard');
         const charCount = document.getElementById('charCount');
+        const emojiCountBadge = document.getElementById('emojiCountBadge');
         const emojiArea = document.getElementById('emojiArea');
         const categoryRow = document.getElementById('categoryRow');
         const searchInput = document.getElementById('emojiSearchInput');
         const searchClearBtn = document.getElementById('searchClearBtn');
+        const matchCountBadge = document.getElementById('matchCountBadge');
 
         let savedRange = null;
         let allEmojis = [];
@@ -691,40 +795,36 @@
         let activeCategory = null;
         let currentRenderList = [];
         let renderedCount = 0;
-        const CHUNK_SIZE = 60;
+        const CHUNK_SIZE = 36; // Small initial batch for 0ms lag
 
-        // In-Memory Blob URL Cache for 0ms Instant Rendering
         const imageBlobCache = {};
-        const TRANSPARENT_PIXEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-        // Smart Search Alias Dictionary
+        // Smart Alias Dictionary
         const SEARCH_ALIASES = {
-            "yt": ["youtube", "video", "play"],
-            "youtube": ["yt", "youtube", "play"],
-            "fb": ["facebook", "meta"],
-            "facebook": ["fb", "facebook", "meta"],
-            "tg": ["telegram", "plane", "chat"],
-            "telegram": ["tg", "telegram"],
-            "ig": ["instagram", "insta"],
+            "yt": ["youtube", "yt", "video", "play", "red"],
+            "youtube": ["youtube", "yt", "video", "play"],
+            "fb": ["facebook", "fb", "meta"],
+            "facebook": ["facebook", "fb", "meta"],
+            "tg": ["telegram", "tg", "plane"],
+            "telegram": ["telegram", "tg", "plane"],
+            "ig": ["instagram", "ig", "insta"],
             "insta": ["instagram", "ig"],
-            "wa": ["whatsapp", "call", "chat"],
-            "bnb": ["binance", "crypto", "coin", "yellow"],
-            "binance": ["bnb", "binance", "crypto"],
-            "btc": ["bitcoin", "crypto", "coin"],
-            "dc": ["discord", "game"],
-            "tt": ["tiktok", "music", "video"],
-            "tiktok": ["tt", "tiktok"],
-            "nf": ["netflix", "movie", "red"],
-            "star": ["star", "gold", "premium", "sparkle"],
-            "verify": ["verified", "tick", "check", "blue"],
+            "wa": ["whatsapp", "wa", "chat", "green"],
+            "bnb": ["binance", "bnb", "crypto", "coin"],
+            "binance": ["binance", "bnb", "crypto"],
+            "btc": ["bitcoin", "btc", "crypto", "coin"],
+            "tt": ["tiktok", "tt", "music"],
+            "tiktok": ["tiktok", "tt"],
+            "nf": ["netflix", "movie"],
+            "verified": ["verified", "tick", "check", "blue", "badge"],
             "tick": ["verified", "tick", "check"],
-            "fire": ["fire", "hot", "lit", "flame"],
-            "love": ["heart", "love", "red", "like"],
-            "laugh": ["laugh", "funny", "haha", "lol", "joy"],
-            "angry": ["angry", "rage", "mad"]
+            "star": ["star", "gold", "premium", "sparkle"],
+            "fire": ["fire", "hot", "flame", "lit"],
+            "laugh": ["laugh", "funny", "haha", "lol", "joy", "smile"]
         };
 
-        // Track Cursor Position Inside Draft
+        // Cursor Tracker
         function saveCurrentSelection() {
             const sel = window.getSelection();
             if (sel.rangeCount > 0) {
@@ -755,19 +855,19 @@
         function clearDraft() {
             draft.innerHTML = '';
             savedRange = null;
-            updateCharCount();
+            updateStats();
             document.getElementById('settingsMenu').classList.remove('show');
         }
 
-        function updateCharCount() {
+        function updateStats() {
             const imgs = draft.querySelectorAll('img.inline-premium-emoji').length;
             const textLen = draft.innerText.replace(/\n/g, '').length;
-            charCount.textContent = (textLen + imgs) + ' chars';
+            emojiCountBadge.textContent = imgs;
+            charCount.textContent = textLen;
         }
+        draft.addEventListener('input', updateStats);
 
-        draft.addEventListener('input', updateCharCount);
-
-        // WYSIWYG Formatting
+        // Formatting
         function applyFormat(tag) {
             const selection = window.getSelection();
             if (savedRange) {
@@ -782,7 +882,7 @@
             } else {
                 const range = selection.getRangeAt(0);
                 if (range.collapsed) {
-                    if (Telegram.showAlert) Telegram.showAlert('Please select some text first!');
+                    if (Telegram.showAlert) Telegram.showAlert('Select some text first!');
                     return;
                 }
                 const wrapper = document.createElement(tag);
@@ -800,62 +900,57 @@
                 selection.addRange(newRange);
             }
             saveCurrentSelection();
-            updateCharCount();
+            updateStats();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // Image Loader with Memory Blob Cache
-        function loadEmojiBlob(emojiId, rawUrl, imgEl) {
+        // Ultra-Fast Image Loader (Uses Native Browser Cache First, Fetch Fallback if Needed)
+        function setSmartImageSrc(imgEl, emojiId, rawUrl) {
             if (!rawUrl) return;
             const fullUrl = rawUrl.startsWith('/') ? (apiBase + rawUrl) : rawUrl;
             if (imageBlobCache[emojiId]) {
                 imgEl.src = imageBlobCache[emojiId];
                 return;
             }
-            fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
-                .then(r => {
-                    if (!r.ok) throw new Error('err');
-                    return r.blob();
-                })
-                .then(blob => {
-                    const bUrl = URL.createObjectURL(blob);
-                    imageBlobCache[emojiId] = bUrl;
-                    imgEl.src = bUrl;
-                })
-                .catch(() => {
-                    imgEl.style.opacity = '0.3';
-                });
+            imgEl.decoding = 'async';
+            imgEl.loading = 'lazy';
+            imgEl.src = fullUrl;
+            imgEl.onerror = () => {
+                imgEl.onerror = null;
+                fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': '69420' } })
+                    .then(r => r.ok ? r.blob() : Promise.reject())
+                    .then(blob => {
+                        const bUrl = URL.createObjectURL(blob);
+                        imageBlobCache[emojiId] = bUrl;
+                        imgEl.src = bUrl;
+                    })
+                    .catch(() => { imgEl.style.opacity = '0.25'; });
+            };
         }
 
-        const lazyLoadObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const el = entry.target;
-                    if (el.tagName === 'IMG' && el.dataset.realSrc) {
-                        const src = el.dataset.realSrc;
-                        const eid = el.dataset.eid;
-                        el.removeAttribute('data-real-src');
-                        lazyLoadObserver.unobserve(el);
-                        loadEmojiBlob(eid, src, el);
-                    }
-                }
-            });
-        }, { root: emojiArea, rootMargin: '140px 0px', threshold: 0 });
-
-        // Infinite Scroll inside Emoji Area for Chunked Rendering
         emojiArea.addEventListener('scroll', () => {
-            if (emojiArea.scrollTop + emojiArea.clientHeight >= emojiArea.scrollHeight - 80) {
+            if (emojiArea.scrollTop + emojiArea.clientHeight >= emojiArea.scrollHeight - 90) {
                 renderNextChunk();
             }
-        });
+        }, { passive: true });
+
+        // Pre-index each emoji once on arrival so search is 0ms
+        function indexEmojiItem(emoji) {
+            const rawTags = (emoji.tags || '').toLowerCase().trim();
+            const rawPack = (emoji.pack_id || 'Other').toLowerCase();
+            emoji._tags = rawTags;
+            emoji._words = rawTags ? rawTags.split(/\s+/) : [];
+            emoji._pack = rawPack;
+            emoji._label = emoji._words[0] || emoji.symbol || '⭐';
+        }
 
         async function loadEmojis() {
             if (!apiBase) {
-                keyboard.innerHTML = '<div class="error">❌ Missing API URL. Please open via Bot.</div>';
+                keyboard.innerHTML = '<div class="state-msg">❌ Missing API URL. Open via Bot.</div>';
                 return;
             }
-            keyboard.innerHTML = '<div class="loading">✨ Loading premium emojis...</div>';
-            await fetchPage(1, 1200, true);
+            keyboard.innerHTML = '<div class="state-msg">⚡ Loading studio emojis...</div>';
+            await fetchPage(1, 1500, true);
             fetchRemainingInBackground();
         }
 
@@ -868,8 +963,10 @@
                 const data = await res.json();
                 if (!data || data.length === 0) return 0;
 
-                data.forEach(emoji => {
+                for (let i = 0; i < data.length; i++) {
+                    const emoji = data[i];
                     if (!emojiById[emoji.id]) {
+                        indexEmojiItem(emoji);
                         emojiById[emoji.id] = emoji;
                         allEmojis.push(emoji);
                     }
@@ -878,7 +975,7 @@
                         catMap[packId] = true;
                         createCategoryButton(packId, emoji.image_url, emoji.id);
                     }
-                });
+                }
 
                 if (isFirstLoad && Object.keys(catMap).length > 0) {
                     const firstPack = Object.keys(catMap)[0];
@@ -888,19 +985,19 @@
                     const newlyAdded = data.filter(e => (e.pack_id || 'Other') === activeCategory);
                     if (newlyAdded.length > 0) {
                         currentRenderList.push(...newlyAdded);
-                        renderNextChunk();
+                        if (renderedCount < CHUNK_SIZE) renderNextChunk();
                     }
                 }
                 return data.length;
             } catch (err) {
-                if (isFirstLoad) keyboard.innerHTML = `<div class="error">❌ ${err.message}</div>`;
+                if (isFirstLoad) keyboard.innerHTML = `<div class="state-msg">❌ ${err.message}</div>`;
                 return 0;
             }
         }
 
         async function fetchRemainingInBackground() {
             let page = 2;
-            const limit = 1200;
+            const limit = 1500;
             while (true) {
                 const count = await fetchPage(page, limit, false);
                 if (count < limit) break;
@@ -908,17 +1005,28 @@
             }
         }
 
-        function setGridList(list) {
-            keyboard.innerHTML = '';
-            currentRenderList = list;
-            renderedCount = 0;
-            emojiArea.scrollTop = 0;
+        let rAF_id = null;
+        function setGridList(list, showCount = false) {
+            if (rAF_id) cancelAnimationFrame(rAF_id);
+            rAF_id = requestAnimationFrame(() => {
+                keyboard.innerHTML = '';
+                currentRenderList = list;
+                renderedCount = 0;
+                emojiArea.scrollTop = 0;
 
-            if (list.length === 0) {
-                keyboard.innerHTML = '<div class="empty">😕 No matching emojis found.</div>';
-                return;
-            }
-            renderNextChunk();
+                if (showCount) {
+                    matchCountBadge.textContent = `${list.length}`;
+                    matchCountBadge.classList.add('visible');
+                } else {
+                    matchCountBadge.classList.remove('visible');
+                }
+
+                if (list.length === 0) {
+                    keyboard.innerHTML = '<div class="state-msg">😕 No matching emojis found.</div>';
+                    return;
+                }
+                renderNextChunk();
+            });
         }
 
         function renderNextChunk() {
@@ -927,9 +1035,9 @@
             renderedCount += nextSlice.length;
 
             const fragment = document.createDocumentFragment();
-            nextSlice.forEach(emoji => {
-                fragment.appendChild(createEmojiElement(emoji));
-            });
+            for (let i = 0; i < nextSlice.length; i++) {
+                fragment.appendChild(createEmojiElement(nextSlice[i]));
+            }
             keyboard.appendChild(fragment);
         }
 
@@ -938,27 +1046,17 @@
             div.className = 'emoji-item';
 
             const mediaEl = document.createElement('img');
-            mediaEl.dataset.eid = emoji.id;
-            if (imageBlobCache[emoji.id]) {
-                mediaEl.src = imageBlobCache[emoji.id];
-            } else {
-                mediaEl.src = TRANSPARENT_PIXEL;
-                mediaEl.dataset.realSrc = emoji.image_url;
-                lazyLoadObserver.observe(mediaEl);
-            }
+            setSmartImageSrc(mediaEl, emoji.id, emoji.image_url);
 
             const label = document.createElement('div');
             label.className = 'label';
-            const firstTag = (emoji.tags || '').split(/\s+/)[0];
-            label.textContent = firstTag || emoji.symbol || '⭐';
+            label.textContent = emoji._label;
 
             div.appendChild(mediaEl);
             div.appendChild(label);
 
-            // Prevent mobile keyboard from popping up when tapping emoji
             div.onmousedown = (e) => e.preventDefault();
             div.onclick = () => insertEmoji(emoji);
-
             return div;
         }
 
@@ -969,16 +1067,19 @@
             div.onclick = () => filterEmojis(packId, div);
 
             const mediaEl = document.createElement('img');
-            mediaEl.src = TRANSPARENT_PIXEL;
-            loadEmojiBlob(eid, imageUrl, mediaEl);
+            setSmartImageSrc(mediaEl, eid, imageUrl);
 
             const label = document.createElement('div');
             label.className = 'normal-emoji';
-            label.textContent = packId.replace(/^Pack_/, '').substring(0, 9);
+            label.textContent = packId.replace(/^Pack_/, '').substring(0, 8);
 
             div.appendChild(mediaEl);
             div.appendChild(label);
             categoryRow.appendChild(div);
+        }
+
+        function clearActiveChips() {
+            document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active-chip'));
         }
 
         function filterEmojis(categoryId, clickedBtn) {
@@ -986,97 +1087,135 @@
                 searchInput.value = '';
                 searchClearBtn.classList.remove('visible');
             }
+            clearActiveChips();
             activeCategory = categoryId;
             document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active-cat'));
             if (clickedBtn) clickedBtn.classList.add('active-cat');
 
             const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
-            setGridList(filtered);
+            setGridList(filtered, false);
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        // Smart Fuzzy & Alias Search Engine
-        function isFuzzyMatch(target, query) {
-            if (target.includes(query)) return true;
-            if (query.length < 3) return false;
-            // Allow 1-2 character typo tolerance
-            let tIdx = 0, qIdx = 0, mismatches = 0;
-            while (tIdx < target.length && qIdx < query.length) {
-                if (target[tIdx] === query[qIdx]) {
-                    tIdx++; qIdx++;
-                } else {
-                    mismatches++;
-                    if (mismatches > 2) return false;
-                    qIdx++;
-                }
+        function runQuickChip(term, btnEl) {
+            const isAlreadyActive = btnEl.classList.contains('active-chip');
+            clearActiveChips();
+            if (isAlreadyActive) {
+                clearSearch();
+                return;
             }
-            return qIdx >= query.length - 1;
+            btnEl.classList.add('active-chip');
+            searchInput.value = term;
+            searchClearBtn.classList.add('visible');
+            executeFastSearch(term);
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.selectionChanged();
         }
 
-        let searchTimer;
+        // Ultra-Fast Pre-Indexed Search (<1ms for 8,800+ emojis)
+        function isFuzzy(word, q) {
+            if (q.length < 3 || Math.abs(word.length - q.length) > 2) return false;
+            let wi = 0, qi = 0, err = 0;
+            while (wi < word.length && qi < q.length) {
+                if (word[wi] === q[qi]) { wi++; qi++; }
+                else {
+                    err++;
+                    if (err > 1) return false;
+                    if (word.length > q.length) wi++;
+                    else if (q.length > word.length) qi++;
+                    else { wi++; qi++; }
+                }
+            }
+            return true;
+        }
+
+        function executeFastSearch(rawQ) {
+            const terms = SEARCH_ALIASES[rawQ] || [rawQ];
+            const exactList = [];
+            const prefixList = [];
+            const substringList = [];
+
+            const total = allEmojis.length;
+            for (let i = 0; i < total; i++) {
+                const em = allEmojis[i];
+                const tags = em._tags;
+                if (!tags && em.symbol !== rawQ) continue;
+
+                let matchedTier = 0;
+                const words = em._words;
+
+                for (let t = 0; t < terms.length; t++) {
+                    const term = terms[t];
+                    if (em.symbol === term) { matchedTier = 1; break; }
+                    if (!tags.includes(term)) continue;
+
+                    for (let w = 0; w < words.length; w++) {
+                        if (words[w] === term) { matchedTier = 1; break; }
+                        if (words[w].startsWith(term)) { matchedTier = Math.max(matchedTier, 2); }
+                    }
+                    if (matchedTier === 0) matchedTier = 3;
+                    if (matchedTier === 1) break;
+                }
+
+                if (matchedTier === 1) exactList.push(em);
+                else if (matchedTier === 2) prefixList.push(em);
+                else if (matchedTier === 3) substringList.push(em);
+            }
+
+            let combined = exactList.concat(prefixList, substringList);
+
+            // Only run typo-fuzzy fallback if fewer than 10 results found
+            if (combined.length < 10 && rawQ.length >= 3) {
+                const seen = new Set(combined.map(x => x.id));
+                for (let i = 0; i < total; i++) {
+                    const em = allEmojis[i];
+                    if (seen.has(em.id)) continue;
+                    const words = em._words;
+                    for (let w = 0; w < words.length; w++) {
+                        if (isFuzzy(words[w], rawQ)) {
+                            combined.push(em);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            setGridList(combined, true);
+        }
+
+        let searchDebounce;
         searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimer);
+            clearTimeout(searchDebounce);
+            clearActiveChips();
             const rawQ = searchInput.value.trim().toLowerCase().replace(/^#/, '');
             searchClearBtn.classList.toggle('visible', rawQ.length > 0);
 
             if (!rawQ) {
-                const activeBtn = document.querySelector('.category-item.active-cat') || document.querySelector('.category-item');
-                if (activeCategory) {
-                    const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
-                    setGridList(filtered);
-                }
+                const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
+                setGridList(filtered, false);
                 return;
             }
 
-            searchTimer = setTimeout(() => {
-                const expandedTerms = [rawQ, ...(SEARCH_ALIASES[rawQ] || [])];
-                const scored = [];
-
-                for (let i = 0; i < allEmojis.length; i++) {
-                    const em = allEmojis[i];
-                    const tags = (em.tags || '').toLowerCase();
-                    const pack = (em.pack_id || '').toLowerCase();
-                    const sym = em.symbol || '';
-
-                    let score = 0;
-                    for (const term of expandedTerms) {
-                        if (sym === term) { score = 100; break; }
-                        const tagWords = tags.split(/\s+/);
-                        if (tagWords.includes(term)) { score = Math.max(score, 95); }
-                        else if (tagWords.some(w => w.startsWith(term))) { score = Math.max(score, 85); }
-                        else if (tags.includes(term)) { score = Math.max(score, 75); }
-                        else if (pack.includes(term)) { score = Math.max(score, 60); }
-                        else if (tagWords.some(w => isFuzzyMatch(w, term))) { score = Math.max(score, 50); }
-                    }
-                    if (score > 0) scored.push({ em, score });
-                }
-
-                scored.sort((a, b) => b.score - a.score);
-                setGridList(scored.map(s => s.em));
-            }, 80);
+            searchDebounce = setTimeout(() => {
+                executeFastSearch(rawQ);
+            }, 120);
         });
 
         function clearSearch() {
             searchInput.value = '';
             searchClearBtn.classList.remove('visible');
+            clearActiveChips();
             const filtered = allEmojis.filter(e => (e.pack_id || 'Other') === activeCategory);
-            setGridList(filtered);
+            setGridList(filtered, false);
         }
 
-        // Insert Actual Premium Emoji Image Directly into Draft Box (No Brackets, No Forced Keyboard Popup)
+        // Insert Visual Premium Emoji Into Draft Without Popping Up Keyboard
         function insertEmoji(emoji) {
             const imgNode = document.createElement('img');
             imgNode.className = 'inline-premium-emoji';
             imgNode.dataset.emojiId = emoji.id;
             imgNode.dataset.imgPath = emoji.image_url || `/api/image/${emoji.id}.webp`;
             imgNode.alt = emoji.symbol || '⭐';
-
-            if (imageBlobCache[emoji.id]) {
-                imgNode.src = imageBlobCache[emoji.id];
-            } else {
-                imgNode.src = TRANSPARENT_PIXEL;
-                loadEmojiBlob(emoji.id, imgNode.dataset.imgPath, imgNode);
-            }
+            setSmartImageSrc(imgNode, emoji.id, imgNode.dataset.imgPath);
 
             const spaceNode = document.createTextNode('\u00A0');
 
@@ -1091,27 +1230,23 @@
             range.insertNode(spaceNode);
             range.insertNode(imgNode);
 
-            // Advance cursor after the inserted emoji & space
             range.setStartAfter(spaceNode);
             range.collapse(true);
             savedRange = range.cloneRange();
 
-            // If keyboard is already open, keep selection synced
             if (document.activeElement === draft) {
                 const sel = window.getSelection();
                 sel.removeAllRanges();
                 sel.addRange(savedRange);
             }
 
-            updateCharCount();
+            updateStats();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // Convert Draft DOM (with inline premium emoji images) to Bot-ready HTML + [emoji_id]
+        // Serialize Draft to Bot Format with [emoji_id]
         function serializeDraftForBot(containerEl) {
             const clone = containerEl.cloneNode(true);
-
-            // Replace every inline premium emoji <img> with [emoji_id]
             clone.querySelectorAll('img.inline-premium-emoji').forEach(img => {
                 const eid = img.dataset.emojiId;
                 const replacement = document.createTextNode(eid ? `[${eid}]` : (img.alt || '⭐'));
@@ -1126,7 +1261,6 @@
                 .replace(/&nbsp;|\u00A0/g, ' ');
         }
 
-        // History Management (100% Preserves Premium Emoji IDs)
         function saveToHistory(botFormattedText) {
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
             history.unshift({
@@ -1137,7 +1271,6 @@
             localStorage.setItem('postHistory', JSON.stringify(history));
         }
 
-        // Convert [emoji_id] in saved history back to visual <img> tags for Draft/Preview
         function hydrateBotTextToVisualHTML(botText) {
             if (!botText) return '';
             const htmlWithBreaks = botText.replace(/\n/g, '<br>');
@@ -1151,7 +1284,7 @@
             container.querySelectorAll('img.inline-premium-emoji').forEach(img => {
                 const eid = img.dataset.emojiId;
                 const path = img.dataset.imgPath || `/api/image/${eid}.webp`;
-                if (eid) loadEmojiBlob(eid, path, img);
+                if (eid) setSmartImageSrc(img, eid, path);
             });
         }
 
@@ -1164,7 +1297,7 @@
             let history = JSON.parse(localStorage.getItem('postHistory') || '[]');
 
             if (history.length === 0) {
-                list.innerHTML = '<div class="empty">No saved history yet.</div>';
+                list.innerHTML = '<div class="state-msg">No saved history yet.</div>';
                 return;
             }
 
@@ -1182,7 +1315,7 @@
                         <span>${item.date || ''}</span>
                     </div>
                     <div class="history-text">${visualHTML}</div>
-                    <div style="font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 700;">Tap to load into editor ✏️</div>
+                    <div style="font-size: 11px; color: var(--accent); margin-top: 8px; font-weight: 700;">Tap to restore into studio ✏️</div>
                 `;
                 list.appendChild(card);
                 hydrateImagesInContainer(card);
@@ -1203,7 +1336,7 @@
                 range.collapse(false);
                 savedRange = range.cloneRange();
 
-                updateCharCount();
+                updateStats();
                 if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
             }
         }
@@ -1223,7 +1356,7 @@
         function sendData() {
             const hasEmoji = draft.querySelector('img.inline-premium-emoji') !== null;
             if (!draft.innerText.trim() && !hasEmoji) {
-                if (Telegram.showAlert) Telegram.showAlert('Please write something or add an emoji first!');
+                if (Telegram.showAlert) Telegram.showAlert('Write something or add an emoji first!');
                 return;
             }
 
