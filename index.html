@@ -83,7 +83,6 @@
             position: relative;
         }
 
-        /* ================= LIVE ANIMATIONS FOR PREMIUM UI ICONS ================= */
         @keyframes floatPulse {
             0%, 100% { transform: translateY(0px) scale(1); }
             50% { transform: translateY(-2.5px) scale(1.08); }
@@ -136,7 +135,6 @@
             filter: drop-shadow(0 2px 5px rgba(56, 189, 248, 0.35));
         }
 
-        /* ================= HEADER ================= */
         .top-bar {
             flex-shrink: 0;
             display: flex;
@@ -224,7 +222,6 @@
             border-color: var(--accent);
         }
 
-        /* Dropdown Menu */
         .settings-menu {
             position: absolute;
             top: 48px;
@@ -257,7 +254,6 @@
         }
         .settings-item:active { background: var(--glow); color: var(--accent); }
 
-        /* ================= VIEWS ================= */
         .main-view {
             display: flex;
             flex-direction: column;
@@ -275,7 +271,6 @@
             overflow: hidden;
         }
 
-        /* ================= DRAFT STUDIO CARD ================= */
         .editor-card {
             flex-shrink: 0;
             background: var(--surface);
@@ -356,7 +351,6 @@
             border-radius: 5px;
         }
 
-        /* ================= TELEGRAM STYLE QUOTE & EXPANDABLE (QUIZ) QUOTE ================= */
         .draft-area blockquote,
         .history-text blockquote {
             position: relative;
@@ -420,7 +414,6 @@
             border-color: transparent;
         }
 
-        /* Formatting Dock */
         .format-toolbar {
             display: flex;
             align-items: center;
@@ -468,7 +461,6 @@
             border-color: rgba(56, 189, 248, 0.45);
         }
 
-        /* ================= SMOOTH POPUP MODALS (CREATE LINK & AI ENHANCE) ================= */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -583,7 +575,6 @@
             box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
         }
 
-        /* AI Loading Modal Specifics */
         .ai-loader-center {
             display: flex;
             flex-direction: column;
@@ -625,7 +616,6 @@
             border-radius: 99px;
         }
 
-        /* ================= EMOJI VAULT CARD ================= */
         .vault-card {
             flex: 1 1 auto;
             min-height: 0;
@@ -803,7 +793,6 @@
             color: var(--text);
         }
 
-        /* ================= SCROLLABLE EMOJI GRID ================= */
         .emoji-scroll-area {
             flex: 1 1 auto;
             min-height: 0;
@@ -900,7 +889,6 @@
             font-weight: 600;
         }
 
-        /* ================= SEND BUTTON ================= */
         .send-btn-wrapper {
             flex-shrink: 0;
             width: 100%;
@@ -927,7 +915,6 @@
             filter: brightness(1.1);
         }
 
-        /* ================= HISTORY VIEW ================= */
         .history-list-scroll {
             flex: 1 1 auto;
             min-height: 0;
@@ -997,7 +984,6 @@
 </head>
 <body>
     <div class="app-shell">
-        <!-- HEADER -->
         <div class="top-bar">
             <div class="brand-wrap">
                 <div class="brand-logo anim-float" id="headerBrandIcon">
@@ -1032,7 +1018,6 @@
                 </button>
             </div>
 
-            <!-- Settings Menu -->
             <div class="settings-menu" id="settingsMenu">
                 <button class="settings-item" onclick="toggleTheme()">
                     <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#facc15" stroke="#fb923c" stroke-width="1.5"/></svg>
@@ -1049,20 +1034,16 @@
             </div>
         </div>
 
-        <!-- MAIN EDITOR VIEW -->
         <div id="mainView" class="main-view">
-            <!-- Draft Editor -->
             <div class="editor-card">
                 <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Write or paste your post here... Tap AI Enhance to auto-make with Premium Emojis!"></div>
 
                 <div class="format-toolbar" id="formatToolbar">
-                    <!-- AI ENHANCE BUTTON (Calls Bot Gemini AI + History) -->
                     <button class="format-btn ai-pill" type="button" onmousedown="event.preventDefault()" onclick="runAiEnhancePost()">
                         <img class="ui-prem-icon anim-wiggle" data-ui-prem="ai" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23facc15' d='M12 1L14.8 8.2L22 11L14.8 13.8L12 21L9.2 13.8L2 11L9.2 8.2L12 1Z'/><circle cx='19' cy='4' r='2' fill='%2338bdf8'/><circle cx='5' cy='19' r='1.8' fill='%23a855f7'/></svg>" alt="">
                         AI Enhance
                     </button>
 
-                    <!-- CREATE LINK BUTTON IN TOOLBAR -->
                     <button class="format-btn link-pill" data-fmt="a" type="button" onmousedown="event.preventDefault()" onclick="openLinkModal()">
                         <img class="ui-prem-icon anim-float" data-ui-prem="link" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' stroke='%2338bdf8' stroke-width='2.2' stroke-linecap='round'/><path d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' stroke='%23a855f7' stroke-width='2.2' stroke-linecap='round'/></svg>" alt="">
                         Create Link
@@ -1080,7 +1061,6 @@
                 </div>
             </div>
 
-            <!-- Emoji Vault -->
             <div class="vault-card">
                 <div class="search-row">
                     <div class="search-icon-box">
@@ -1096,7 +1076,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Filter Chips -->
                 <div class="quick-chips" id="quickChips">
                     <button type="button" class="chip-btn" data-chip="youtube" onmousedown="event.preventDefault()" onclick="runQuickChip('youtube', this)">
                         <img class="chip-prem-img anim-float" data-chip-icon="youtube" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='17' y='3.5' rx='4' fill='%23ff0000'/><path d='M10 8.5l6 3.5-6 3.5V8.5z' fill='%23fff'/></svg>" alt="">
@@ -1136,17 +1115,14 @@
                     </button>
                 </div>
 
-                <!-- Pack Categories -->
                 <div class="category-row" id="categoryRow"></div>
 
-                <!-- Scrollable Emoji Grid -->
                 <div class="emoji-scroll-area" id="emojiArea">
                     <div id="emojiKeyboard" class="emoji-grid"></div>
                     <div id="scrollSentinel" style="height: 16px; width: 100%;"></div>
                 </div>
             </div>
 
-            <!-- Send CTA -->
             <div class="send-btn-wrapper">
                 <button class="send-btn" id="sendBtn" onclick="sendData()">
                     <svg class="ui-prem-icon anim-rocket" style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none">
@@ -1158,7 +1134,6 @@
             </div>
         </div>
 
-        <!-- HISTORY VIEW -->
         <div id="historyView" class="history-view">
             <div style="font-size: 13px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px;">🕒 SAVED POST HISTORY</div>
             <div id="historyList" class="history-list-scroll"></div>
@@ -1169,7 +1144,6 @@
         </div>
     </div>
 
-    <!-- ================= CREATE LINK POPUP MODAL ================= -->
     <div class="modal-backdrop" id="linkModal">
         <div class="modal-box">
             <div class="modal-title-row">
@@ -1193,7 +1167,6 @@
         </div>
     </div>
 
-    <!-- ================= AI MAKING POST SMOOTH POPUP MODAL ================= -->
     <div class="modal-backdrop" id="aiLoadingModal">
         <div class="modal-box">
             <div class="ai-loader-center">
@@ -1215,7 +1188,17 @@
         Telegram.ready();
         Telegram.enableClosingConfirmation();
 
-        // Theme Setup
+        function safeAlert(msg) {
+            const clean = String(msg || 'Notice').slice(0, 220);
+            try {
+                if (Telegram && Telegram.showAlert) {
+                    Telegram.showAlert(clean);
+                    return;
+                }
+            } catch (e) {}
+            alert(clean);
+        }
+
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
 
@@ -1264,9 +1247,6 @@
         const imageBlobCache = {};
         const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-        // =========================================================
-        // ZERO-BROKEN-IMAGE FETCH QUEUE + PERSISTENT CACHE STORAGE
-        // =========================================================
         const fetchQueue = [];
         let activeWorkers = 0;
         const MAX_CONCURRENT_FETCH = 8;
@@ -1337,7 +1317,6 @@
                             applyLoadedImage(t.imgEl, t.boxEl, bUrl);
                         }
                     } catch (e) {
-                        // Keep clean placeholder
                     } finally {
                         activeWorkers--;
                         processFetchQueue();
@@ -1397,9 +1376,6 @@
             "laugh": ["laugh", "funny", "haha", "lol", "joy", "smile"]
         };
 
-        // =========================================================
-        // SELECTION & ACTIVE FORMAT TRACKER
-        // =========================================================
         const INLINE_FMT_TAGS = ['B', 'STRONG', 'I', 'EM', 'U', 'INS', 'S', 'STRIKE', 'DEL', 'CODE', 'TG-SPOILER', 'A'];
 
         function findAncestorTag(node, tagNames) {
@@ -1452,9 +1428,6 @@
         draft.addEventListener('mouseup', saveCurrentSelection);
         draft.addEventListener('touchend', saveCurrentSelection);
 
-        // =========================================================
-        // CREATE LINK TOOLBAR BUTTON -> SMOOTH POPUP WORKFLOW
-        // =========================================================
         function openLinkModal() {
             const sel = window.getSelection();
             if (savedRange) {
@@ -1466,9 +1439,7 @@
             const selectedText = savedRange ? savedRange.toString().replace(/\u200B/g, '').trim() : '';
 
             if (!existingLink && (!savedRange || savedRange.collapsed || !selectedText)) {
-                if (Telegram.showAlert) {
-                    Telegram.showAlert('Select any text or word first, then click Create Link!');
-                }
+                safeAlert('Select any text or word first, then click Create Link!');
                 return;
             }
 
@@ -1499,7 +1470,7 @@
             let rawUrl = urlInput.value.trim();
 
             if (!rawUrl) {
-                if (Telegram.showAlert) Telegram.showAlert('Please paste your link first!');
+                safeAlert('Please paste your link first!');
                 return;
             }
             if (!/^(https?:\/\/|tg:\/\/|mailto:)/i.test(rawUrl)) {
@@ -1525,7 +1496,6 @@
                     aTag.appendChild(frag);
                     pendingLinkRange.insertNode(aTag);
 
-                    // Move cursor outside the newly created <a> link so next typing is normal text
                     const exitAnchor = document.createTextNode('\u200B');
                     aTag.after(exitAnchor);
 
@@ -1551,17 +1521,14 @@
             }
         });
 
-        // =========================================================
-        // DIRECT AI ENHANCE VIA BOT BACKEND (NO HARDCODED MAPS!)
-        // =========================================================
         async function runAiEnhancePost() {
             const rawText = draft.innerText.replace(/\u200B/g, '').trim();
             if (!rawText) {
-                if (Telegram.showAlert) Telegram.showAlert('Write or paste your post first, then tap AI Enhance!');
+                safeAlert('Write or paste your post first, then tap AI Enhance!');
                 return;
             }
             if (!apiBase) {
-                if (Telegram.showAlert) Telegram.showAlert('Missing Bot API URL! Please open Web App from the Bot.');
+                safeAlert('Missing Bot API URL! Please open Web App from the Bot.');
                 return;
             }
 
@@ -1571,8 +1538,9 @@
             aiModal.classList.add('show');
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
 
+            let alertMsgToShow = null;
+
             try {
-                // Collect user's recent postHistory so AI learns how this user likes to place emojis
                 const savedHistory = JSON.parse(localStorage.getItem('postHistory') || '[]');
                 const recentHistoryTexts = savedHistory
                     .slice(0, 6)
@@ -1593,26 +1561,33 @@
                     })
                 });
 
-                const data = await resp.json();
+                const rawBody = await resp.text();
+                let data = null;
+                try {
+                    data = JSON.parse(rawBody);
+                } catch (parseErr) {
+                    data = null;
+                }
+
                 if (resp.ok && data && data.ok && data.text) {
                     draft.innerHTML = hydrateBotTextToVisualHTML(data.text);
                     hydrateImagesInContainer(draft);
                     updateStats();
                     if (Telegram.HapticFeedback) Telegram.HapticFeedback.notificationOccurred('success');
                 } else {
-                    const errMsg = (data && data.error) ? data.error : 'AI could not process the post right now.';
-                    if (Telegram.showAlert) Telegram.showAlert(errMsg);
+                    alertMsgToShow = (data && data.error) ? data.error : `AI Server Error (HTTP ${resp.status})`;
                 }
             } catch (err) {
-                if (Telegram.showAlert) Telegram.showAlert('Connection error while contacting AI server!');
+                alertMsgToShow = 'Connection error while contacting AI server!';
             } finally {
                 aiModal.classList.remove('show');
             }
+
+            if (alertMsgToShow) {
+                safeAlert(alertMsgToShow);
+            }
         }
 
-        // =========================================================
-        // EDITOR INTERACTIONS (QUOTE TOGGLE, ENTER & PASTE HANDLERS)
-        // =========================================================
         draft.addEventListener('click', (e) => {
             const bq = e.target.closest('blockquote');
             if (!bq) return;
@@ -1749,7 +1724,7 @@
                 range.collapse(true);
                 sel.removeAllRanges();
                 sel.addRange(range);
-                savedRange = range.cloneRange();
+                savedRange = newRange.cloneRange();
             }
             updateStats();
         });
@@ -1834,7 +1809,7 @@
                 }
 
                 if (range.collapsed) {
-                    if (Telegram.showAlert) Telegram.showAlert('Select some text first to Quote!');
+                    safeAlert('Select some text first to Quote!');
                     return;
                 }
 
@@ -1906,7 +1881,7 @@
             }
 
             if (range.collapsed) {
-                if (Telegram.showAlert) Telegram.showAlert('Select some text first!');
+                safeAlert('Select some text first!');
                 return;
             }
 
@@ -1939,7 +1914,6 @@
             emoji._label = emoji._words[0] || emoji.symbol || '⭐';
         }
 
-        // Auto-Upgrade UI Buttons, Chips & Modal Icons with Real Premium Emojis from Database
         const upgradedChipKeys = {};
         function upgradeUIWithDatabasePremiumEmojis() {
             const chipTargets = ['youtube', 'telegram', 'binance', 'facebook', 'tiktok', 'verified', 'star', 'fire', 'laugh'];
@@ -2304,9 +2278,6 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // =========================================================
-        // PRECISION DOM SERIALIZER (SUPPORTS LINKS, QUOTES & CLEAN LINES)
-        // =========================================================
         function escapeHtmlText(str) {
             return str
                 .replace(/&/g, '&amp;')
@@ -2525,7 +2496,7 @@
         function sendData() {
             const hasEmoji = draft.querySelector('img.inline-premium-emoji') !== null;
             if (!draft.innerText.replace(/\u200B/g, '').trim() && !hasEmoji) {
-                if (Telegram.showAlert) Telegram.showAlert('Write something or add an emoji first!');
+                safeAlert('Write something or add an emoji first!');
                 return;
             }
 
