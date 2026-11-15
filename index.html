@@ -1534,18 +1534,17 @@
 
             const aiModal = document.getElementById('aiLoadingModal');
             const aiSub = document.getElementById('aiStatusSubText');
-            aiSub.textContent = 'Please wait • AI is reading your post & style...';
+            aiSub.textContent = 'Please wait • AI is checking emoji images & style...';
             aiModal.classList.add('show');
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
 
             let alertMsgToShow = null;
 
             try {
-                // শুধুমাত্র হিস্টরির স্টাইল/প্যাটার্ন পাঠানো হবে, পুরনো ইমোজি আইডি মাস্ক করে দেওয়া হচ্ছে যাতে AI পুরনো ইমোজি কপি না করে
                 const savedHistory = JSON.parse(localStorage.getItem('postHistory') || '[]');
                 const recentHistoryTexts = savedHistory
-                    .slice(0, 6)
-                    .map(item => String(item.botText || item.text || '').replace(/\[(\d{15,22})\]/g, '<EMOJI_SLOT>'))
+                    .slice(0, 3)
+                    .map(item => String(item.botText || item.text || ''))
                     .filter(t => t.trim().length > 0);
 
                 const serializedCurrent = serializeDraftForBot(draft);
@@ -2186,7 +2185,9 @@
 
                     for (let w = 0; w < words.length; w++) {
                         if (words[w] === term) { matchedTier = 1; break; }
-                        if (words[w].startsWith(term)) { matchedTier = Math.max(matchedTier, 2); }
+                        if (words[w].startsWith(term) && Math.abs(words[w].length - term.length) <= 3) {
+                            matchedTier = Math.max(matchedTier, 2);
+                        }
                     }
                     if (matchedTier === 0) matchedTier = 3;
                     if (matchedTier === 1) break;
@@ -2398,6 +2399,7 @@
         function hydrateBotTextToVisualHTML(botText) {
             if (!botText) return '';
             let html = botText
+                .replace(/(?:&lt;|<)(\d{17,21})(?:&gt;|>)/g, '[$1]')
                 .replace(/<blockquote expandable>/gi, '<blockquote expandable class="is-collapsed">')
                 .replace(/<\/blockquote>\n/gi, '</blockquote>')
                 .replace(/\n/g, '<br>');
