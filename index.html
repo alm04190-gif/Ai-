@@ -25,6 +25,7 @@
             --shadow-btn: 0 10px 26px -4px rgba(37, 99, 235, 0.45);
             --shimmer-1: #e2e8f0;
             --shimmer-2: #f8fafc;
+            --quote-bg: rgba(37, 99, 235, 0.08);
         }
 
         [data-theme="dark"] {
@@ -47,6 +48,7 @@
             --shadow-btn: 0 10px 28px -4px rgba(56, 189, 248, 0.4);
             --shimmer-1: #161d31;
             --shimmer-2: #232e4d;
+            --quote-bg: rgba(56, 189, 248, 0.11);
         }
 
         * {
@@ -288,8 +290,8 @@
 
         .draft-area {
             width: 100%;
-            min-height: 60px;
-            max-height: 98px;
+            min-height: 68px;
+            max-height: 145px;
             color: var(--text);
             font-size: 15px;
             line-height: 1.5;
@@ -298,6 +300,7 @@
             -webkit-overflow-scrolling: touch;
             outline: none;
             word-wrap: break-word;
+            white-space: pre-wrap;
             user-select: text;
         }
         .draft-area:empty::before {
@@ -318,11 +321,11 @@
             pointer-events: none;
         }
 
-        .draft-area b { font-weight: 800; }
-        .draft-area i { font-style: italic; }
-        .draft-area u { text-decoration: underline; }
-        .draft-area s { text-decoration: line-through; }
-        .draft-area code {
+        .draft-area b, .history-text b { font-weight: 800; }
+        .draft-area i, .history-text i { font-style: italic; }
+        .draft-area u, .history-text u { text-decoration: underline; }
+        .draft-area s, .history-text s { text-decoration: line-through; }
+        .draft-area code, .history-text code {
             background: var(--surface-3);
             padding: 1px 5px;
             border-radius: 5px;
@@ -330,20 +333,79 @@
             font-size: 13px;
             color: var(--accent);
         }
-        .draft-area tg-spoiler {
-            background: var(--text-muted);
-            color: transparent;
+        .draft-area tg-spoiler, .history-text tg-spoiler {
+            background: var(--surface-3);
+            color: var(--text);
+            border: 1px dashed var(--accent);
             border-radius: 4px;
-            padding: 0 3px;
+            padding: 0 4px;
         }
-        .draft-area blockquote {
-            border-left: 3px solid var(--accent);
-            background: var(--surface-2);
+
+        /* ================= TELEGRAM STYLE QUOTE & EXPANDABLE (QUIZ) QUOTE ================= */
+        .draft-area blockquote,
+        .history-text blockquote {
+            position: relative;
+            border-left: 3.5px solid var(--accent);
+            background: var(--quote-bg);
             margin: 4px 0;
-            padding: 4px 8px;
-            border-radius: 0 6px 6px 0;
-            color: var(--text-muted);
+            padding: 6px 28px 6px 10px;
+            border-radius: 4px 10px 10px 4px;
+            color: var(--text);
             display: block;
+            transition: max-height 0.22s ease;
+        }
+
+        /* Top-right quote mark badge like Telegram */
+        .draft-area blockquote::before,
+        .history-text blockquote::before {
+            content: "”";
+            position: absolute;
+            top: 2px;
+            right: 7px;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--accent);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Bottom-right interactive collapse/expand arrow button on quotes */
+        .draft-area blockquote::after,
+        .history-text blockquote[expandable]::after {
+            content: "⌃";
+            position: absolute;
+            bottom: 4px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            background: var(--surface-3);
+            border: 1px solid var(--border-highlight);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        }
+
+        /* Collapsed state (Telegram Expandable Quote / Quiz Style) */
+        .draft-area blockquote[expandable].is-collapsed,
+        .history-text blockquote[expandable].is-collapsed {
+            max-height: 74px;
+            overflow: hidden;
+        }
+
+        .draft-area blockquote[expandable].is-collapsed::after,
+        .history-text blockquote[expandable].is-collapsed::after {
+            content: "⌄";
+            background: var(--accent);
+            color: #fff;
+            border-color: transparent;
         }
 
         /* Formatting Dock */
@@ -373,10 +435,12 @@
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
+            transition: all 0.12s ease;
         }
-        .format-btn:active {
-            transform: scale(0.92);
+        .format-btn:active,
+        .format-btn.active-fmt {
+            transform: scale(0.94);
             background: var(--glow);
             border-color: var(--accent);
             color: var(--accent);
@@ -613,7 +677,7 @@
             background: var(--glow);
         }
 
-        /* Shimmer Skeleton Placeholder (No Broken Image Ever!) */
+        /* Shimmer Skeleton Placeholder */
         .emoji-img-box {
             width: 30px;
             height: 30px;
@@ -724,6 +788,7 @@
             color: var(--text);
             line-height: 1.5;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
         .history-actions {
             flex-shrink: 0;
@@ -766,7 +831,6 @@
         <div class="top-bar">
             <div class="brand-wrap">
                 <div class="brand-logo anim-float" id="headerBrandIcon">
-                    <!-- Animated Premium Crown/Star SVG (Auto-upgrades to DB Premium Emoji too) -->
                     <svg viewBox="0 0 36 36" fill="none">
                         <defs>
                             <linearGradient id="crownGrad" x1="0" y1="0" x2="36" y2="36">
@@ -798,7 +862,7 @@
                 </button>
             </div>
 
-            <!-- Settings Menu with Animated Premium Icons -->
+            <!-- Settings Menu -->
             <div class="settings-menu" id="settingsMenu">
                 <button class="settings-item" onclick="toggleTheme()">
                     <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#facc15" stroke="#fb923c" stroke-width="1.5"/></svg>
@@ -830,19 +894,21 @@
                         </svg>
                         Keyboard
                     </button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('s')"><s>S</s></button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('code')">Mono</button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('tg-spoiler')">Spoiler</button>
-                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('blockquote')">Quote</button>
+                    <button class="format-btn" data-fmt="b" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
+                    <button class="format-btn" data-fmt="i" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
+                    <button class="format-btn" data-fmt="u" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
+                    <button class="format-btn" data-fmt="s" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('s')"><s>S</s></button>
+                    <button class="format-btn" data-fmt="code" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('code')">Mono</button>
+                    <button class="format-btn" data-fmt="tg-spoiler" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('tg-spoiler')">Spoiler</button>
+                    <button class="format-btn" data-fmt="blockquote" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('blockquote')">” Quote</button>
+                    <button class="format-btn" data-fmt="expandable-quote" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('expandable-quote')">⌄ Quiz Quote</button>
+                    <button class="format-btn" type="button" onmousedown="event.preventDefault()" onclick="clearActiveFormat()" title="Exit/Clear Format">Tx</button>
                 </div>
             </div>
 
             <!-- Emoji Vault -->
             <div class="vault-card">
-                <!-- Glowing Search Input with Animated Premium Search Icon -->
+                <!-- Glowing Search Input -->
                 <div class="search-row">
                     <div class="search-icon-box">
                         <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none">
@@ -857,7 +923,7 @@
                     </div>
                 </div>
 
-                <!-- Quick Filter Chips (Auto-populated with Real Premium Emojis + Live Animation) -->
+                <!-- Quick Filter Chips -->
                 <div class="quick-chips" id="quickChips">
                     <button type="button" class="chip-btn" data-chip="youtube" onmousedown="event.preventDefault()" onclick="runQuickChip('youtube', this)">
                         <img class="chip-prem-img anim-float" data-chip-icon="youtube" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='17' y='3.5' rx='4' fill='%23ff0000'/><path d='M10 8.5l6 3.5-6 3.5V8.5z' fill='%23fff'/></svg>" alt="">
@@ -907,7 +973,7 @@
                 </div>
             </div>
 
-            <!-- Send CTA with Animated Rocket/Plane Icon -->
+            <!-- Send CTA -->
             <div class="send-btn-wrapper">
                 <button class="send-btn" id="sendBtn" onclick="sendData()">
                     <svg class="ui-prem-icon anim-rocket" style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none">
@@ -979,7 +1045,7 @@
         let activeCategory = null;
         let currentRenderList = [];
         let renderedCount = 0;
-        const CHUNK_SIZE = 84; // 14 rows so scrolling is always active & smooth
+        const CHUNK_SIZE = 84;
 
         const imageBlobCache = {};
         const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -1057,7 +1123,7 @@
                             applyLoadedImage(t.imgEl, t.boxEl, bUrl);
                         }
                     } catch (e) {
-                        // Silently keep clean placeholder without broken image icon
+                        // Keep clean placeholder
                     } finally {
                         activeWorkers--;
                         processFetchQueue();
@@ -1082,7 +1148,6 @@
             }
         }, { root: emojiArea, rootMargin: '180px 0px', threshold: 0.01 });
 
-        // Sentinel Observer + Scroll Listener for Infinite Emoji Scrolling
         const sentinelObserver = new IntersectionObserver((entries) => {
             if (entries[0].isIntersecting) {
                 renderNextChunk();
@@ -1096,7 +1161,6 @@
             }
         }, { passive: true });
 
-        // Smart Alias Dictionary
         const SEARCH_ALIASES = {
             "yt": ["youtube", "yt", "video", "play"],
             "youtube": ["youtube", "yt", "video", "play"],
@@ -1120,13 +1184,52 @@
             "laugh": ["laugh", "funny", "haha", "lol", "joy", "smile"]
         };
 
-        // Cursor Tracker
+        // =========================================================
+        // SELECTION, ACTIVE FORMAT TRACKER & QUOTE ARROW TOGGLE
+        // =========================================================
+        const INLINE_FMT_TAGS = ['B', 'STRONG', 'I', 'EM', 'U', 'INS', 'S', 'STRIKE', 'DEL', 'CODE', 'TG-SPOILER'];
+
+        function findAncestorTag(node, tagNames) {
+            let cur = node && node.nodeType === 3 ? node.parentNode : node;
+            while (cur && cur !== draft) {
+                if (cur.nodeType === 1 && tagNames.includes(cur.tagName)) {
+                    return cur;
+                }
+                cur = cur.parentNode;
+            }
+            return null;
+        }
+
+        function updateToolbarActiveState() {
+            document.querySelectorAll('.format-btn[data-fmt]').forEach(btn => btn.classList.remove('active-fmt'));
+            if (!savedRange) return;
+            const node = savedRange.commonAncestorContainer;
+            if (!draft.contains(node)) return;
+
+            if (findAncestorTag(node, ['B', 'STRONG'])) document.querySelector('[data-fmt="b"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['I', 'EM'])) document.querySelector('[data-fmt="i"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['U', 'INS'])) document.querySelector('[data-fmt="u"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['S', 'STRIKE', 'DEL'])) document.querySelector('[data-fmt="s"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['CODE'])) document.querySelector('[data-fmt="code"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['TG-SPOILER'])) document.querySelector('[data-fmt="tg-spoiler"]')?.classList.add('active-fmt');
+
+            const bq = findAncestorTag(node, ['BLOCKQUOTE']);
+            if (bq) {
+                if (bq.hasAttribute('expandable')) {
+                    document.querySelector('[data-fmt="expandable-quote"]')?.classList.add('active-fmt');
+                } else {
+                    document.querySelector('[data-fmt="blockquote"]')?.classList.add('active-fmt');
+                }
+            }
+        }
+
         function saveCurrentSelection() {
             const sel = window.getSelection();
             if (sel.rangeCount > 0) {
                 const r = sel.getRangeAt(0);
                 if (draft.contains(r.commonAncestorContainer)) {
                     savedRange = r.cloneRange();
+                    updateToolbarActiveState();
                 }
             }
         }
@@ -1134,6 +1237,154 @@
         draft.addEventListener('keyup', saveCurrentSelection);
         draft.addEventListener('mouseup', saveCurrentSelection);
         draft.addEventListener('touchend', saveCurrentSelection);
+
+        // Click on Bottom-Right Corner of any Blockquote to Toggle Quiz/Expandable Collapse
+        draft.addEventListener('click', (e) => {
+            const bq = e.target.closest('blockquote');
+            if (!bq) return;
+            const rect = bq.getBoundingClientRect();
+            const clickedBottomRight = (e.clientX >= rect.right - 36) && (e.clientY >= rect.bottom - 32);
+            if (clickedBottomRight) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!bq.hasAttribute('expandable')) {
+                    bq.setAttribute('expandable', '');
+                    bq.classList.add('is-collapsed');
+                } else {
+                    bq.classList.toggle('is-collapsed');
+                }
+                updateToolbarActiveState();
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+            }
+        });
+
+        // Clean Enter Key Handling: Break out of inline formats & never multiply blank lines
+        draft.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' || e.isComposing) return;
+
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            if (!draft.contains(range.commonAncestorContainer)) return;
+
+            e.preventDefault();
+            range.deleteContents();
+
+            const inlineAncestor = findAncestorTag(range.startContainer, INLINE_FMT_TAGS);
+            const bqAncestor = findAncestorTag(range.startContainer, ['BLOCKQUOTE']);
+
+            // If cursor is at the end of an inline format (bold, italic, mono, spoiler), step outside it first
+            if (inlineAncestor) {
+                const afterRange = document.createRange();
+                afterRange.setStart(range.startContainer, range.startOffset);
+                afterRange.setEndAfter(inlineAncestor.lastChild || inlineAncestor);
+                const trailingText = afterRange.toString().replace(/\u200B/g, '');
+                if (trailingText.length === 0) {
+                    range.setStartAfter(inlineAncestor);
+                    range.collapse(true);
+                }
+            }
+
+            // If inside a blockquote and pressing Enter on an empty last line, exit the blockquote cleanly
+            if (bqAncestor) {
+                const prevNode = range.startContainer.nodeType === 1
+                    ? range.startContainer.childNodes[range.startOffset - 1]
+                    : null;
+                const atEnd = (() => {
+                    const testR = document.createRange();
+                    testR.setStart(range.startContainer, range.startOffset);
+                    testR.setEnd(bqAncestor, bqAncestor.childNodes.length);
+                    return testR.toString().replace(/\u200B/g, '').trim() === '';
+                })();
+
+                if (atEnd && prevNode && prevNode.nodeName === 'BR') {
+                    prevNode.remove();
+                    const exitBr = document.createElement('br');
+                    const cursorAnchor = document.createTextNode('\u200B');
+                    if (bqAncestor.nextSibling) {
+                        bqAncestor.parentNode.insertBefore(exitBr, bqAncestor.nextSibling);
+                        bqAncestor.parentNode.insertBefore(cursorAnchor, exitBr.nextSibling);
+                    } else {
+                        bqAncestor.parentNode.appendChild(exitBr);
+                        bqAncestor.parentNode.appendChild(cursorAnchor);
+                    }
+                    const newR = document.createRange();
+                    newR.setStart(cursorAnchor, 1);
+                    newR.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(newR);
+                    savedRange = newR.cloneRange();
+                    updateStats();
+                    updateToolbarActiveState();
+                    return;
+                }
+            }
+
+            // Insert a single clean <br> line break
+            const br = document.createElement('br');
+            range.insertNode(br);
+
+            // Ensure caret visually moves to the new line if at the very end of container
+            const container = bqAncestor || draft;
+            const checkAfter = document.createRange();
+            checkAfter.setStartAfter(br);
+            checkAfter.setEnd(container, container.childNodes.length);
+            const hasFollowingContent = checkAfter.toString().replace(/\u200B/g, '').length > 0 ||
+                checkAfter.cloneContents().querySelector('br, img, blockquote, div');
+
+            if (!hasFollowingContent) {
+                const anchor = document.createTextNode('\u200B');
+                br.after(anchor);
+                range.setStart(anchor, 1);
+            } else {
+                range.setStartAfter(br);
+            }
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            savedRange = range.cloneRange();
+            updateStats();
+            updateToolbarActiveState();
+        });
+
+        // Clean Paste Handler so pasting multi-line text never creates duplicate <div>/<p> gaps
+        draft.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            if (!text) return;
+
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+
+            const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+            const frag = document.createDocumentFragment();
+            let lastNode = null;
+
+            lines.forEach((line, idx) => {
+                if (line.length > 0) {
+                    const tn = document.createTextNode(line);
+                    frag.appendChild(tn);
+                    lastNode = tn;
+                }
+                if (idx < lines.length - 1) {
+                    const br = document.createElement('br');
+                    frag.appendChild(br);
+                    lastNode = br;
+                }
+            });
+
+            if (lastNode) {
+                range.insertNode(frag);
+                range.setStartAfter(lastNode);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                savedRange = range.cloneRange();
+            }
+            updateStats();
+        });
 
         function toggleKeyboard() {
             if (document.activeElement === draft) {
@@ -1152,50 +1403,190 @@
             draft.innerHTML = '';
             savedRange = null;
             updateStats();
+            updateToolbarActiveState();
             document.getElementById('settingsMenu').classList.remove('show');
         }
 
         function updateStats() {
             const imgs = draft.querySelectorAll('img.inline-premium-emoji').length;
-            const textLen = draft.innerText.replace(/\n/g, '').length;
+            const textLen = draft.innerText.replace(/[\n\u200B]/g, '').length;
             emojiCountBadge.textContent = imgs;
             charCount.textContent = textLen;
         }
         draft.addEventListener('input', updateStats);
 
-        // WYSIWYG Formatting
+        // Unwrap helper
+        function unwrapElement(el) {
+            const parent = el.parentNode;
+            if (!parent) return;
+            while (el.firstChild) {
+                parent.insertBefore(el.firstChild, el);
+            }
+            parent.removeChild(el);
+        }
+
+        // Exit/Clear Format Button (Tx)
+        function clearActiveFormat() {
+            const sel = window.getSelection();
+            if (savedRange) {
+                sel.removeAllRanges();
+                sel.addRange(savedRange);
+            }
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const node = range.commonAncestorContainer;
+
+            const inlineEl = findAncestorTag(node, INLINE_FMT_TAGS);
+            if (inlineEl) {
+                unwrapElement(inlineEl);
+            }
+            const bqEl = findAncestorTag(node, ['BLOCKQUOTE']);
+            if (bqEl) {
+                unwrapElement(bqEl);
+            }
+            saveCurrentSelection();
+            updateStats();
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        }
+
+        // =========================================================
+        // FIXED WYSIWYG FORMATTING (NO BLEEDING + EXPANDABLE QUOTE)
+        // =========================================================
         function applyFormat(tag) {
+            draft.focus();
             const selection = window.getSelection();
             if (savedRange) {
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
             }
             if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
 
-            const commandMap = { 'b': 'bold', 'i': 'italic', 'u': 'underline', 's': 'strikeThrough' };
-            if (commandMap[tag]) {
-                document.execCommand(commandMap[tag], false, null);
-            } else {
-                const range = selection.getRangeAt(0);
-                if (range.collapsed) {
-                    if (Telegram.showAlert) Telegram.showAlert('Select some text first!');
+            const isExpandableQuote = (tag === 'expandable-quote');
+            const actualTag = isExpandableQuote ? 'blockquote' : tag;
+
+            // Handle Blockquote & Expandable (Quiz) Quote
+            if (actualTag === 'blockquote') {
+                const existingBq = findAncestorTag(range.commonAncestorContainer, ['BLOCKQUOTE']);
+                if (existingBq) {
+                    if (isExpandableQuote) {
+                        // Toggle expandable/quiz mode on existing quote
+                        if (existingBq.hasAttribute('expandable')) {
+                            existingBq.removeAttribute('expandable');
+                            existingBq.classList.remove('is-collapsed');
+                        } else {
+                            existingBq.setAttribute('expandable', '');
+                            existingBq.classList.add('is-collapsed');
+                        }
+                    } else {
+                        // Unwrap quote back to normal text
+                        unwrapElement(existingBq);
+                    }
+                    saveCurrentSelection();
+                    updateStats();
+                    if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
                     return;
                 }
-                const wrapper = document.createElement(tag);
-                try {
-                    range.surroundContents(wrapper);
-                } catch (e) {
-                    const content = range.extractContents();
-                    wrapper.appendChild(content);
-                    range.insertNode(wrapper);
+
+                if (range.collapsed) {
+                    if (Telegram.showAlert) Telegram.showAlert('Select some text first to Quote!');
+                    return;
                 }
-                selection.removeAllRanges();
+
+                const bq = document.createElement('blockquote');
+                if (isExpandableQuote) {
+                    bq.setAttribute('expandable', '');
+                    bq.classList.add('is-collapsed');
+                }
+
+                const frag = range.extractContents();
+                // Normalize any <div> blocks inside extracted selection into clean <br> lines
+                const tempDiv = document.createElement('div');
+                tempDiv.appendChild(frag);
+                tempDiv.querySelectorAll('div, p').forEach((blk, idx) => {
+                    if (idx > 0 || blk.previousSibling) {
+                        blk.parentNode.insertBefore(document.createElement('br'), blk);
+                    }
+                    unwrapElement(blk);
+                });
+                // Remove leading/trailing <br> inside quote
+                while (tempDiv.firstChild && tempDiv.firstChild.nodeName === 'BR') tempDiv.removeChild(tempDiv.firstChild);
+                while (tempDiv.lastChild && tempDiv.lastChild.nodeName === 'BR') tempDiv.removeChild(tempDiv.lastChild);
+
+                while (tempDiv.firstChild) {
+                    bq.appendChild(tempDiv.firstChild);
+                }
+
+                range.insertNode(bq);
+
+                // Place a clean cursor anchor OUTSIDE and AFTER the blockquote so next line is normal
+                const exitAnchor = document.createTextNode('\u200B');
+                bq.after(exitAnchor);
+
                 const newRange = document.createRange();
-                newRange.selectNodeContents(wrapper);
-                newRange.collapse(false);
+                newRange.setStart(exitAnchor, 1);
+                newRange.collapse(true);
+                selection.removeAllRanges();
                 selection.addRange(newRange);
+                savedRange = newRange.cloneRange();
+                updateToolbarActiveState();
+                updateStats();
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+                return;
             }
-            saveCurrentSelection();
+
+            // Handle Inline Formats: b, i, u, s, code, tg-spoiler
+            const tagAliases = {
+                'b': ['B', 'STRONG'],
+                'i': ['I', 'EM'],
+                'u': ['U', 'INS'],
+                's': ['S', 'STRIKE', 'DEL'],
+                'code': ['CODE'],
+                'tg-spoiler': ['TG-SPOILER']
+            };
+
+            const existingInline = findAncestorTag(range.commonAncestorContainer, tagAliases[actualTag] || [actualTag.toUpperCase()]);
+            if (existingInline) {
+                // Toggle OFF if already inside this format
+                const exitAnchor = document.createTextNode('\u200B');
+                existingInline.after(exitAnchor);
+                if (!range.collapsed) {
+                    unwrapElement(existingInline);
+                }
+                const newRange = document.createRange();
+                newRange.setStart(exitAnchor, 1);
+                newRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+                savedRange = newRange.cloneRange();
+                updateToolbarActiveState();
+                updateStats();
+                if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+                return;
+            }
+
+            if (range.collapsed) {
+                if (Telegram.showAlert) Telegram.showAlert('Select some text first!');
+                return;
+            }
+
+            const wrapper = document.createElement(actualTag);
+            const content = range.extractContents();
+            wrapper.appendChild(content);
+            range.insertNode(wrapper);
+
+            // Move cursor OUTSIDE and AFTER the formatted wrapper so typing next does NOT stay bold/formatted
+            const outsideAnchor = document.createTextNode('\u200B');
+            wrapper.after(outsideAnchor);
+
+            const newRange = document.createRange();
+            newRange.setStart(outsideAnchor, 1);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            savedRange = newRange.cloneRange();
+
+            updateToolbarActiveState();
             updateStats();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
@@ -1209,7 +1600,6 @@
             emoji._label = emoji._words[0] || emoji.symbol || '⭐';
         }
 
-        // Auto-Upgrade Chip Icons & Header Icon with Real Premium Emojis from User's Database
         const upgradedChipKeys = {};
         function upgradeUIWithDatabasePremiumEmojis() {
             const chipTargets = ['youtube', 'telegram', 'binance', 'facebook', 'tiktok', 'verified', 'star', 'fire', 'laugh'];
@@ -1328,7 +1718,6 @@
             }
             keyboard.appendChild(fragment);
 
-            // Auto-fill if container still hasn't overflowed
             requestAnimationFrame(() => {
                 if (emojiArea.scrollHeight <= emojiArea.clientHeight + 80 && renderedCount < currentRenderList.length) {
                     renderNextChunk();
@@ -1530,7 +1919,7 @@
             imgNode.src = TRANSPARENT_PIXEL;
             enqueueEmojiImage(emoji.id, imgNode.dataset.imgPath, imgNode, null);
 
-            const spaceNode = document.createTextNode('\u00A0');
+            const spaceNode = document.createTextNode(' ');
 
             let range = savedRange;
             if (!range || !draft.contains(range.commonAncestorContainer)) {
@@ -1557,20 +1946,114 @@
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        function serializeDraftForBot(containerEl) {
-            const clone = containerEl.cloneNode(true);
-            clone.querySelectorAll('img.inline-premium-emoji').forEach(img => {
-                const eid = img.dataset.emojiId;
-                const replacement = document.createTextNode(eid ? `[${eid}]` : (img.alt || '⭐'));
-                img.replaceWith(replacement);
-            });
+        // =========================================================
+        // PRECISION DOM SERIALIZER (1 ENTER = 1 LINE, NEVER 3-4!)
+        // =========================================================
+        function escapeHtmlText(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
 
-            return clone.innerHTML
-                .replace(/<div><br\s*\/?><\/div>/gi, '\n')
-                .replace(/<div>/gi, '\n')
-                .replace(/<\/div>/gi, '')
-                .replace(/<br\s*\/?>/gi, '\n')
-                .replace(/&nbsp;|\u00A0/g, ' ');
+        function serializeNodes(parentNode) {
+            let out = '';
+            const children = Array.from(parentNode.childNodes);
+
+            for (let i = 0; i < children.length; i++) {
+                const node = children[i];
+
+                if (node.nodeType === 3) {
+                    // Text node
+                    const cleanText = node.nodeValue
+                        .replace(/\u200B/g, '')
+                        .replace(/\u00A0/g, ' ');
+                    out += escapeHtmlText(cleanText);
+                } else if (node.nodeType === 1) {
+                    const tag = node.tagName.toUpperCase();
+
+                    if (tag === 'IMG' && node.classList.contains('inline-premium-emoji')) {
+                        const eid = node.dataset.emojiId;
+                        out += eid ? `[${eid}]` : (node.alt || '⭐');
+                    } else if (tag === 'BR') {
+                        // Ignore browser trailing placeholder <br> at the very end of a block if followed by nothing
+                        const isLastInBlock = (i === children.length - 1) &&
+                            (parentNode !== draft && (parentNode.tagName === 'DIV' || parentNode.tagName === 'P' || parentNode.tagName === 'BLOCKQUOTE'));
+                        if (!isLastInBlock) {
+                            out += '\n';
+                        }
+                    } else if (tag === 'DIV' || tag === 'P') {
+                        // A <div> or <p> starts on a new line if there is already content before it
+                        if (out.length > 0 && !out.endsWith('\n')) {
+                            out += '\n';
+                        }
+                        const inner = serializeNodes(node);
+                        // If the div was an empty line (e.g. <div><br></div> or <div><b><br></b></div>), it represents 1 newline
+                        if (inner === '' || inner === '\n') {
+                            out += '\n';
+                        } else {
+                            out += inner;
+                            if (!out.endsWith('\n') && i < children.length - 1) {
+                                out += '\n';
+                            }
+                        }
+                    } else if (tag === 'BLOCKQUOTE') {
+                        const isExpandable = node.hasAttribute('expandable');
+                        const innerQuote = serializeNodes(node).replace(/^\n+|\n+$/g, '');
+                        if (innerQuote.trim().length > 0) {
+                            if (out.length > 0 && !out.endsWith('\n')) {
+                                out += '\n';
+                            }
+                            const openTag = isExpandable ? '<blockquote expandable>' : '<blockquote>';
+                            out += `${openTag}${innerQuote}</blockquote>`;
+                            // If there is content after the blockquote and it doesn't start with a newline or <br>, ensure clean line transition
+                            const nextNode = children[i + 1];
+                            if (nextNode && !(nextNode.nodeType === 1 && nextNode.tagName === 'BR')) {
+                                out += '\n';
+                            }
+                        }
+                    } else {
+                        // Inline formatting tags
+                        const tagMap = {
+                            'B': 'b', 'STRONG': 'b',
+                            'I': 'i', 'EM': 'i',
+                            'U': 'u', 'INS': 'u',
+                            'S': 's', 'STRIKE': 's', 'DEL': 's',
+                            'CODE': 'code',
+                            'TG-SPOILER': 'tg-spoiler'
+                        };
+                        const mapped = tagMap[tag];
+                        const inner = serializeNodes(node);
+                        if (mapped) {
+                            if (inner.replace(/\n/g, '').trim().length === 0) {
+                                // Do not wrap empty spaces/newlines in tags
+                                out += inner;
+                            } else {
+                                // Keep leading/trailing newlines outside inline tags
+                                const leadMatch = inner.match(/^\n+/);
+                                const trailMatch = inner.match(/\n+$/);
+                                const lead = leadMatch ? leadMatch[0] : '';
+                                const trail = trailMatch ? trailMatch[0] : '';
+                                const core = inner.slice(lead.length, inner.length - trail.length);
+                                out += `${lead}<${mapped}>${core}</${mapped}>${trail}`;
+                            }
+                        } else {
+                            out += inner;
+                        }
+                    }
+                }
+            }
+            return out;
+        }
+
+        function serializeDraftForBot(containerEl) {
+            let raw = serializeNodes(containerEl);
+            // Clean up any accidental triple+ newlines around blockquotes so Telegram doesn't add double block margins
+            raw = raw
+                .replace(/\n{3,}(<blockquote)/g, '\n\n$1')
+                .replace(/(<\/blockquote>)\n{3,}/g, '$1\n\n')
+                .replace(/^\n+|\n+$/g, '');
+            return raw;
         }
 
         function saveToHistory(botFormattedText) {
@@ -1585,8 +2068,12 @@
 
         function hydrateBotTextToVisualHTML(botText) {
             if (!botText) return '';
-            const htmlWithBreaks = botText.replace(/\n/g, '<br>');
-            return htmlWithBreaks.replace(/\[(\d{17,21})\]/g, (match, eid) => {
+            let html = botText
+                .replace(/<blockquote expandable>/gi, '<blockquote expandable class="is-collapsed">')
+                .replace(/<\/blockquote>\n/gi, '</blockquote>')
+                .replace(/\n/g, '<br>');
+
+            return html.replace(/\[(\d{17,21})\]/g, (match, eid) => {
                 const imgPath = `/api/image/${eid}.webp`;
                 return `<img class="inline-premium-emoji" data-emoji-id="${eid}" data-img-path="${imgPath}" src="${TRANSPARENT_PIXEL}" alt="⭐">`;
             });
@@ -1618,7 +2105,18 @@
                 const rawBotText = item.botText || item.text || '';
                 const card = document.createElement('div');
                 card.className = 'history-card';
-                card.onclick = () => loadHistoryItem(index);
+                card.onclick = (e) => {
+                    const bq = e.target.closest('blockquote[expandable]');
+                    if (bq) {
+                        const rect = bq.getBoundingClientRect();
+                        if (e.clientX >= rect.right - 36 && e.clientY >= rect.bottom - 32) {
+                            e.stopPropagation();
+                            bq.classList.toggle('is-collapsed');
+                            return;
+                        }
+                    }
+                    loadHistoryItem(index);
+                };
 
                 const visualHTML = hydrateBotTextToVisualHTML(rawBotText);
                 card.innerHTML = `
@@ -1649,6 +2147,7 @@
                 savedRange = range.cloneRange();
 
                 updateStats();
+                updateToolbarActiveState();
                 if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
             }
         }
@@ -1667,7 +2166,7 @@
 
         function sendData() {
             const hasEmoji = draft.querySelector('img.inline-premium-emoji') !== null;
-            if (!draft.innerText.trim() && !hasEmoji) {
+            if (!draft.innerText.replace(/\u200B/g, '').trim() && !hasEmoji) {
                 if (Telegram.showAlert) Telegram.showAlert('Write something or add an emoji first!');
                 return;
             }
