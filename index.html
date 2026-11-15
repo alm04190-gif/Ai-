@@ -115,6 +115,11 @@
             0% { background-position: -120px 0; }
             100% { background-position: 120px 0; }
         }
+        @keyframes aiBarProgress {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
         .anim-float { animation: floatPulse 2.4s ease-in-out infinite; }
         .anim-wiggle { animation: wiggleGlow 2.6s ease-in-out infinite; }
@@ -281,6 +286,7 @@
             display: flex;
             flex-direction: column;
             gap: 7px;
+            position: relative;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
         .editor-card:focus-within {
@@ -340,6 +346,15 @@
             border-radius: 4px;
             padding: 0 4px;
         }
+        .draft-area a, .history-text a {
+            color: #38bdf8;
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            background: rgba(56, 189, 248, 0.12);
+            padding: 0 4px;
+            border-radius: 5px;
+        }
 
         /* ================= TELEGRAM STYLE QUOTE & EXPANDABLE (QUIZ) QUOTE ================= */
         .draft-area blockquote,
@@ -355,7 +370,6 @@
             transition: max-height 0.22s ease;
         }
 
-        /* Top-right quote mark badge like Telegram */
         .draft-area blockquote::before,
         .history-text blockquote::before {
             content: "”";
@@ -370,7 +384,6 @@
             pointer-events: none;
         }
 
-        /* Bottom-right interactive collapse/expand arrow button on quotes */
         .draft-area blockquote::after,
         .history-text blockquote[expandable]::after {
             content: "⌃";
@@ -393,7 +406,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
         }
 
-        /* Collapsed state (Telegram Expandable Quote / Quiz Style) */
         .draft-area blockquote[expandable].is-collapsed,
         .history-text blockquote[expandable].is-collapsed {
             max-height: 74px;
@@ -435,7 +447,7 @@
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             transition: all 0.12s ease;
         }
         .format-btn:active,
@@ -445,10 +457,172 @@
             border-color: var(--accent);
             color: var(--accent);
         }
-        .format-btn.kbd-pill {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(139, 92, 246, 0.18));
-            border-color: var(--border-highlight);
+        .format-btn.ai-pill {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(139, 92, 246, 0.28), rgba(6, 182, 212, 0.22));
+            border: 1.5px solid var(--border-highlight);
             color: var(--accent);
+            box-shadow: 0 2px 10px rgba(56, 189, 248, 0.22);
+        }
+        .format-btn.link-pill {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(124, 58, 237, 0.16));
+            border-color: rgba(56, 189, 248, 0.45);
+        }
+
+        /* ================= SMOOTH POPUP MODALS (CREATE LINK & AI ENHANCE) ================= */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 7, 17, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s ease;
+        }
+        .modal-backdrop.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 360px;
+            background: var(--surface);
+            border: 1.5px solid var(--border-highlight);
+            border-radius: 20px;
+            padding: 18px 16px 16px 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 25px var(--glow);
+            transform: translateY(12px) scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .modal-backdrop.show .modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-title-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .modal-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .modal-sub b {
+            color: var(--accent);
+        }
+
+        .modal-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--surface-2);
+            border: 1.5px solid var(--border-highlight);
+            border-radius: 13px;
+            padding: 3px 10px;
+        }
+        .modal-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            padding: 9px 4px;
+        }
+        .modal-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .modal-btn-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 2px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 11px 12px;
+            border-radius: 13px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 1px solid var(--border);
+            transition: transform 0.12s ease, filter 0.15s ease;
+        }
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+        .modal-btn.cancel {
+            background: var(--surface-2);
+            color: var(--text);
+        }
+        .modal-btn.done {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.22);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+        }
+
+        /* AI Loading Modal Specifics */
+        .ai-loader-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 8px 4px;
+            gap: 11px;
+        }
+        .ai-orb {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(139, 92, 246, 0.28));
+            border: 1.5px solid var(--border-highlight);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 26px rgba(56, 189, 248, 0.4);
+        }
+        .ai-orb img, .ai-orb svg {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+        }
+        .ai-progress-track {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 99px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .ai-progress-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #a855f7, #06b6d4, #2563eb);
+            background-size: 250% 100%;
+            animation: aiBarProgress 1.3s linear infinite;
+            border-radius: 99px;
         }
 
         /* ================= EMOJI VAULT CARD ================= */
@@ -466,7 +640,6 @@
             overflow: hidden;
         }
 
-        /* Glowing Neon Search Bar */
         .search-row {
             flex-shrink: 0;
             position: relative;
@@ -532,7 +705,6 @@
         }
         .search-clear.visible { display: inline-block; }
 
-        /* Quick Filter Tag Chips with Real Premium Emojis */
         .quick-chips {
             flex-shrink: 0;
             display: flex;
@@ -575,7 +747,6 @@
         }
         .chip-btn:active { transform: scale(0.93); }
 
-        /* Pack Category Strip */
         .category-row {
             flex-shrink: 0;
             display: flex;
@@ -677,7 +848,6 @@
             background: var(--glow);
         }
 
-        /* Shimmer Skeleton Placeholder */
         .emoji-img-box {
             width: 30px;
             height: 30px;
@@ -883,17 +1053,21 @@
         <div id="mainView" class="main-view">
             <!-- Draft Editor -->
             <div class="editor-card">
-                <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Write your post here... Tap any premium emoji below to insert!"></div>
+                <div class="draft-area" id="draft" contenteditable="true" data-placeholder="Write or paste your post here... Tap AI Enhance to auto-make with Premium Emojis!"></div>
 
                 <div class="format-toolbar" id="formatToolbar">
-                    <button class="format-btn kbd-pill" type="button" onmousedown="event.preventDefault()" onclick="toggleKeyboard()">
-                        <svg class="ui-prem-icon anim-float" viewBox="0 0 24 24" fill="none">
-                            <rect x="2" y="5" width="20" height="14" rx="3" fill="rgba(56,189,248,0.2)" stroke="#38bdf8" stroke-width="1.8"/>
-                            <circle cx="6.5" cy="9.5" r="1" fill="#38bdf8"/><circle cx="10" cy="9.5" r="1" fill="#38bdf8"/><circle cx="14" cy="9.5" r="1" fill="#38bdf8"/><circle cx="17.5" cy="9.5" r="1" fill="#38bdf8"/>
-                            <path d="M7 15h10" stroke="#a855f7" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Keyboard
+                    <!-- AI ENHANCE BUTTON (Calls Bot Gemini AI + History) -->
+                    <button class="format-btn ai-pill" type="button" onmousedown="event.preventDefault()" onclick="runAiEnhancePost()">
+                        <img class="ui-prem-icon anim-wiggle" data-ui-prem="ai" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23facc15' d='M12 1L14.8 8.2L22 11L14.8 13.8L12 21L9.2 13.8L2 11L9.2 8.2L12 1Z'/><circle cx='19' cy='4' r='2' fill='%2338bdf8'/><circle cx='5' cy='19' r='1.8' fill='%23a855f7'/></svg>" alt="">
+                        AI Enhance
                     </button>
+
+                    <!-- CREATE LINK BUTTON IN TOOLBAR -->
+                    <button class="format-btn link-pill" data-fmt="a" type="button" onmousedown="event.preventDefault()" onclick="openLinkModal()">
+                        <img class="ui-prem-icon anim-float" data-ui-prem="link" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' stroke='%2338bdf8' stroke-width='2.2' stroke-linecap='round'/><path d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' stroke='%23a855f7' stroke-width='2.2' stroke-linecap='round'/></svg>" alt="">
+                        Create Link
+                    </button>
+
                     <button class="format-btn" data-fmt="b" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('b')"><b>B</b></button>
                     <button class="format-btn" data-fmt="i" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('i')"><i>I</i></button>
                     <button class="format-btn" data-fmt="u" type="button" onmousedown="event.preventDefault()" onclick="applyFormat('u')"><u>U</u></button>
@@ -908,7 +1082,6 @@
 
             <!-- Emoji Vault -->
             <div class="vault-card">
-                <!-- Glowing Search Input -->
                 <div class="search-row">
                     <div class="search-icon-box">
                         <svg class="ui-prem-icon anim-wiggle" viewBox="0 0 24 24" fill="none">
@@ -996,6 +1169,46 @@
         </div>
     </div>
 
+    <!-- ================= CREATE LINK POPUP MODAL ================= -->
+    <div class="modal-backdrop" id="linkModal">
+        <div class="modal-box">
+            <div class="modal-title-row">
+                <img class="ui-prem-icon anim-wiggle" style="width:24px;height:24px;" data-ui-prem="link" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><path d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' stroke='%2338bdf8' stroke-width='2.3' stroke-linecap='round'/><path d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' stroke='%23a855f7' stroke-width='2.3' stroke-linecap='round'/></svg>" alt="">
+                <span>Paste Your Link</span>
+            </div>
+            <div class="modal-sub" id="linkModalSubText">Selected Text: <b id="linkSelectedPreview">CLICK HERE</b></div>
+            <div class="modal-input-wrap">
+                <input type="url" id="linkUrlInput" class="modal-input" placeholder="https://t.me/your_link_here" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="modal-btn-row">
+                <button type="button" class="modal-btn cancel" onclick="closeLinkModal()">
+                    <img class="ui-prem-icon anim-wiggle" data-ui-prem="cancel" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='10' fill='rgba(239,68,68,0.2)' stroke='%23ef4444' stroke-width='2'/><path d='M15 9l-6 6M9 9l6 6' stroke='%23ef4444' stroke-width='2.2' stroke-linecap='round'/></svg>" alt="">
+                    Cancel
+                </button>
+                <button type="button" class="modal-btn done" onclick="confirmInsertLink()">
+                    <img class="ui-prem-icon anim-float" data-ui-prem="done" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='10' fill='rgba(34,197,94,0.25)' stroke='%234ade80' stroke-width='2'/><path d='M8 12.5l2.6 2.6 5.4-5.4' stroke='%23fff' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/></svg>" alt="">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= AI MAKING POST SMOOTH POPUP MODAL ================= -->
+    <div class="modal-backdrop" id="aiLoadingModal">
+        <div class="modal-box">
+            <div class="ai-loader-center">
+                <div class="ai-orb anim-float">
+                    <img class="ui-prem-icon anim-wiggle" data-ui-prem="ai" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23facc15' d='M12 1L14.8 8.2L22 11L14.8 13.8L12 21L9.2 13.8L2 11L9.2 8.2L12 1Z'/><circle cx='19' cy='4' r='2' fill='%2338bdf8'/><circle cx='5' cy='19' r='1.8' fill='%23a855f7'/></svg>" alt="">
+                </div>
+                <div style="font-size: 16px; font-weight: 800; color: var(--text);">AI Make Your Post</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted);" id="aiStatusSubText">Please wait...</div>
+                <div class="ai-progress-track">
+                    <div class="ai-progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const Telegram = window.Telegram.WebApp;
         Telegram.expand();
@@ -1039,6 +1252,7 @@
         const scrollSentinel = document.getElementById('scrollSentinel');
 
         let savedRange = null;
+        let pendingLinkRange = null;
         let allEmojis = [];
         let emojiById = {};
         let catMap = {};
@@ -1132,7 +1346,6 @@
             }
         }
 
-        // Lazy Viewport Observer for Emoji Images
         const lazyImgObserver = new IntersectionObserver((entries) => {
             for (let i = 0; i < entries.length; i++) {
                 const entry = entries[i];
@@ -1185,9 +1398,9 @@
         };
 
         // =========================================================
-        // SELECTION, ACTIVE FORMAT TRACKER & QUOTE ARROW TOGGLE
+        // SELECTION & ACTIVE FORMAT TRACKER
         // =========================================================
-        const INLINE_FMT_TAGS = ['B', 'STRONG', 'I', 'EM', 'U', 'INS', 'S', 'STRIKE', 'DEL', 'CODE', 'TG-SPOILER'];
+        const INLINE_FMT_TAGS = ['B', 'STRONG', 'I', 'EM', 'U', 'INS', 'S', 'STRIKE', 'DEL', 'CODE', 'TG-SPOILER', 'A'];
 
         function findAncestorTag(node, tagNames) {
             let cur = node && node.nodeType === 3 ? node.parentNode : node;
@@ -1212,6 +1425,7 @@
             if (findAncestorTag(node, ['S', 'STRIKE', 'DEL'])) document.querySelector('[data-fmt="s"]')?.classList.add('active-fmt');
             if (findAncestorTag(node, ['CODE'])) document.querySelector('[data-fmt="code"]')?.classList.add('active-fmt');
             if (findAncestorTag(node, ['TG-SPOILER'])) document.querySelector('[data-fmt="tg-spoiler"]')?.classList.add('active-fmt');
+            if (findAncestorTag(node, ['A'])) document.querySelector('[data-fmt="a"]')?.classList.add('active-fmt');
 
             const bq = findAncestorTag(node, ['BLOCKQUOTE']);
             if (bq) {
@@ -1238,7 +1452,167 @@
         draft.addEventListener('mouseup', saveCurrentSelection);
         draft.addEventListener('touchend', saveCurrentSelection);
 
-        // Click on Bottom-Right Corner of any Blockquote to Toggle Quiz/Expandable Collapse
+        // =========================================================
+        // CREATE LINK TOOLBAR BUTTON -> SMOOTH POPUP WORKFLOW
+        // =========================================================
+        function openLinkModal() {
+            const sel = window.getSelection();
+            if (savedRange) {
+                sel.removeAllRanges();
+                sel.addRange(savedRange);
+            }
+
+            const existingLink = savedRange ? findAncestorTag(savedRange.commonAncestorContainer, ['A']) : null;
+            const selectedText = savedRange ? savedRange.toString().replace(/\u200B/g, '').trim() : '';
+
+            if (!existingLink && (!savedRange || savedRange.collapsed || !selectedText)) {
+                if (Telegram.showAlert) {
+                    Telegram.showAlert('Select any text or word first, then click Create Link!');
+                }
+                return;
+            }
+
+            pendingLinkRange = savedRange.cloneRange();
+            const previewEl = document.getElementById('linkSelectedPreview');
+            const urlInput = document.getElementById('linkUrlInput');
+
+            if (existingLink && (!selectedText || selectedText === existingLink.innerText.trim())) {
+                previewEl.textContent = existingLink.innerText.trim() || 'Link';
+                urlInput.value = existingLink.getAttribute('href') || '';
+            } else {
+                previewEl.textContent = selectedText.length > 28 ? selectedText.substring(0, 28) + '...' : selectedText;
+                urlInput.value = '';
+            }
+
+            document.getElementById('linkModal').classList.add('show');
+            setTimeout(() => urlInput.focus(), 60);
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
+        }
+
+        function closeLinkModal() {
+            document.getElementById('linkModal').classList.remove('show');
+            pendingLinkRange = null;
+        }
+
+        function confirmInsertLink() {
+            const urlInput = document.getElementById('linkUrlInput');
+            let rawUrl = urlInput.value.trim();
+
+            if (!rawUrl) {
+                if (Telegram.showAlert) Telegram.showAlert('Please paste your link first!');
+                return;
+            }
+            if (!/^(https?:\/\/|tg:\/\/|mailto:)/i.test(rawUrl)) {
+                rawUrl = 'https://' + rawUrl;
+            }
+
+            if (pendingLinkRange) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(pendingLinkRange);
+
+                const existingLink = findAncestorTag(pendingLinkRange.commonAncestorContainer, ['A']);
+                if (existingLink && pendingLinkRange.collapsed) {
+                    existingLink.setAttribute('href', rawUrl);
+                } else {
+                    if (existingLink) unwrapElement(existingLink);
+                    const aTag = document.createElement('a');
+                    aTag.setAttribute('href', rawUrl);
+                    aTag.setAttribute('target', '_blank');
+                    aTag.setAttribute('rel', 'noopener noreferrer');
+
+                    const frag = pendingLinkRange.extractContents();
+                    aTag.appendChild(frag);
+                    pendingLinkRange.insertNode(aTag);
+
+                    // Move cursor outside the newly created <a> link so next typing is normal text
+                    const exitAnchor = document.createTextNode('\u200B');
+                    aTag.after(exitAnchor);
+
+                    const newRange = document.createRange();
+                    newRange.setStart(exitAnchor, 1);
+                    newRange.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                    savedRange = newRange.cloneRange();
+                }
+            }
+
+            closeLinkModal();
+            updateToolbarActiveState();
+            updateStats();
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.notificationOccurred('success');
+        }
+
+        document.getElementById('linkUrlInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirmInsertLink();
+            }
+        });
+
+        // =========================================================
+        // DIRECT AI ENHANCE VIA BOT BACKEND (NO HARDCODED MAPS!)
+        // =========================================================
+        async function runAiEnhancePost() {
+            const rawText = draft.innerText.replace(/\u200B/g, '').trim();
+            if (!rawText) {
+                if (Telegram.showAlert) Telegram.showAlert('Write or paste your post first, then tap AI Enhance!');
+                return;
+            }
+            if (!apiBase) {
+                if (Telegram.showAlert) Telegram.showAlert('Missing Bot API URL! Please open Web App from the Bot.');
+                return;
+            }
+
+            const aiModal = document.getElementById('aiLoadingModal');
+            const aiSub = document.getElementById('aiStatusSubText');
+            aiSub.textContent = 'Please wait • AI is reading your post & history...';
+            aiModal.classList.add('show');
+            if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
+
+            try {
+                // Collect user's recent postHistory so AI learns how this user likes to place emojis
+                const savedHistory = JSON.parse(localStorage.getItem('postHistory') || '[]');
+                const recentHistoryTexts = savedHistory
+                    .slice(0, 6)
+                    .map(item => item.botText || item.text || '')
+                    .filter(t => t.trim().length > 0);
+
+                const serializedCurrent = serializeDraftForBot(draft);
+
+                const resp = await fetch(`${apiBase}/api/ai-enhance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': '69420'
+                    },
+                    body: JSON.stringify({
+                        text: serializedCurrent,
+                        history: recentHistoryTexts
+                    })
+                });
+
+                const data = await resp.json();
+                if (resp.ok && data && data.ok && data.text) {
+                    draft.innerHTML = hydrateBotTextToVisualHTML(data.text);
+                    hydrateImagesInContainer(draft);
+                    updateStats();
+                    if (Telegram.HapticFeedback) Telegram.HapticFeedback.notificationOccurred('success');
+                } else {
+                    const errMsg = (data && data.error) ? data.error : 'AI could not process the post right now.';
+                    if (Telegram.showAlert) Telegram.showAlert(errMsg);
+                }
+            } catch (err) {
+                if (Telegram.showAlert) Telegram.showAlert('Connection error while contacting AI server!');
+            } finally {
+                aiModal.classList.remove('show');
+            }
+        }
+
+        // =========================================================
+        // EDITOR INTERACTIONS (QUOTE TOGGLE, ENTER & PASTE HANDLERS)
+        // =========================================================
         draft.addEventListener('click', (e) => {
             const bq = e.target.closest('blockquote');
             if (!bq) return;
@@ -1258,7 +1632,6 @@
             }
         });
 
-        // Clean Enter Key Handling: Break out of inline formats & never multiply blank lines
         draft.addEventListener('keydown', (e) => {
             if (e.key !== 'Enter' || e.isComposing) return;
 
@@ -1273,7 +1646,6 @@
             const inlineAncestor = findAncestorTag(range.startContainer, INLINE_FMT_TAGS);
             const bqAncestor = findAncestorTag(range.startContainer, ['BLOCKQUOTE']);
 
-            // If cursor is at the end of an inline format (bold, italic, mono, spoiler), step outside it first
             if (inlineAncestor) {
                 const afterRange = document.createRange();
                 afterRange.setStart(range.startContainer, range.startOffset);
@@ -1285,7 +1657,6 @@
                 }
             }
 
-            // If inside a blockquote and pressing Enter on an empty last line, exit the blockquote cleanly
             if (bqAncestor) {
                 const prevNode = range.startContainer.nodeType === 1
                     ? range.startContainer.childNodes[range.startOffset - 1]
@@ -1320,11 +1691,9 @@
                 }
             }
 
-            // Insert a single clean <br> line break
             const br = document.createElement('br');
             range.insertNode(br);
 
-            // Ensure caret visually moves to the new line if at the very end of container
             const container = bqAncestor || draft;
             const checkAfter = document.createRange();
             checkAfter.setStartAfter(br);
@@ -1347,7 +1716,6 @@
             updateToolbarActiveState();
         });
 
-        // Clean Paste Handler so pasting multi-line text never creates duplicate <div>/<p> gaps
         draft.addEventListener('paste', (e) => {
             e.preventDefault();
             const text = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -1386,19 +1754,6 @@
             updateStats();
         });
 
-        function toggleKeyboard() {
-            if (document.activeElement === draft) {
-                draft.blur();
-            } else {
-                draft.focus();
-                if (savedRange) {
-                    const sel = window.getSelection();
-                    sel.removeAllRanges();
-                    sel.addRange(savedRange);
-                }
-            }
-        }
-
         function clearDraft() {
             draft.innerHTML = '';
             savedRange = null;
@@ -1415,7 +1770,6 @@
         }
         draft.addEventListener('input', updateStats);
 
-        // Unwrap helper
         function unwrapElement(el) {
             const parent = el.parentNode;
             if (!parent) return;
@@ -1425,7 +1779,6 @@
             parent.removeChild(el);
         }
 
-        // Exit/Clear Format Button (Tx)
         function clearActiveFormat() {
             const sel = window.getSelection();
             if (savedRange) {
@@ -1437,21 +1790,16 @@
             const node = range.commonAncestorContainer;
 
             const inlineEl = findAncestorTag(node, INLINE_FMT_TAGS);
-            if (inlineEl) {
-                unwrapElement(inlineEl);
-            }
+            if (inlineEl) unwrapElement(inlineEl);
+
             const bqEl = findAncestorTag(node, ['BLOCKQUOTE']);
-            if (bqEl) {
-                unwrapElement(bqEl);
-            }
+            if (bqEl) unwrapElement(bqEl);
+
             saveCurrentSelection();
             updateStats();
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('light');
         }
 
-        // =========================================================
-        // FIXED WYSIWYG FORMATTING (NO BLEEDING + EXPANDABLE QUOTE)
-        // =========================================================
         function applyFormat(tag) {
             draft.focus();
             const selection = window.getSelection();
@@ -1465,12 +1813,10 @@
             const isExpandableQuote = (tag === 'expandable-quote');
             const actualTag = isExpandableQuote ? 'blockquote' : tag;
 
-            // Handle Blockquote & Expandable (Quiz) Quote
             if (actualTag === 'blockquote') {
                 const existingBq = findAncestorTag(range.commonAncestorContainer, ['BLOCKQUOTE']);
                 if (existingBq) {
                     if (isExpandableQuote) {
-                        // Toggle expandable/quiz mode on existing quote
                         if (existingBq.hasAttribute('expandable')) {
                             existingBq.removeAttribute('expandable');
                             existingBq.classList.remove('is-collapsed');
@@ -1479,7 +1825,6 @@
                             existingBq.classList.add('is-collapsed');
                         }
                     } else {
-                        // Unwrap quote back to normal text
                         unwrapElement(existingBq);
                     }
                     saveCurrentSelection();
@@ -1500,7 +1845,6 @@
                 }
 
                 const frag = range.extractContents();
-                // Normalize any <div> blocks inside extracted selection into clean <br> lines
                 const tempDiv = document.createElement('div');
                 tempDiv.appendChild(frag);
                 tempDiv.querySelectorAll('div, p').forEach((blk, idx) => {
@@ -1509,7 +1853,6 @@
                     }
                     unwrapElement(blk);
                 });
-                // Remove leading/trailing <br> inside quote
                 while (tempDiv.firstChild && tempDiv.firstChild.nodeName === 'BR') tempDiv.removeChild(tempDiv.firstChild);
                 while (tempDiv.lastChild && tempDiv.lastChild.nodeName === 'BR') tempDiv.removeChild(tempDiv.lastChild);
 
@@ -1519,7 +1862,6 @@
 
                 range.insertNode(bq);
 
-                // Place a clean cursor anchor OUTSIDE and AFTER the blockquote so next line is normal
                 const exitAnchor = document.createTextNode('\u200B');
                 bq.after(exitAnchor);
 
@@ -1535,7 +1877,6 @@
                 return;
             }
 
-            // Handle Inline Formats: b, i, u, s, code, tg-spoiler
             const tagAliases = {
                 'b': ['B', 'STRONG'],
                 'i': ['I', 'EM'],
@@ -1547,7 +1888,6 @@
 
             const existingInline = findAncestorTag(range.commonAncestorContainer, tagAliases[actualTag] || [actualTag.toUpperCase()]);
             if (existingInline) {
-                // Toggle OFF if already inside this format
                 const exitAnchor = document.createTextNode('\u200B');
                 existingInline.after(exitAnchor);
                 if (!range.collapsed) {
@@ -1575,7 +1915,6 @@
             wrapper.appendChild(content);
             range.insertNode(wrapper);
 
-            // Move cursor OUTSIDE and AFTER the formatted wrapper so typing next does NOT stay bold/formatted
             const outsideAnchor = document.createTextNode('\u200B');
             wrapper.after(outsideAnchor);
 
@@ -1600,6 +1939,7 @@
             emoji._label = emoji._words[0] || emoji.symbol || '⭐';
         }
 
+        // Auto-Upgrade UI Buttons, Chips & Modal Icons with Real Premium Emojis from Database
         const upgradedChipKeys = {};
         function upgradeUIWithDatabasePremiumEmojis() {
             const chipTargets = ['youtube', 'telegram', 'binance', 'facebook', 'tiktok', 'verified', 'star', 'fire', 'laugh'];
@@ -1609,13 +1949,32 @@
                 if (match) {
                     upgradedChipKeys[key] = true;
                     const chipImg = document.querySelector(`img[data-chip-icon="${key}"]`);
-                    if (chipImg) {
-                        enqueueEmojiImage(match.id, match.image_url, chipImg, null);
-                    }
+                    if (chipImg) enqueueEmojiImage(match.id, match.image_url, chipImg, null);
                     if (key === 'star') {
                         const statStar = document.getElementById('statStarIcon');
                         if (statStar) enqueueEmojiImage(match.id, match.image_url, statStar, null);
                     }
+                }
+            }
+
+            const uiMap = {
+                'ai': ['sparkle', 'magic', 'star', 'fire', 'bolt'],
+                'link': ['link', 'chain', 'globe', 'arrow', 'telegram'],
+                'done': ['verified', 'check', 'tick', 'done'],
+                'cancel': ['cross', 'close', 'cancel', 'error']
+            };
+            for (const [uiKey, searchWords] of Object.entries(uiMap)) {
+                if (upgradedChipKeys['ui_' + uiKey]) continue;
+                let found = null;
+                for (const w of searchWords) {
+                    found = allEmojis.find(e => e._words.includes(w) || e._tags.includes(w));
+                    if (found) break;
+                }
+                if (found) {
+                    upgradedChipKeys['ui_' + uiKey] = true;
+                    document.querySelectorAll(`img[data-ui-prem="${uiKey}"]`).forEach(img => {
+                        enqueueEmojiImage(found.id, found.image_url, img, null);
+                    });
                 }
             }
         }
@@ -1909,7 +2268,6 @@
             setGridList(filtered, false);
         }
 
-        // Insert Visual Premium Emoji Into Draft Box
         function insertEmoji(emoji) {
             const imgNode = document.createElement('img');
             imgNode.className = 'inline-premium-emoji';
@@ -1947,7 +2305,7 @@
         }
 
         // =========================================================
-        // PRECISION DOM SERIALIZER (1 ENTER = 1 LINE, NEVER 3-4!)
+        // PRECISION DOM SERIALIZER (SUPPORTS LINKS, QUOTES & CLEAN LINES)
         // =========================================================
         function escapeHtmlText(str) {
             return str
@@ -1964,7 +2322,6 @@
                 const node = children[i];
 
                 if (node.nodeType === 3) {
-                    // Text node
                     const cleanText = node.nodeValue
                         .replace(/\u200B/g, '')
                         .replace(/\u00A0/g, ' ');
@@ -1976,19 +2333,16 @@
                         const eid = node.dataset.emojiId;
                         out += eid ? `[${eid}]` : (node.alt || '⭐');
                     } else if (tag === 'BR') {
-                        // Ignore browser trailing placeholder <br> at the very end of a block if followed by nothing
                         const isLastInBlock = (i === children.length - 1) &&
                             (parentNode !== draft && (parentNode.tagName === 'DIV' || parentNode.tagName === 'P' || parentNode.tagName === 'BLOCKQUOTE'));
                         if (!isLastInBlock) {
                             out += '\n';
                         }
                     } else if (tag === 'DIV' || tag === 'P') {
-                        // A <div> or <p> starts on a new line if there is already content before it
                         if (out.length > 0 && !out.endsWith('\n')) {
                             out += '\n';
                         }
                         const inner = serializeNodes(node);
-                        // If the div was an empty line (e.g. <div><br></div> or <div><b><br></b></div>), it represents 1 newline
                         if (inner === '' || inner === '\n') {
                             out += '\n';
                         } else {
@@ -2006,14 +2360,20 @@
                             }
                             const openTag = isExpandable ? '<blockquote expandable>' : '<blockquote>';
                             out += `${openTag}${innerQuote}</blockquote>`;
-                            // If there is content after the blockquote and it doesn't start with a newline or <br>, ensure clean line transition
                             const nextNode = children[i + 1];
                             if (nextNode && !(nextNode.nodeType === 1 && nextNode.tagName === 'BR')) {
                                 out += '\n';
                             }
                         }
+                    } else if (tag === 'A') {
+                        const href = (node.getAttribute('href') || '').replace(/"/g, '&quot;');
+                        const inner = serializeNodes(node);
+                        if (href && inner.trim().length > 0) {
+                            out += `<a href="${href}">${inner}</a>`;
+                        } else {
+                            out += inner;
+                        }
                     } else {
-                        // Inline formatting tags
                         const tagMap = {
                             'B': 'b', 'STRONG': 'b',
                             'I': 'i', 'EM': 'i',
@@ -2026,10 +2386,8 @@
                         const inner = serializeNodes(node);
                         if (mapped) {
                             if (inner.replace(/\n/g, '').trim().length === 0) {
-                                // Do not wrap empty spaces/newlines in tags
                                 out += inner;
                             } else {
-                                // Keep leading/trailing newlines outside inline tags
                                 const leadMatch = inner.match(/^\n+/);
                                 const trailMatch = inner.match(/\n+$/);
                                 const lead = leadMatch ? leadMatch[0] : '';
@@ -2048,7 +2406,6 @@
 
         function serializeDraftForBot(containerEl) {
             let raw = serializeNodes(containerEl);
-            // Clean up any accidental triple+ newlines around blockquotes so Telegram doesn't add double block margins
             raw = raw
                 .replace(/\n{3,}(<blockquote)/g, '\n\n$1')
                 .replace(/(<\/blockquote>)\n{3,}/g, '$1\n\n')
@@ -2106,6 +2463,7 @@
                 const card = document.createElement('div');
                 card.className = 'history-card';
                 card.onclick = (e) => {
+                    if (e.target.closest('a')) return;
                     const bq = e.target.closest('blockquote[expandable]');
                     if (bq) {
                         const rect = bq.getBoundingClientRect();
@@ -2173,7 +2531,10 @@
 
             const finalBotText = serializeDraftForBot(draft);
             saveToHistory(finalBotText);
-            Telegram.sendData(JSON.stringify({ text: finalBotText }));
+            Telegram.sendData(JSON.stringify({
+                text: finalBotText,
+                disable_web_page_preview: true
+            }));
         }
 
         loadEmojis();
