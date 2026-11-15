@@ -1534,17 +1534,18 @@
 
             const aiModal = document.getElementById('aiLoadingModal');
             const aiSub = document.getElementById('aiStatusSubText');
-            aiSub.textContent = 'Please wait • AI is reading your post & history...';
+            aiSub.textContent = 'Please wait • AI is reading your post & style...';
             aiModal.classList.add('show');
             if (Telegram.HapticFeedback) Telegram.HapticFeedback.impactOccurred('medium');
 
             let alertMsgToShow = null;
 
             try {
+                // শুধুমাত্র হিস্টরির স্টাইল/প্যাটার্ন পাঠানো হবে, পুরনো ইমোজি আইডি মাস্ক করে দেওয়া হচ্ছে যাতে AI পুরনো ইমোজি কপি না করে
                 const savedHistory = JSON.parse(localStorage.getItem('postHistory') || '[]');
                 const recentHistoryTexts = savedHistory
                     .slice(0, 6)
-                    .map(item => item.botText || item.text || '')
+                    .map(item => String(item.botText || item.text || '').replace(/\[(\d{15,22})\]/g, '<EMOJI_SLOT>'))
                     .filter(t => t.trim().length > 0);
 
                 const serializedCurrent = serializeDraftForBot(draft);
